@@ -1,0 +1,13 @@
+{
+  "encoding": "animations",
+  "animations": [
+    {
+      "action": "idle",
+      "recursive": false,
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 16
+    }
+  ]
+}
