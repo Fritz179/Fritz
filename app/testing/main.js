@@ -1,60 +1,49 @@
+const game = createGame({type: 'pacman', levels: true})
+
 function preload() {
   addSpriteSheet('tiles')
   addSpriteSheet('player')
 }
 
 function setup() {
-  console.log(sprites);
-  createGame({tileWidth: 16})
   createCanvas(window.innerWidth, window.innerHeight)
 
+  console.log(sprites);
   loadMap('level_0')
-  // const pl = window['Player']
-  // console.log(Player, window.Player);
-  // console.log(new window['Player']());
-  console.log(new Player().__proto__.__proto__.constructor.name);
-
-}
-
-let off = 0
-function draw() {
-  // console.log(maps);
-  display(sprites.player.idle_right, 0, 600)
-  for (let i = 0; i < 10; i++) {
-    display(sprites.player.running_right[(i + off) % 10], 50 * i + 50, 0)
-  }
-  display(sprites.player.idle_left, 0, 500)
-  for (let i = 0; i < 10; i++) {
-    display(sprites.player.running_left[(i + off) % 10], 50 * i + 50, 100)
-  }
-  off++
+  const playerSpawner = game.createSpawner(Player)
+  // for (let i = 0; i < 1000; i++) {
+  //   playerSpawner.spawn().setPos(random(width), random(height))
+  // }
+  spawners.player.spawn().setPos(0, 500)
+  spawners.player.spawn().setPos(30, 500)
 }
 
 class Player extends Entity {
   constructor() {
     super()
-    this.setSprite(sprites._player)
+
     this.setPos(16, 16)
+    this.setSprite(sprites.player)
+    console.log(this.constructor.className);
+  }
+
+  fixedUpdate() {
+    // console.log(this.sprite);
+  }
+
+  update() {
+    this.x += random(20)
+    if (this.y > height) this.y = 0
+    if (this.y < 0) this.y = height
+    if (this.x > width) this.x = 0
+    if (this.x < 0) this.x = width
+  }
+
+  onCollisionEntry(event) {
+    console.log('colliding with', event.collider.className);
+  }
+
+  getSprite() {
+    return random(this.sprite.running_right)
   }
 }
-
-
-///////////////////////////////////////////
-
-// function setup() {
-//   createGame({type: 'pacman'})
-//   setMapSprite('tiles')
-//
-//   const playerSpawner = createSpawner('player', Player)
-//   playerSpawner.spawn()
-//
-//   const bulletsPool = createPool('bullets', Bullets, {max: 15, overflow: 'stop'})
-//   player.setPos(64, 64)
-//   // createPool('')
-// }
-
-// class Player extends Entity {
-//   constructor(x) {
-//     this.setSize(16, 16)
-//   }
-// }
