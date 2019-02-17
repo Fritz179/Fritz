@@ -9,7 +9,8 @@ function initMap() {
     collisionMap: [],
     graphicalMap: [],
     w: 0,
-    h: 0
+    h: 0,
+    s: 0
   }
 
   fritz.setDefaultLoadMapOptions = settings => {
@@ -64,14 +65,12 @@ function initMap() {
     pacman: json => {
       const {getSize, fillMap, fillOffsets, setUndefined} = mapParsers
       const innerTile = 0, wallTile = 1, outerTile = 2
-      const tileMap = []
+      const {tileMap} = fritz.maps
 
       //find map size
-      const {w, h, j} = getSize(json)
+      const {w, h} = getSize(json)
       fritz.maps.w = tileMap.w = w
       fritz.maps.h = tileMap.h = h
-      fritz.maps.j = tileMap.j = j
-
 
       //get throug shapes and init empty spaces as innerTile
       fillMap(tileMap, json, innerTile)
@@ -80,10 +79,10 @@ function initMap() {
       fillOffsets(tileMap, [-w - 1, -w, -w + 1, -1, 1, w - 1, w, w + 1], innerTile, wallTile)
 
       //loop through map and set everithing else as outerTile
-      setUndefined(tileMap, j, outerTile)
+      setUndefined(tileMap, w * h, outerTile)
 
       //start creating graphicalMap
-      const graphicalMap = []
+      const {graphicalMap} = fritz.maps
 
       //check tile for tile to create graphicalMap
       tileMap.forEach((tile, i) => {
@@ -101,7 +100,7 @@ function initMap() {
       })
 
       //start creating collisionMap
-      const collisionMap = []
+      const {collisionMap} = fritz.maps
 
       //check tile for tile to create collisionMap
       tileMap.forEach((tile, i) => {
@@ -117,15 +116,10 @@ function initMap() {
         collisionMap[i] = collsion
       })
 
-      console.log(tileMap);
-      console.log(graphicalMap);
-      graphicalMap.forEach((tile, i) => {
-        const x = i % w
-        const y = (i - x) / w
-        const s = 16
-        image(fritz.sprites.tiles[tile], x * s, y * s)
-      })
 
+      console.log(fritz.maps);
+
+      fritz.updateTileLayer()
 
       function getPacman(tl, t, tr, l, r, bl, b, br) {
         let tile = []
@@ -184,10 +178,11 @@ function initMap() {
     },
 
     fillOffsets: (tileMap, offsets, toCheck, replace) => {
+      const j = tileMap.w * tileMap.h
       tileMap.forEach((tile, i) => {
         if (tile == toCheck) {
           offsets.forEach(offset => {
-            if (typeof tileMap[i + offset] == 'undefined' && i + offset <= tileMap.j && i + offset >= 0) {
+            if (typeof tileMap[i + offset] == 'undefined' && i + offset <= j && i + offset >= 0) {
               tileMap[i + offset] = replace
             }
           })
@@ -211,7 +206,7 @@ function initMap() {
       if (ws != 1 || hs != 1) throw new Error(`invalid map, nullpunkt invalid, ${ws}${hs}`)
 
       const w = we + 2, h = he + 2
-      return {w: w, h: h, j: w * h}
+      return {w: w, h: h}
     },
 
     setUndefined: (tileMap, j, tile) => {

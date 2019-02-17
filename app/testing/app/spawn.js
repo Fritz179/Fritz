@@ -22,7 +22,7 @@ function initSpawner() {
 
   fritz.spawnOne = (Constructor, parentName) => {
     const entity = new Constructor()
-    if (!parentName) parentName = getParentName(entity)
+    if (!parentName) parentName = getParentName(Constructor)
     const id = entity._id
     ecs[parentName].push(entity)
 
@@ -55,7 +55,6 @@ function initSpawner() {
     } else {
       const spawner = {
         spawn: () => {
-          console.log(fritz);
           return fritz.spawnOne(Constructor, parentName)
         }
       }

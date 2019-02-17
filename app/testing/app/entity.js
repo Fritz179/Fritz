@@ -37,10 +37,6 @@ function initEntity() {
       this.sprite = sprite || createDefaultTexture()
     }
 
-    display() {
-
-    }
-
     setSprite(sprite) { this.sprite = sprite }
     getSprite() { return this.sprite }
   }
@@ -66,6 +62,29 @@ function initEntity() {
     }
 
     onHitboxEntry() { }
+
+    onMapCollision(side, x, y, s) {
+      console.log(side, x, y, s);
+      switch (side) {
+        case 'top':
+          this.x2 = x * s
+          this.yv = 0
+          break;
+        case 'right':
+          this.x2 = x * s
+          this.xv = 0
+          break;
+        case 'bottom':
+          this.y2 = y * s
+          this.yv = 0
+          break;
+        case 'left':
+          this.x2 = x * s
+          this.xv = 0
+          break;
+        default: throw new Error('invalid collision side', side, x, y, s, this)
+      }
+    }
 
     get moving() { return this.xv || this.yv }
   }

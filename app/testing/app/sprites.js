@@ -163,8 +163,4 @@ function initSprites() {
       return g
     },
   }
-
-  fritz.display = (img, x, y) => {
-    image(img, x, y)
-  }
 }

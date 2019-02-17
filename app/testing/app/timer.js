@@ -8,15 +8,19 @@ function initTimer() {
     }
 
     for (let i = entities.length - 1; i >= 0; i--) {
-      entities[i].fixedUpdate()
-      entities[i].update()
+      e = entities[i]
+      e.xv += e.xa; e.yv += e.ya
+      e.x += e.xv; e.y += e.yv
+      fritz.collideRectMap(e, true)
+      e.fixedUpdate()
+      e.update()
     }
 
     for (let i = animations.length - 1; i >= 0; i--) {
       animations[i].update()
     }
 
-    //collide all
+    //collide all with all other
     for (let i = entities.length - 1; i >= 0; i--) {
       for (let j = i - 1; j >= 0; j--) {
         if (fritz.collideRectRect(entities[i], entities[j])) {
@@ -30,14 +34,7 @@ function initTimer() {
       }
     }
 
-    //display all
-    for (let i = entities.length - 1; i >= 0; i--) {
-      display(entities[i].getSprite(), entities[i].x, entities[i].y)
-    }
-
-    for (let i = animations.length - 1; i >= 0; i--) {
-      display(animations[i].getSprite(), animations[i].x, animations[i].y)
-    }
+    updateCanvas()
   }
 
   if (typeof fixedUpdate == 'function') fixedUpdate()

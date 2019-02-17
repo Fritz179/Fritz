@@ -4,7 +4,7 @@ const defaultOptions = {
   addSpriteSheet: {path: '/img', format:'png', json: true},
   loadMap: {path: '/levels'},
   createPool: {},
-  createGame: {type: 'pacman', levels: false, tileWidth: 16}
+  createGame: {type: 'pacman', levels: false, tileWidth: false, cameraMode: 'auto'}
 };
 
 
@@ -14,14 +14,30 @@ const defaultOptions = {
   function init() {
     fritz.gameSettings = defaultOptions.createGame;
     //function not stored in fritz, else it would be replaced with 'creategame not called' and it would be callable like game.createGame()
-    window.createGame = (settings = {}) => {
-      setDefaultOptions(fritz.gameSettings, addDefaultOptions(settings, defaultOptions.createGame))
-      console.log('New game instatiated, thanks for using fritz ;-)\n\n', fritz.gameSettings);
+    window.createGame = (gameSettings = {}) => {
+      fritz.gameSettings = setDefaultOptions(gameSettings, addDefaultOptions(gameSettings, defaultOptions.createGame))
 
+      //set actual functions to global, before it was just error functions
       for (var key in fritz) {
         window[key] = fritz[key]
       }
+
+      //maps
+      if (typeof gameSettings.tileWidth == 'number') {
+        fritz.maps.s = gameSettings.tileWidth
+      } else {
+        console.warn('map not created, no tileWidth key')
+      }
+
+      //camera
+      let {cameraRatio, cameraWidth, cameraHeight} = gameSettings
+      if (!cameraRatio && cameraWidth && cameraHeight) gameSettings.cameraRatio = cameraWidth / cameraHeight
+      else if (!cameraWidth && cameraRatio && cameraHeight) gameSettings.cameraWidth = cameraHeight * cameraRatio
+      else if (!cameraHeight && cameraWidth && cameraRatio) gameSettings.cameraHeight = cameraWidth / cameraRatio
+      else throw new Error(`unable to crete camera, not enough parameters specified, minimun 2 (cameraRatio, cameraWidth, cameraHeight)`)
+
       window.game = window.fritz = fritz
+      console.log('New game instatiated, thanks for using fritz ;-)\n', fritz.gameSettings, '\n\n');
 
       return fritz
     }
@@ -40,6 +56,7 @@ const defaultOptions = {
     initSpawner()
     initCollision()
     initTimer()
+    initCamera()
 
     //save all function in window object
     for (var key in fritz) {
@@ -89,4 +106,16 @@ function createDefaultTexture() {
   g.rect(8, 0, 16, 8)
   g.rect(0, 8, 8, 16)
   return g
+}
+
+function xyi(x, y) {
+  const {w, h} = fritz.maps
+  if (x >= w || x < 0 || y >= h || y < 0) return -1
+  return y * w + x
+}
+
+function ixy(i) {
+  const {w, h} = fritz.maps
+  if (i > w * h || i < 0) return {x: -1, y: -1}
+  return {x: i % w, y: (i - (i % w)) / h}
 }
