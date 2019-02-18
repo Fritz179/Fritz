@@ -1,4 +1,5 @@
 const fritz = Object.create(null)
+enableDubug = false
 
 const defaultOptions = {
   addSpriteSheet: {path: '/img', format:'png', json: true},
@@ -57,6 +58,7 @@ const defaultOptions = {
     initCollision()
     initTimer()
     initCamera()
+    initInput()
 
     //save all function in window object
     for (var key in fritz) {

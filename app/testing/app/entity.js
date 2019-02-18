@@ -64,10 +64,10 @@ function initEntity() {
     onHitboxEntry() { }
 
     onMapCollision(side, x, y, s) {
-      console.log(side, x, y, s);
+      if (enableDubug) console.log(side, x, y, s);
       switch (side) {
         case 'top':
-          this.x2 = x * s
+          this.y1 = (y + 1) * s
           this.yv = 0
           break;
         case 'right':
@@ -79,7 +79,7 @@ function initEntity() {
           this.yv = 0
           break;
         case 'left':
-          this.x2 = x * s
+          this.x1 = (x + 1) * s
           this.xv = 0
           break;
         default: throw new Error('invalid collision side', side, x, y, s, this)

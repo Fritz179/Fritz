@@ -35,6 +35,8 @@ function initSpawner() {
         return false
       }
 
+      removeListener(entity)
+
       ecs[parentName].splice(index, 1)
       return true
     }

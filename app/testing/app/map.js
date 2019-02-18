@@ -2,6 +2,9 @@ const collideTop = 0x1
 const collideRight = 0x2
 const collideBottom = 0x4
 const collideLeft = 0x8
+const mapsLoaded = {}
+let currentMap = ''
+
 
 function initMap() {
   fritz.maps = {
@@ -26,18 +29,20 @@ function initMap() {
     addDefaultOptions(options, defaultOptions.loadMap)
 
     loadJSON(options.src || `.${options.path}/${name}.json`, json => {
-      if (customMapParser) {
-        fritz.maps = customMapParser(json)
-        return
-      }
-      if (typeof json.encoding != 'string') throw new Error(`encoding not specified of ${name}`)
+      parseMapWhenSpritesLoaded = () => {
+        if (customMapParser) {
+          fritz.maps = customMapParser(json)
+          return
+        }
+        if (typeof json.encoding != 'string') throw new Error(`encoding not specified of ${name}`)
 
-      //if no custom function is available and there is an encoding key, parse the image
-      if (typeof mapParsers[json.encoding] == 'function') {
-        mapParsers[json.encoding](json)
-      } else {
-        console.warn('supported encoding methods: pacman, parsed. For more info take a look at the README')
-        throw new Error(`the ${json.encoding} encoding method not supported!`)
+        //if no custom function is available and there is an encoding key, parse the image
+        if (typeof mapParsers[json.encoding] == 'function') {
+          mapParsers[json.encoding](json)
+        } else {
+          console.warn('supported encoding methods: pacman, parsed. For more info take a look at the README')
+          throw new Error(`the ${json.encoding} encoding method not supported!`)
+        }
       }
     }, (e) => {
       //if json failed to load, throw an error
@@ -115,11 +120,6 @@ function initMap() {
 
         collisionMap[i] = collsion
       })
-
-
-      console.log(fritz.maps);
-
-      fritz.updateTileLayer()
 
       function getPacman(tl, t, tr, l, r, bl, b, br) {
         let tile = []
