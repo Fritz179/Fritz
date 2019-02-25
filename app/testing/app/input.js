@@ -1,14 +1,12 @@
 const listeners = []
 
-function initInput() {
-  fritz.listenInput = (listener) => {
-    listeners.push(listener)
-  }
+p5.prototype.listenInput = (listener) => {
+  listeners.push(listener)
 }
 
 window.keyPressed = () => {
   if (key == '$') {
-    enableDubug = !enableDubug
+    debugEnabled = !debugEnabled
   }
   listeners.forEach(listener => {
     listener.onInput(names[key] || key)

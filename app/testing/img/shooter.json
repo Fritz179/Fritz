@@ -1,9 +1,9 @@
 {
-  "encoding": "animations",
   "animations": [
     {
+      "ultraMirror": true,
       "action": "idle",
-      "recursive": false,
+      "recursive": 5,
       "x": 0,
       "y": 0,
       "w": 16,

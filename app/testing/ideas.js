@@ -1,7 +1,7 @@
 const game = createGame({type: 'pacman', levels: true)
 
 function preload() {
-  game.setMapSpriteSheet('tiles')
+  game.addSpriteSheet('tiles')
   game.addSpriteSheet('player')
   game.loadLevel('level_0')
 }

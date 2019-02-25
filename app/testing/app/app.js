@@ -1,80 +1,46 @@
-const fritz = Object.create(null)
-enableDubug = false
+const gameSettings = {type: 'pacman', levels: false, tileWidth: false, cameraMode: 'auto', cameraOverflow: 'hidden', cameraRatio: 0, cameraWidth: 0, cameraHeight: 0}
+const functionToCallBeforeSetup = []
+let preFunction = () => { }
+let postFunction = () => { }
+let debugEnabled = true, createGameHasBeenCalled
 
-const defaultOptions = {
-  addSpriteSheet: {path: '/img', format:'png', json: true},
-  loadMap: {path: '/levels'},
-  createPool: {},
-  createGame: {type: 'pacman', levels: false, tileWidth: false, cameraMode: 'auto'}
-};
+function createGame(options) {
+  setDefaultOptions(gameSettings, options)
+  if (createGameHasBeenCalled) throw new Error('An existing game instance already exist')
+  createGameHasBeenCalled = true
 
+  let {cameraRatio, cameraWidth, cameraHeight} = gameSettings
+  if (!cameraRatio && cameraWidth && cameraHeight) gameSettings.cameraRatio = cameraWidth / cameraHeight
+  else if (!cameraWidth && cameraRatio && cameraHeight) gameSettings.cameraWidth = cameraHeight * cameraRatio
+  else if (!cameraHeight && cameraWidth && cameraRatio) gameSettings.cameraHeight = cameraWidth / cameraRatio
+  else throw new Error(`unable to crete camera, not enough parameters specified, minimun 2 (cameraRatio, cameraWidth, cameraHeight)`)
+}
 
-(function IIFE(window) {
-  'use strict'
+p5.prototype.registerMethod('init', () => {
+  const setupCopy = window.setup || (() => { throw new Error('function setup is not defined') })
+  const drawCopy = window.draw || (() => { })
 
-  function init() {
-    fritz.gameSettings = defaultOptions.createGame;
-    //function not stored in fritz, else it would be replaced with 'creategame not called' and it would be callable like game.createGame()
-    window.createGame = (gameSettings = {}) => {
-      fritz.gameSettings = setDefaultOptions(gameSettings, addDefaultOptions(gameSettings, defaultOptions.createGame))
+  window.setup = () => {
+    if (!createGameHasBeenCalled) throw new Error('Please use createGame to create a game :-)')
+    functionToCallBeforeSetup.forEach(fun => fun())
+    setupCopy()
+    startCamera()
 
-      //set actual functions to global, before it was just error functions
-      for (var key in fritz) {
-        window[key] = fritz[key]
-      }
-
-      //maps
-      if (typeof gameSettings.tileWidth == 'number') {
-        fritz.maps.s = gameSettings.tileWidth
-      } else {
-        console.warn('map not created, no tileWidth key')
-      }
-
-      //camera
-      let {cameraRatio, cameraWidth, cameraHeight} = gameSettings
-      if (!cameraRatio && cameraWidth && cameraHeight) gameSettings.cameraRatio = cameraWidth / cameraHeight
-      else if (!cameraWidth && cameraRatio && cameraHeight) gameSettings.cameraWidth = cameraHeight * cameraRatio
-      else if (!cameraHeight && cameraWidth && cameraRatio) gameSettings.cameraHeight = cameraWidth / cameraRatio
-      else throw new Error(`unable to crete camera, not enough parameters specified, minimun 2 (cameraRatio, cameraWidth, cameraHeight)`)
-
-      window.game = window.fritz = fritz
-      console.log('New game instatiated, thanks for using fritz ;-)\n', fritz.gameSettings, '\n\n');
-
-      return fritz
+    preFunction = () => {
+      fixedUpdateECS()
+      updateECS()
+      redrawLayers()
     }
+
+    window.draw = drawCopy
+
+    postFunction = () => { }
   }
+  window.draw = () => { }
+});
 
-  //if app already initialized, do nothing
-  if (window._fritzAppVersion) {
-    console.warn('FritzApp already available');
-  } else { //start fritz
-    window._fritzAppVersion = 1
-
-    init()
-    initMap()
-    initSprites()
-    initEntity()
-    initSpawner()
-    initCollision()
-    initTimer()
-    initCamera()
-    initInput()
-
-    //save all function in window object
-    for (var key in fritz) {
-      if (typeof window[key] == 'undefined') {
-        //actual function will be made available only when createGame is called
-        if (typeof fritz[key] == 'function') {
-          window[key] = () => { throw new Error(`Cannot call ${key}, game not createt, use createGame`) }
-        } else {
-          window[key] = fritz[key]
-        }
-      } else {
-        console.log(`in window ${key} is already defined`);
-      }
-    }
-  }
-})(window);
+p5.prototype.registerMethod('pre', () => { preFunction() });
+p5.prototype.registerMethod('post', () => { postFunction() });
 
 function addDefaultOptions(settings, defaults) {
   for (let key in defaults) {
@@ -82,7 +48,6 @@ function addDefaultOptions(settings, defaults) {
       settings[key] = defaults[key]
     }
   }
-
   return settings
 }
 
@@ -94,7 +59,6 @@ function setDefaultOptions(defaults, settings) {
       console.warn(`cannot change default settings, invalid key: ${key} of: `, settings);
     }
   }
-
   return defaults
 }
 
@@ -111,13 +75,13 @@ function createDefaultTexture() {
 }
 
 function xyi(x, y) {
-  const {w, h} = fritz.maps
+  const {w, h} = p5.prototype.maps
   if (x >= w || x < 0 || y >= h || y < 0) return -1
   return y * w + x
 }
 
 function ixy(i) {
-  const {w, h} = fritz.maps
+  const {w, h} = p5.prototype.maps
   if (i > w * h || i < 0) return {x: -1, y: -1}
   return {x: i % w, y: (i - (i % w)) / h}
 }

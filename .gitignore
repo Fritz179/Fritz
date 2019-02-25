@@ -3,4 +3,6 @@
 node_modules
 
 /app/testing/libraries
+/app/testing/_app
+/app/testing/img/old
 /app/public
