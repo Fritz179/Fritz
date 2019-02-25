@@ -1,26 +1,12 @@
-const collideTop = 0x1
-const collideRight = 0x2
-const collideBottom = 0x4
-const collideLeft = 0x8
-const mapsLoaded = {}
-let currentMap = ''
+p5.prototype.maps = { tileMap: [], collisionMap: [], graphicalMap: [], IDToName: {}, nameToID: {}, w: 0, h: 0, s: 0, name: 'unnamed' }
+p5.prototype.flags = {
+  collideTop: 0x1,
+  collideRight: 0x2,
+  collideBottom: 0x4,
+  collideLeft: 0x8
+}
+p5.prototype.mapsLoaded = {}
 
-
-function initMap() {
-  fritz.maps = {
-    tileMap: [],
-    collisionMap: [],
-    graphicalMap: [],
-    w: 0,
-    h: 0,
-    s: 0
-  }
-
-  fritz.setDefaultLoadMapOptions = settings => {
-    setDefaultOptions(defaultOptions.loadMap, settings)
-  }
-
-  //load a map and parse it if required
 //encoding types available:
 //pacman => loads in sprites to create a map pacman-like tile based game, block construction
 
