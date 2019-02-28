@@ -25,10 +25,9 @@ p5.prototype.spawnOne = (Constructor, parentName, ...args) => {
   const id = entity._id
   ecs[parentName].push(entity)
 
-  if (entity.kill) throw new Error(`Cannot have kill method on ${key}`)
+  if (entity.kill) throw new Error(`Cannot have kill method on ${Constructor.name}`)
   entity.kill = () => {
     const index = ecs[parentName].findIndex(e => e._id == id)
-
     if (index == -1) {
       console.error('Object alredy deleted')
       return false
@@ -39,6 +38,21 @@ p5.prototype.spawnOne = (Constructor, parentName, ...args) => {
     ecs[parentName].splice(index, 1)
     return true
   }
+
+  if (entity.changeParentName) throw new Error(`Cannot have changeParentName method on ${Constructor.name}`)
+  entity.changeParentName = newParentName => {
+    if (!['entities', 'animations', 'hitboxes'].includes(newParentName)) throw new Error(`Invalid newParentName: ${parentName}`)
+
+    const index = ecs[parentName].findIndex(e => e._id == id)
+    if (index == -1) {
+      console.error('Object alredy deleted')
+      return false
+    }
+    ecs[newParentName].push(ecs[parentName].splice(index, 1)[0])
+    parentName = newParentName
+    return true
+  }
+
   return entity
 }
 
@@ -135,8 +149,20 @@ function fixedUpdateECS() {
   for (let i = entities.length - 1; i >= 0; i--) {
     for (let j = i - 1; j >= 0; j--) {
       if (p5.prototype.collideRectRect(entities[i], entities[j])) {
-        entities[i].onCollisionEntry({collider: entities[j]})
-        entities[j].onCollisionEntry({collider: entities[i]})
+        let e1 = entities[i], e2 = entities[j], solve1 = true, solve2 = true, killed1, killed2
+        e1.onCollisionEntry({collider: e2, stopCollison: () => solve1 = false, stopOtherCollision: () => solve2 = false})
+        e2.onCollisionEntry({collider: e1, stopCollison: () => solve2 = false, stopOtherCollision: () => solve1 = false})
+
+        if (solve1 && solve2) p5.prototype.solveRectRect(e1, e2)
+        else if (solve1) p5.prototype.solveRectIRect(e1, e2)
+        else if (solve2) p5.prototype.solveRectIRect(e2, e1)
+
+        killed1 = e1.onCollisionExit({collider: e2, solved: solve1})
+        killed2 = e2.onCollisionExit({collider: e1, solved: solve2})
+
+        if (killed1 && killed2) {i--; break}
+        else if (killed1) break
+        else if (killed2) i--
       }
     }
 

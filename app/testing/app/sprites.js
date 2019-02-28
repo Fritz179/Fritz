@@ -13,12 +13,14 @@ p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
 
   loadImage(options.src || `.${options.path}/${name}.${options.format}`, img => {
     //load image, if no json is specified available just save the image
+    let sprite
     if (!options.json) {
       if (options.customSpriteSheetParser) {
-        p5.prototype.sprites[name] = options.customSpriteSheetParser(img, json)
+        sprite = options.customSpriteSheetParser(img, json)
       } else {
-        p5.prototype.sprites[name] = parseSpriteSheet(img, false, options)
+        sprite = parseSpriteSheet(img, false, options)
       }
+      callback ? callback(sprite) : p5.prototype.sprites[name] = sprite
       return
     }
 
@@ -26,10 +28,11 @@ p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
     loadJSON(options.jsonPath || `.${options.path}/${name}.json`, json => {
       //if no custom function is available parse it
       if (options.customSpriteSheetParser) {
-        p5.prototype.sprites[name] = customSpriteSheetParser(img, json)
+        sprite = customSpriteSheetParser(img, json)
       } else {
-        p5.prototype.sprites[name] = parseSpriteSheet(img, json, options)
+        sprite = parseSpriteSheet(img, json, options)
       }
+      callback ? callback(sprite) : p5.prototype.sprites[name] = sprite
     }, e => {
       console.log(e);
       throw new Error(`Error json loading: ${name} at: `)
@@ -45,11 +48,11 @@ p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
 
 p5.prototype.registerPreloadMethod('loadSpriteSheet', p5.prototype.loadSpriteSheet);
 
-
 function parseSpriteSheet(img, json, options) {
   if (gameSettings.type == 'pacman') {
     if (!json) {
       if (options.type == 'tiles') return parsePacmanTiles(img)
+      else if (!json) return img
       else throw new Error('Invalid arguments')
     } else {
       if (json.animations) return parseAnimation(img, json)
@@ -100,42 +103,38 @@ function parseAnimation(img, json) {
   const sprite = {}
   json.animations.forEach(animation => {
     const {x, y, w, h, action, xOff = 0, yOff = 0, mirror = json.mirror || false, ultraMirror = json.ultraMirror || false} = animation
+    sprite[action] = []
+
     if (animation.recursive) {
       const wrap = img.width
-      if (ultraMirror) {
-        sprite[`${action}_up`] = [], sprite[`${action}_right`] = [], sprite[`${action}_down`] = [], sprite[`${action}_left`] = []
-      } else if (mirror) {
-        sprite[`${action}_right`] = [], sprite[`${action}_left`] = []
-      } else {
-        sprite[action] = []
-      }
 
       //once defaults are setted, loop through animation
       for (let i = 0; i < animation.recursive; i++) {
+        sprite[action][i] = []
         let x1 = (x + w * i) % wrap
         let y1 = y + h * Math.floor((x + w * i) / wrap)
         if (!Number.isInteger(x1) || !Number.isInteger(y1) || !action) throw new Error(`invalid arguments for ${name} sprite`)
         if (ultraMirror) {
-          sprite[`${action}_up`][i] = cut(img, x1, y1, w, h)
-          sprite[`${action}_right`][i] = rotate90(cut(img, x1, y1, w, h))
-          sprite[`${action}_down`][i] = rotate90(rotate90(cut(img, x1, y1, w, h)))
-          sprite[`${action}_left`][i] = unRotate(cut(img, x1, y1, w, h))
+          sprite[action][i][0] = cut(img, x1, y1, w, h)
+          sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h))
+          sprite[action][i][2] = rotate90(rotate90(cut(img, x1, y1, w, h)))
+          sprite[action][i][3] = unRotate(cut(img, x1, y1, w, h))
         } else if (mirror) {
-          sprite[`${action}_right`][i] = cut(img, x1, y1, w, h)
-          sprite[`${action}_left`][i] = flipH(cut(img, x1, y1, w, h))
+          sprite[action][i][0] = cut(img, x1, y1, w, h)
+          sprite[action][i][1] = flipH(cut(img, x1, y1, w, h))
         } else {
           sprite[action][i] = cut(img, x1, y1, w, h)
         }
       }
     } else {
       if (ultraMirror) {
-        sprite[`${action}_up`] = cut(img, x, y, w, h)
-        sprite[`${action}_right`] = rotate90(cut(img, x, y, w, h))
-        sprite[`${action}_down`] = rotate90(rotate90(cut(img, x, y, w, h)))
-        sprite[`${action}_left`] = unRotate(cut(img, x, y, w, h))
+        sprite[action][0] = cut(img, x, y, w, h)
+        sprite[action][1] = rotate90(cut(img, x, y, w, h))
+        sprite[action][2] = rotate90(rotate90(cut(img, x, y, w, h)))
+        sprite[action][3] = unRotate(cut(img, x, y, w, h))
       } else if (mirror) {
-        sprite[`${action}_right`] = cut(img, x, y, w, h)
-        sprite[`${action}_left`] = flipH(cut(img, x, y, w, h))
+        sprite[action][0] = cut(img, x, y, w, h)
+        sprite[action][1] = flipH(cut(img, x, y, w, h))
       } else {
         sprite[action] = cut(img, x, y, w, h)
       }

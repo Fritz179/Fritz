@@ -1,8 +1,11 @@
 const gameSettings = {type: 'pacman', levels: false, tileWidth: false, cameraMode: 'auto', cameraOverflow: 'hidden', cameraRatio: 0, cameraWidth: 0, cameraHeight: 0}
 const functionToCallBeforeSetup = []
-let preFunction = () => { }
-let postFunction = () => { }
-let debugEnabled = true, createGameHasBeenCalled
+let preFunction = () => { }, postFunction = () => { }
+let debugEnabled = false, createGameHasBeenCalled, status = 'play', statusFunctions = {}
+
+function reload() {
+  resizeCamera()
+}
 
 function createGame(options) {
   setDefaultOptions(gameSettings, options)
@@ -22,14 +25,20 @@ p5.prototype.registerMethod('init', () => {
 
   window.setup = () => {
     if (!createGameHasBeenCalled) throw new Error('Please use createGame to create a game :-)')
+    p5.prototype.sprites.defaultTexture = createDefaultTexture()
     functionToCallBeforeSetup.forEach(fun => fun())
     setupCopy()
     startCamera()
 
     preFunction = () => {
-      fixedUpdateECS()
-      updateECS()
-      redrawLayers()
+      if (status == 'play') {
+        updateVariables()
+        fixedUpdateECS()
+        updateECS()
+        redrawLayers()
+      } else if (status == 'mainMenu') {
+        statusFunctions[status].forEach(fun => fun())
+      }
     }
 
     window.draw = drawCopy
@@ -72,16 +81,4 @@ function createDefaultTexture() {
   g.rect(8, 0, 16, 8)
   g.rect(0, 8, 8, 16)
   return g
-}
-
-function xyi(x, y) {
-  const {w, h} = p5.prototype.maps
-  if (x >= w || x < 0 || y >= h || y < 0) return -1
-  return y * w + x
-}
-
-function ixy(i) {
-  const {w, h} = p5.prototype.maps
-  if (i > w * h || i < 0) return {x: -1, y: -1}
-  return {x: i % w, y: (i - (i % w)) / h}
 }

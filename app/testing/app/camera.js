@@ -58,24 +58,34 @@ function resizeCamera() {
 
   canvas.xOff = 0
   canvas.yOff = 0
+  let multiplierX, multiplierY
+
   if (cameraMode == 'multiple') {
-    const multipleX = (width - (width % cameraWidth)) / cameraWidth
-    const multipleY = (height - (height % cameraHeight)) / cameraHeight
-    const multiplier = camera.multiplier = multipleX < multipleY ? multipleX : multipleY
-    canvas.xOff = (width - cameraWidth * multiplier) / 2
-    canvas.yOff = (height - cameraHeight * multiplier) / 2
+    multiplierX = (width - (width % cameraWidth)) / cameraWidth
+    multiplierY = (height - (height % cameraHeight)) / cameraHeight
+    multiplierX = multiplierY = multiplierX < multiplierY ? multiplierX : multiplierY
   } else if (cameraMode == 'auto') {
-    const multipleX = width / cameraWidth
-    const multipleY = height / cameraHeight
-    camera.multiplier = multipleX < multipleY ? multipleX : multipleY
+    multiplierX = width / cameraWidth
+    multiplierY = height / cameraHeight
+    multiplierX = multiplierY = multiplierX < multiplierY ? multiplierX : multiplierY
+  } else if (cameraMode == 'original') {
+    multiplierX = multiplierY = 1
+  } else if (cameraMode == 'strech') {
+    multiplierX = width / cameraWidth
+    multiplierY = height / cameraHeight
   } else {
-    console.log('// TODO: cameraMode not multiple or auto?');
+    console.error('// TODO: cameraMode not multiple or auto or strech?');
   }
+  camera.multiplierX = multiplierX
+  camera.multiplierY = multiplierY
 
   if (cameraOverflow == 'hidden') {
     canvas.size(cameraWidth, cameraHeight)
+    canvas.xOff = round((width - cameraWidth * multiplierX) / 2)
+    canvas.yOff = round((height - cameraHeight * multiplierY) / 2)
   } else if (cameraOverflow == 'display') {
-    canvas.size(ceil(width / multiple), ceil(height / multiple))
+    canvas.xOff = canvas.yOff = 0
+    canvas.size(ceil(windowWidth / multiplierX), ceil(windowHeight / multiplierY))
   } else {
     console.log('// TODO: cameraOverflow not hidder or display?');
   }
@@ -102,56 +112,66 @@ function updateTileLayer(tiles) {
 
 function redrawLayers() {
   centerCamera()
-  const {x1, y1, xc, yc, x2, y2, multiplier} = camera
+  const {x1, y1, xc, yc, x2, y2, multiplierX, multiplierY} = camera
   const {entities, animations} = ecs
 
   if (!p5.prototype.rectInsideRect(camera, tileLayer)) {
-    console.log('redrawing tileLayer');
+    if (debugEnabled) console.log('redrawing tileLayer');
     tileLayer.redrawAll()
   }
 
-  background(51)
+  background(debugEnabled ? 51 : 0)
 
-  canvas.fill(30)
+  canvas.fill(debugEnabled ? 30 : 0)
   canvas.rect(-10, -10, canvas.width + 20, canvas.height + 20)
   canvas.image(tileLayer, -x1 + tileLayer.x1, -y1 + tileLayer.y1)
-
+  // for (let i = 0; i < 100000; i++) {
+  //   if (p5.prototype.collideRectRect(camera, {x1: -100, y1: -100, x2: -84, y2: -84})) {
+  //     canvas.image(sprites.player.idle, -100 -x1, -100 -y1)
+  //   }
+  // }
+  canvas.noFill()
+  canvas.strokeWeight(1)
+  canvas.stroke(255, 0, 0)
   for (let i = entities.length - 1; i >= 0; i--) {
-    canvas.image(entities[i].getSprite(), round(entities[i].x - x1), round(entities[i].y - y1))
+    if (p5.prototype.collideRectRect(camera, entities[i])) {
+      canvas.image(entities[i].getSprite(), round(entities[i].x - x1), round(entities[i].y - y1))
+      if (debugEnabled) canvas.rect(round(entities[i].x - x1), round(entities[i].y - y1), round(entities[i].w - 1), round(entities[i].h - 1))
+    }
   }
 
   for (let i = animations.length - 1; i >= 0; i--) {
-    canvas.image(animations[i].getSprite(), round(animations[i].x - x1), round(animations[i].y - y1))
+    if (p5.prototype.collideRectRect(camera, animations[i])) {
+      canvas.image(animations[i].getSprite(), round(animations[i].x - x1), round(animations[i].y - y1))
+      if (debugEnabled) canvas.rect(round(animations[i].x - x1), round(animations[i].y - y1), round(animations[i].w - 1), round(animations[i].h - 1))
+    }
   }
-
-  image(canvas, round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplier), round(canvas.height * multiplier))
+  // canvas.stroke(255, 0, 0)
+  // canvas.line(100, 0, canvas.width, canvas.height)
+  image(canvas, round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplierX), round(canvas.height * multiplierY))
 
   if (debugEnabled) {
     noFill()
     strokeWeight(2)
     stroke(255)
-    rect(round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplier), round(canvas.height * multiplier))
-    const x0 = round(-x1 * multiplier + canvas.xOff), y0 = round(-y1 * multiplier + canvas.yOff)
+    rect(round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplierX) - 1, round(canvas.height * multiplierY) - 1)
+
+    //draw map edge
+    const {w, h, s} = p5.prototype.maps
+    stroke(255, 0, 0)
+    rect(txx(0), tyy(0), txx(w * s) - txx(0), tyy(h * s) - tyy(0))
+    line(txx(0), tyy(0), txx(camera.x1), tyy(camera.y1))
+    line(txx(w * s), tyy(0), txx(camera.x2), tyy(camera.y1))
+    line(txx(0), tyy(h * s), txx(camera.x1), tyy(camera.y2))
+    line(txx(w * s), tyy(h * s), txx(camera.x2), tyy(camera.y2))
+
+    //draw tileLayer edge
     stroke(255, 255, 0)
-    rect(x0 + tileLayer.x1 * multiplier, y0 + tileLayer.y1 * multiplier, tileLayer.width * multiplier, tileLayer.height * multiplier)
-    stroke(0, 0, 255)
-    line(x0, y0, x0 + xc * multiplier, y0 + yc * multiplier)
-    // noFill()
-    // stroke(255)
-    // rect(round(startX), round(startY), round(toW), round(toH))
-    // stroke(255, 0, 0)
-    // rect(round(-x1 * multiple + startX), round(-y1 * multiple + startY), round(tileLayer.width * multiple), round(tileLayer.height * multiple))
-    // stroke(0, 0, 255)
-    // const x0 = round(-x1 * multiple + startX), y0 = round(-y1 * multiple + startY)
-    // line(x0 + x * multiple, y0 + y * multiple, x0, y0)
-    // fill(255)
-    // noStroke()
-    // textSize(30)
-    // text(`X: ${player.x}`, 50, 50)
-    // text(`Y: ${player.y}`, 50, 100)
-    // text(`Framerate: ${round(frameRate())}`, 50, 150)
-    // text(`XV: ${player.xv}`, 200, 50)
-    // text(`YV: ${player.yv}`, 200, 100)
+    rect(txx(tileLayer.x1), tyy(tileLayer.y1), txx(tileLayer.x2) - txx(tileLayer.x1), tyy(tileLayer.y2) - tyy(tileLayer.y1))
+    line(txx(camera.x1), tyy(camera.y1), txx(tileLayer.x1), tyy(tileLayer.y1))
+    line(txx(camera.x1), tyy(camera.y2), txx(tileLayer.x1), tyy(tileLayer.y2))
+    line(txx(camera.x2), tyy(camera.y1), txx(tileLayer.x2), tyy(tileLayer.y1))
+    line(txx(camera.x2), tyy(camera.y2), txx(tileLayer.x2), tyy(tileLayer.y2))
   }
 }
 

@@ -1,4 +1,4 @@
-p5.prototype.collideRectMap = (rect, toSolve = true) => {
+p5.prototype.collideRectMap = rect => {
   const {collisionMap, w, h, s} = p5.prototype.maps
 
   if (p5.prototype.rectInsideRect(rect, {x1: 0, y1: 0, x2: w * s, y2: h * s})) { //on Map
@@ -10,14 +10,14 @@ p5.prototype.collideRectMap = (rect, toSolve = true) => {
     if (rect.xv > 0) { //right
       x = floor(rect.x2 / s)
       do {
-        if (collisionMap[y * w + x] & 8) rect.onMapCollision('right', x, y, s)
+        if (collisionMap[y * w + x] & 8) rect._onMapCollision('right', x, y, s)
         y += 1
       } while (y < y2)
 
     } else if (rect.xv < 0) { //left
       x = floor(rect.x1 / s)
       do {
-        if (collisionMap[y * w + x] & 2) rect.onMapCollision('left', x, y, s)
+        if (collisionMap[y * w + x] & 2) rect._onMapCollision('left', x, y, s)
         y += 1
       } while (y < y2)
     }
@@ -32,14 +32,14 @@ p5.prototype.collideRectMap = (rect, toSolve = true) => {
     if (rect.yv > 0) { //bottom
       y = floor(rect.y2 / s)
       do {
-        if (collisionMap[y * w + x] & 1) rect.onMapCollision('bottom', x, y, s)
+        if (collisionMap[y * w + x] & 1) rect._onMapCollision('bottom', x, y, s)
         x += 1
       } while (x < x2)
 
     } else if (rect.yv < 0) { //top
       y = floor(rect.y1 / s)
       do {
-        if (collisionMap[y * w + x] & 4) rect.onMapCollision('top', x, y, s)
+        if (collisionMap[y * w + x] & 4) rect._onMapCollision('top', x, y, s)
         x += 1
       } while (x < x2)
     }
@@ -48,6 +48,22 @@ p5.prototype.collideRectMap = (rect, toSolve = true) => {
 
 p5.prototype.collideRectRect = (a, b) => {
   return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1
+}
+
+p5.prototype.solveRectRect = (a, b) => {
+  throw new Error('// TODO: crea al solveRectRect')
+}
+
+p5.prototype.solveRectIRect = (a, b) => {
+  if (abs(a.xv) > abs(a.yv)) {
+    if (a.xv > 0) a.x2 = b.x1
+    else a.x1 = b.x2
+    a.xv = 0
+  } else {
+    if (a.yv > 0) a.y2 = b.y1
+    else a.y1 = a.y2
+    a.yv = 0
+  }
 }
 
 p5.prototype.rectInsideRect = (a, b) => {

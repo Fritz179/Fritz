@@ -1,21 +1,55 @@
-const listeners = []
+const listeners = {allNameSpaces: []}
 
-p5.prototype.listenInput = (listener) => {
-  listeners.push(listener)
+p5.prototype.listenInput = (listener, nameSpace) => {
+  if (nameSpace) {
+    listeners[nameSpace] = []
+    listeners[nameSpace].push(listener)
+  } else {
+    listeners.allNameSpaces.push(listener)
+  }
+}
+
+p5.prototype.removeAlllisteners = nameSpaceToRemove => {
+  if (nameSpaceToRemove) {
+    listeners[nameSpaceToRemove] = []
+  } else {
+    for (let nameSpace in listeners) {
+      nameSpace = []
+    }
+  }
 }
 
 window.keyPressed = () => {
   if (key == '$') {
     debugEnabled = !debugEnabled
   }
-  listeners.forEach(listener => {
-    listener.onInput(names[key] || key)
+  const input = names[key] || key
+  if (listeners[status]) {
+    listeners[status].forEach(listener => {
+      if (typeof listener.onInput == 'function') listener.onInput(input)
+    })
+  }
+  listeners.allNameSpaces.forEach(listener => {
+    if (typeof listener.onInput == 'function') listener.onInput(input)
+  })
+}
+
+window.mousePressed = () => {
+  if (listeners[status]) {
+    listeners[status].forEach(listener => {
+      if (typeof listener.mousePressed == 'function') listener.mousePressed()
+    })
+  }
+  listeners.allNameSpaces.forEach(listener => {
+    if (typeof listener.mousePressed == 'function') listener.mousePressed()
   })
 }
 
 function removeListener(listener) {
-  for (let i = listeners.length - 1; i >= 0; i--) {
-    if (listener._id == listeners[i]._id) listeners.splice(i, 1)
+  for (let nameSpace in listeners) {
+    for (let i = nameSpace.length - 1; i >= 0; i--) {
+      if (listener._id == nameSpace[i]._id) nameSpace.splice(i, 1)
+    }
   }
 }
 

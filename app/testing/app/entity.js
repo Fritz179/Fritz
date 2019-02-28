@@ -1,6 +1,7 @@
 class Master {
   constructor() {
     this.x = this.y = 0
+    this.xd
     this.xv = this.yv = 0
     this.xa = this.ya = 0
     this.w = this.h = 16
@@ -47,7 +48,8 @@ class Hitbox extends Master {
   }
 
   onCollisionEntry() {
-    console.error(`${this.tag}, hitbox without onCollisionEntry`)
+    console.error(`hitbox: ${this.className}, without onCollisionEntry`)
+    this.onCollisionEntry = () => { }
   }
 }
 
@@ -57,31 +59,46 @@ class Entity extends Animation {
   }
 
   onCollisionEntry() {
-    console.error(`${this.tag}, entity without onCollisionEntry`)
+    console.error(`entity: ${this.className}, without onCollisionEntry`)
+    this.onCollisionEntry = () => { }
+  }
+
+  onCollisionExit() {
+    console.error(`entity: ${this.className}, without onCollisionExit`)
+    this.onCollisionExit = () => { }
   }
 
   onHitboxEntry() { }
 
-  onMapCollision(side, x, y, s) {
-    if (debugEnabled) console.log(side, x, y, s);
-    switch (side) {
-      case 'top':
+  _onMapCollision(side, x, y, s) {
+    if (debugEnabled) console.log(side, x, y, s, typeof this.onMapCollision == 'function');
+
+    if (typeof this.onMapCollision == 'function') {
+      this.onMapCollision({solveCollision: solveCollision.bind(this)})
+    } else {
+      solveCollision.call(this)
+    }
+
+    function solveCollision() {
+      switch (side) {
+        case 'top':
         this.y1 = (y + 1) * s
         this.yv = 0
         break;
-      case 'right':
+        case 'right':
         this.x2 = x * s
         this.xv = 0
         break;
-      case 'bottom':
+        case 'bottom':
         this.y2 = y * s
         this.yv = 0
         break;
-      case 'left':
+        case 'left':
         this.x1 = (x + 1) * s
         this.xv = 0
         break;
-      default: throw new Error('invalid collision side', side, x, y, s, this)
+        default: throw new Error('invalid collision side', side, x, y, s, this)
+      }
     }
   }
 

@@ -5,6 +5,7 @@ class Player extends Entity {
     this.setSize(16, 16)
     this.speed = 15
     this.setVel(this.speed, this.speed)
+    this.spriteDir = 0
   }
 
   fixedUpdate() {
@@ -21,19 +22,27 @@ class Player extends Entity {
 
   onInput(input) {
     switch (input) {
-      case 'up': if (!this.moving) this.setVel(0, -this.speed); break;
-      case 'right': if (!this.moving) this.setVel(this.speed, 0); break;
-      case 'down': if (!this.moving) this.setVel(0, this.speed); break;
-      case 'left': if (!this.moving) this.setVel(-this.speed, 0); break;
+      case 'up': if (!this.moving) {this.setVel(0, -this.speed); this.spriteDir = 2;} break;
+      case 'right': if (!this.moving) {this.setVel(this.speed, 0); this.spriteDir = 3;} break;
+      case 'down': if (!this.moving) {this.setVel(0, this.speed); this.spriteDir = 0;} break;
+      case 'left': if (!this.moving) {this.setVel(-this.speed, 0); this.spriteDir = 1;} break;
       case 'p': console.log(this.x, this.y, this.xv, this.yv); break;
     }
   }
 
-  onCollisionEntry(event) {
-    //console.log('colliding with', event.collider.className);
+  onCollisionEntry({collider, stopCollison, stopOtherCollision}) {
+    switch (collider.className) {
+      case 'bullet':
+        console.log('damaged');
+        break;
+      default:
+      console.log('colliding with', collider.className);
+    }
   }
 
+  onCollisionExit() { }
+
   getSprite() {
-    return this.sprite.idle
+    return this.sprite.idle[0]
   }
 }
