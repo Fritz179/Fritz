@@ -1,12 +1,15 @@
 {
+  "sprites": {
+    "pointer": {"json": false}
+  },
   "buttons": {
-    "playButton": {
+    "play": {
       "x1": 800,
       "y1": 430,
       "x2": 1205,
-      "y1": 633
+      "y2": 633
     },
-    "optionsButton": {
+    "options": {
       "x1": 710,
       "y1": 705,
       "x2": 1315,

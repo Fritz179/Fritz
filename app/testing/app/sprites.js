@@ -8,7 +8,7 @@
 
 p5.prototype.sprites = {}
 p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
-  addDefaultOptions(options, {path: './img', format: 'png', json: true})
+  addDefaultOptions(options, {path: './img', format: 'png', json: true, type: 'animations'})
   const ret = {}
 
   loadImage(options.src || `.${options.path}/${name}.${options.format}`, img => {
@@ -49,16 +49,13 @@ p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
 p5.prototype.registerPreloadMethod('loadSpriteSheet', p5.prototype.loadSpriteSheet);
 
 function parseSpriteSheet(img, json, options) {
-  if (gameSettings.type == 'pacman') {
-    if (!json) {
-      if (options.type == 'tiles') return parsePacmanTiles(img)
-      else if (!json) return img
-      else throw new Error('Invalid arguments')
-    } else {
-      if (json.animations) return parseAnimation(img, json)
-    }
+  if (options.type == 'pacmanTiles') return parsePacmanTiles(img)
+  else if (options.type == 'animations') {
+    if (!json) return img
+    if (!json.animations) throw new Error(`No animation key on json of:\n ${json}, options:\n ${options}`)
+    return parseAnimation(img, json)
   }
-  console.log(img, json);
+  console.log(img, json, options);
 }
 
 function parsePacmanTiles(img) {

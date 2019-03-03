@@ -30,6 +30,17 @@ class Master {
   set y2(y) { this.y = y - this.h }
 }
 
+class Hitbox extends Master {
+  constructor() {
+    super()
+  }
+
+  onCollisionEntry() {
+    console.error(`hitbox: ${this.className}, without onCollisionEntry`)
+    this.onCollisionEntry = () => { }
+  }
+}
+
 class Animation extends Master {
   constructor(sprite) {
     super()
@@ -41,32 +52,30 @@ class Animation extends Master {
   getSprite() { return this.sprite }
 }
 
-class Hitbox extends Master {
+class Block extends Animation {
   constructor() {
     super()
-
   }
 
   onCollisionEntry() {
-    console.error(`hitbox: ${this.className}, without onCollisionEntry`)
+    console.error(`${this.parentName}: ${this.className}, without onCollisionEntry`)
     this.onCollisionEntry = () => { }
   }
+
+  onCollisionExit() { }
 }
 
-class Entity extends Animation {
+class Entity extends Block {
   constructor() {
     super()
   }
 
-  onCollisionEntry() {
-    console.error(`entity: ${this.className}, without onCollisionEntry`)
+  onBlockEntry() {
+    console.error(`entity: ${this.className}, without onBlockEntry`)
     this.onCollisionEntry = () => { }
   }
 
-  onCollisionExit() {
-    console.error(`entity: ${this.className}, without onCollisionExit`)
-    this.onCollisionExit = () => { }
-  }
+  onBlockExit() { }
 
   onHitboxEntry() { }
 
@@ -108,3 +117,4 @@ class Entity extends Animation {
 p5.prototype.Animation = Animation
 p5.prototype.Hitbox = Hitbox
 p5.prototype.Entity = Entity
+p5.prototype.Block = Block

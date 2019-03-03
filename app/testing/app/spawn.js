@@ -1,7 +1,8 @@
 const ecs = {
   entities: [],
   hitboxes: [],
-  animations: []
+  animations: [],
+  blocks: []
 }
 
 p5.prototype.spawners = {}
@@ -13,6 +14,7 @@ function getParentName(instance) {
     case 'Entity': return 'entities'; break;
     case 'Hitbox': return 'hitboxes'; break;
     case 'Animation': return 'animations'; break;
+    case 'Block': return 'blocks'; break;
     case 'Object': throw new Error(`Invalid constructor, please extend Entity, Hitbox, or Animations`); break;
     case 'Function': debugger; throw new Error(`Invalid constructor??`); break;
     default: return getParentName(instance.__proto__);
@@ -117,7 +119,7 @@ p5.prototype.createPool = (key, constructor, options) => {
 }
 
 function updateECS() {
-  const {entities, hitboxes, animations} = ecs
+  const {entities, hitboxes, animations, blocks} = ecs
 
   //update all
   for (let i = animations.length - 1; i >= 0; i--) {
@@ -131,14 +133,18 @@ function updateECS() {
   for (let i = entities.length - 1; i >= 0; i--) {
     entities[i].update()
   }
+
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    blocks[i].update()
+  }
 }
 
 function fixedUpdateECS() {
-  const {entities, hitboxes, animations} = ecs
+  const {entities, hitboxes, animations, blocks} = ecs
 
   //fixedUpdate entities
   for (let i = entities.length - 1; i >= 0; i--) {
-    e = entities[i]
+    const e = entities[i]
     e.xv += e.xa; e.yv += e.ya
     e.x += e.xv; e.y += e.yv
     p5.prototype.collideRectMap(e, true)
@@ -161,8 +167,8 @@ function fixedUpdateECS() {
         killed2 = e2.onCollisionExit({collider: e1, solved: solve2})
 
         if (killed1 && killed2) {i--; break}
-        else if (killed1) break
-        else if (killed2) i--
+        else if (killed1) i--
+        else if (killed2) break
       }
     }
 
@@ -172,5 +178,26 @@ function fixedUpdateECS() {
         hitboxes[j].onCollisionEntry({collider: entities[i]})
       }
     }
+
+    for (let j = blocks.length - 1; j >= 0; j--) {
+      if (p5.prototype.collideRectRect(entities[i], blocks[j])) {
+        let e = entities[i], b = blocks[j], solve = true, killed = false
+        e.onBlockEntry({collider: b, stopCollison: () => solve = false})
+        b.onCollisionEntry({collider: e, stopCollison: () => solve = false})
+
+        if (solve) p5.prototype.solveRectIRect(e, b)
+        killed = e.onBlockExit({collider: b, solved: solve})
+        b.onCollisionExit()
+
+        if (killed) break
+      }
+    }
   }
+}
+
+p5.prototype.clearAllEntitites = () => {
+  const {entities, hitboxes, animations} = ecs
+  entities.splice(0)
+  hitboxes.splice(0)
+  animations.splice(0)
 }

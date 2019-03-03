@@ -5,26 +5,21 @@ p5.prototype.flags = {
   collideBottom: 0x4,
   collideLeft: 0x8
 }
-p5.prototype.mapsLoaded = {}
+p5.prototype.mapsSaved = {}
+const originalMapJson = {}
 
 //encoding types available:
 //pacman => loads in sprites to create a map pacman-like tile based game, block construction
 
 p5.prototype.loadMap = (name, options = {}, callback) => {
-  addDefaultOptions(options, {path: '/levels', reuseIfAlreadyAvailable: true})
+  addDefaultOptions(options, {path: '/levels'})
   const ret = {}
 
-  //if can reuse map already loaded
-  if (options.reuseIfAlreadyAvailable && p5.prototype.mapsLoaded[name]) {
-    p5.prototype.setCurrentMap(p5.prototype.mapsLoaded[name])
-  } else {
+  if (originalMapJson[name]) console.warn(`Map already loaded: ${name}`);
+  else {
     //load map and save it
     loadJSON(options.src || `.${options.path}/${name}.json`, json => {
-      functionToCallBeforeSetup.push(() => {
-        p5.prototype.setCurrentMap(parseMap(json, options))
-        p5.prototype.saveCurrentMap(name)
-        //saveMap(name, p5.prototype.maps)
-      })
+      originalMapJson[name] = json
     }, e => {
       console.log(e);
       throw new Error(`Error loading json: ${name} at: `)
@@ -33,6 +28,22 @@ p5.prototype.loadMap = (name, options = {}, callback) => {
 
   return ret;
 };
+
+p5.prototype.setMap = (name, options = {}) => {
+  const {map, getOriginal, namespace} = options
+
+  if (map) setCurrentMap(map)
+  else if (!getOriginal && p5.prototype.mapsSaved[name]) setCurrentMap(p5.prototype.mapsSaved[name])
+  else if (originalMapJson[name]) setCurrentMap(parseMap(originalMapJson[name], {namespace: namespace || currentStatus}))
+  else throw new Error(`Invalid map name: ${name}`)
+}
+
+p5.prototype.loadAndSetMap = (name, options = {}, callback) => {
+  p5.prototype.loadMap(name, options, callback)
+  functionToCallBeforeSetup.push(() => {
+    p5.prototype.setMap(name, {namespace: options.namespace, getOriginal: true})
+  })
+}
 
 // 41 4c 50 48 41 4e 55 4d 45 52 49 43 41 4c 49 5a 45 20 54 48 45 20 54 48 49 52 44 20 53 45 47 4d 45 4e 54 3a 20 35 34 34 20 31 39 20 35 20 31 33 20 37 32 32 30 35 30 34
 // ALPHANUMERICALIZE THE THIRD SEGMENT: 544 19 5 13 7220504
@@ -46,23 +57,26 @@ p5.prototype.saveCurrentMap = name => {
 
 p5.prototype.saveMap = (name, maps) => {
   if (!name) throw new Error(`Name non specified for: \n`, maps)
-  if (p5.prototype.mapsLoaded[name]) console.warn(`overwriting map: ${name}`);
-  p5.prototype.mapsLoaded[name] = maps
+  if (p5.prototype.mapsSaved[name]) console.warn(`overwriting map: ${name}`);
+  p5.prototype.mapsSaved[name] = maps
 }
 
-p5.prototype.setCurrentMap = maps => {
+function setCurrentMap(maps) {
   setDefaultOptions(p5.prototype.maps, maps)
 }
 
-function parseMap(json, options) {
+function parseMap(json, options = {}) {
   addDefaultOptions(json, {toSpawn: {}})
+  addDefaultOptions(options, {namespace: currentStatus})
+  const {namespace} = options
   const {maps} = p5.prototype
+  const nS = getNS(namespace)
 
   maps.toSpawn = json.toSpawn
   const tileMap = json.tileMap || initialMapParse(json)
-  const w = maps.w = tileMap.w || json.w, h = maps.h = tileMap.h || json.h, s = maps.s = json.s || gameSettings.tileWidth
 
-  if (gameSettings.type == 'pacman') {
+  const w = maps.w = tileMap.w || json.w, h = maps.h = tileMap.h || json.h, s = maps.s = json.s || nS.settings.tileWidth
+  if (nS.settings.type == 'pacman') {
     maps.nameToID = {innerTile: 0, wallTile: 1, outerTile: 2}
     maps.IDToName = ['innerTile', 'wallTile', 'outerTile']
     maps.tileMap = parsePacmanTileMap(tileMap)
@@ -70,16 +84,12 @@ function parseMap(json, options) {
     maps.graphicalMap = parsePacmanGraphicalMap(tileMap)
   }
 
-  celarAndSpawn(json.toSpawn)
-}
-
-function celarAndSpawn(toSpawn) {
   const {spawners} = p5.prototype
-  for (key in toSpawn) {
+  for (key in json.toSpawn) {
     key = key.toLowerCase()
     if (!spawners[key]) throw new Error(`faled to load map, ${key} spawner not found:\n`, spawners)
-    toSpawn[key].forEach(args => {
-      spawners[key].spawn(...args)
+    json.toSpawn[key].forEach(args => {
+      spawners[key].spawn(...args, namespace || currentStatus)
     })
   }
 }
@@ -123,6 +133,8 @@ function getMapSize(json, border = 1) {
 function fillShapes(tileMap, json) {
   for (let shape in json.shapes) {
     for (let fill in json.shapes[shape]) {
+      const toFill = parseInt(fill)
+      if (!Number.isInteger(toFill)) throw new Error(`Invalis fill: ${fill}`)
       json.shapes[shape][fill].forEach(points => {
         let x1, y1, x2, y2
         if (shape == 'rect') [x1, y1, x2, y2] = points
@@ -130,7 +142,7 @@ function fillShapes(tileMap, json) {
         else throw new Error(`Invalid shape, ${shape} is not a shape`)
         for (let x = x1; x <= x2; x++) {
           for (let y = y1; y <= y2; y++) {
-            tileMap[y * tileMap.w + x] = fill
+            tileMap[y * tileMap.w + x] = toFill
           }
         }
       })

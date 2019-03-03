@@ -1,22 +1,25 @@
-const gameSettings = {type: 'pacman', levels: false, tileWidth: false, cameraMode: 'auto', cameraOverflow: 'hidden', cameraRatio: 0, cameraWidth: 0, cameraHeight: 0}
 const functionToCallBeforeSetup = []
 let preFunction = () => { }, postFunction = () => { }
-let debugEnabled = false, createGameHasBeenCalled, status = 'play', statusFunctions = {}
+let debugEnabled = false, createGameHasBeenCalled, currentStatus, statusNamespaces = {}
 
 function reload() {
   resizeCamera()
 }
 
-function createGame(options) {
+function createGame(statusName, options) {
+  if (statusNamespaces[statusName]) throw new Error('status already existing')
+
+  const gameSettings = {type: 'pacman', levels: false, tileWidth: false, cameraMode: 'auto', cameraOverflow: 'hidden', cameraRatio: 0, cameraWidth: 0, cameraHeight: 0}
   setDefaultOptions(gameSettings, options)
-  if (createGameHasBeenCalled) throw new Error('An existing game instance already exist')
   createGameHasBeenCalled = true
 
-  let {cameraRatio, cameraWidth, cameraHeight} = gameSettings
-  if (!cameraRatio && cameraWidth && cameraHeight) gameSettings.cameraRatio = cameraWidth / cameraHeight
-  else if (!cameraWidth && cameraRatio && cameraHeight) gameSettings.cameraWidth = cameraHeight * cameraRatio
-  else if (!cameraHeight && cameraWidth && cameraRatio) gameSettings.cameraHeight = cameraWidth / cameraRatio
-  else throw new Error(`unable to crete camera, not enough parameters specified, minimun 2 (cameraRatio, cameraWidth, cameraHeight)`)
+  setDefaultOptions(gameSettings, getCameraRatio(gameSettings))
+
+  statusNamespaces[statusName] = {
+    type: 'game',
+    updateFunctions: [updateVariables, fixedUpdateECS, updateECS, redrawLayers],
+    settings: gameSettings
+  }
 }
 
 p5.prototype.registerMethod('init', () => {
@@ -31,14 +34,7 @@ p5.prototype.registerMethod('init', () => {
     startCamera()
 
     preFunction = () => {
-      if (status == 'play') {
-        updateVariables()
-        fixedUpdateECS()
-        updateECS()
-        redrawLayers()
-      } else if (status == 'mainMenu') {
-        statusFunctions[status].forEach(fun => fun())
-      }
+      statusNamespaces[currentStatus].updateFunctions.forEach(fun => fun())
     }
 
     window.draw = drawCopy
@@ -50,6 +46,50 @@ p5.prototype.registerMethod('init', () => {
 
 p5.prototype.registerMethod('pre', () => { preFunction() });
 p5.prototype.registerMethod('post', () => { postFunction() });
+
+const onStatusChangeCallbacks = {}, onStatusChangeDefaultCallbacks = {
+  game: {
+    pre: [() => {
+      const {settings} = getNS()
+      if (settings.type == 'pacman') {
+        noSmooth()
+        canvas.noSmooth()
+        spriteLayer.noSmooth()
+        tileLayer.noSmooth()
+        layers = [tileLayer, spriteLayer]
+      }
+    }]
+  },
+  menu: {
+    pre: [() => {
+      smooth()
+    }]
+  }
+}
+
+p5.prototype.onStatusChange = (status, callback, type = 'pre') => {
+  if (!onStatusChangeCallbacks[status]) onStatusChangeCallbacks[status] = {pre: [], post: []}
+  onStatusChangeCallbacks[status][type].push(callback)
+}
+
+p5.prototype.changeStatus = newStatus => {
+  let cdc = onStatusChangeDefaultCallbacks, cc = onStatusChangeCallbacks
+  if (currentStatus) {
+    let nS = getNS()
+    if (cdc[nS.type] && cdc[nS.type].post) cdc[nS.type].post.forEach(fun => fun())
+    if (cc[currentStatus]) cc[currentStatus].post.forEach(fun => fun())
+  }
+  currentStatus = newStatus
+  nS = getNS()
+  if (cdc[nS.type] && cdc[nS.type].pre) cdc[nS.type].pre.forEach(fun => fun())
+  if (cc[currentStatus]) cc[currentStatus].pre.forEach(fun => fun())
+  resizeCamera()
+}
+
+function getNS(status = currentStatus) {
+  if (!statusNamespaces[status]) throw new Error(`invalid current status: ${status}`)
+  return statusNamespaces[status]
+}
 
 function addDefaultOptions(settings, defaults) {
   for (let key in defaults) {
@@ -81,4 +121,20 @@ function createDefaultTexture() {
   g.rect(8, 0, 16, 8)
   g.rect(0, 8, 8, 16)
   return g
+}
+
+function getCameraRatio(settings) {
+
+  let {cameraRatio, cameraWidth, cameraHeight} = settings
+  if (cameraRatio && cameraWidth && cameraHeight && cameraHeight * cameraRatio == cameraWidth) return settings
+  else if (!cameraRatio && cameraWidth && cameraHeight) cameraRatio = cameraWidth / cameraHeight
+  else if (!cameraWidth && cameraRatio && cameraHeight) cameraWidth = cameraHeight * cameraRatio
+  else if (!cameraHeight && cameraWidth && cameraRatio) cameraHeight = cameraWidth / cameraRatio
+  else if (!cameraHeight && !cameraWidth && cameraRatio) {
+    const {width, height} = window.screen
+    if (width / height == cameraRatio) { cameraWidth = width, cameraHeight = height }
+    else if (width / height > cameraRatio) { cameraWidth = height * cameraRatio, cameraHeight = height }
+    else { cameraWidth = width, cameraHeight = width / cameraHeight }
+  } else throw new Error(`unable to crete camera, not enough parameters specified, minimun 2 (cameraRatio, cameraWidth, cameraHeight)`)
+  return {cameraRatio: cameraRatio, cameraWidth: cameraWidth, cameraHeight: cameraHeight}
 }

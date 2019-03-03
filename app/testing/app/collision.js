@@ -76,3 +76,7 @@ p5.prototype.collideCircleCircle = (a, b) => {
   const y = a.y + b.y
   return r * r < x * x + y * y
 }
+
+p5.prototype.collidePointRect = (a, b) => {
+  return a.x < b.x2 && a.x > b.x1 && a.y < b.y2 && a.y > b.y1
+}

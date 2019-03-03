@@ -11,17 +11,18 @@ p5.prototype.ixy = i => {
 }
 
 p5.prototype.xytxy = (x, y) => {
-  const {w, h} = p5.prototype.maps
+  const {w, h, s} = p5.prototype.maps
   const {x1, y1} = camera
 
-  x = floor((x - canvas.xOff + x1) / gameSettings.tileWidth)
-  y = floor((y - canvas.yOff + y1) / gameSettings.tileWidth)
+  x = floor((x - canvas.xOff + x1 * camera.multiplierX) / (s * camera.multiplierX))
+  y = floor((y - canvas.yOff + y1 * camera.multiplierY) / (s * camera.multiplierY))
 
   return (x >= w || x < 0 || y >= h || y < 0) ? {x: -1, y: -1} : {x: x, y: y}
 }
 
 p5.prototype.xyti = (x, y) => {
-  return p5.prototype.xyi(p5.prototype.xytxy(x, y))
+  const {x2, y2} = p5.prototype.xytxy(x, y)
+  return p5.prototype.xyi(x2, y2)
 }
 
 p5.prototype.txyxy = (x, y) => {

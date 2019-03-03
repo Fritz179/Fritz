@@ -1,4 +1,4 @@
-class Shooter extends Entity {
+class Shooter extends Block {
   constructor(x, y, r) {
     super()
     this.setSprite(sprites.shooter)
@@ -21,11 +21,8 @@ class Shooter extends Entity {
     return this.sprite.idle[floor(this.lifetime / this.maxLifetime * this.sprite.idle.length)][this.r]
   }
 
-  onCollisionEntry({stopCollison}) {
-    stopCollison()
-  }
 
-  onCollisionExit() { }
+  onCollisionEntry() { }
 }
 
 class Bullet extends Entity {
