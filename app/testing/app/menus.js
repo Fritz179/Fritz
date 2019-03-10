@@ -1,30 +1,33 @@
 p5.prototype.menuSprites = {}
 p5.prototype.createMenu = (statusName, options = {}, Constructor) => {
-  addDefaultOptions(options, {path: './img', json: false, cameraMode: 'auto', cameraOverflow: 'hidden'})
+  addDefaultOptions(options, {path: './img/menus', json: false, cameraMode: 'auto', cameraOverflow: 'hidden'})
   if (!Constructor) Constructor = Menu
   if (!statusName) statusName = Constructor.name
   if (statusName == 'Menu') throw new Error(`Invalid Menu name: ${Constructor}`)
 
   const ret = {}
   loadJSON(options.jsonPath || `.${options.path}/${statusName}.json`,json => {
-    if (!json.buttons) throw new Error(`no buttons for menu: ${statusName}`)
     addDefaultOptions(json, {sprites: [], options: {}})
 
     const sprite = menuSprites[statusName] = {}
 
-    if (json.defaultPointer) sprite.pointer = createDefaultMenuPointer()
-
     loadSpriteSheet(statusName, options, img => sprite.sprite = img)
-
     for (key in json.sprites) {
-      loadSpriteSheet(key, json.sprites[key] || {}, img => sprite[key] = img)
+      addDefaultOptions(json.sprites[key], {path: './img/menus'})
+      loadSpriteSheet(key, json.sprites[key], img => sprite[key] = img)
     }
 
     const menu = new Constructor()
-    menu.buttons = json.buttons
-    let buttonsName = []
-    for (let i in json.buttons) buttonsName.push(i)
-    menu.buttonsName = buttonsName
+
+    if (json.buttons) {
+      if (!json.sprites.pointer) sprite.pointer = createDefaultMenuPointer()
+      menu.defaultButtons = true
+      menu.buttons = json.buttons
+      let buttonsName = []
+      for (let i in json.buttons) buttonsName.push(i)
+      menu.buttonsName = buttonsName
+    } else menu.defaultButtons = false
+
     menu.statusName = statusName
     menu.sprite = sprite
 
@@ -58,21 +61,23 @@ class Menu {
       background(0)
       canvas.image(this.sprite.sprite, 0, 0, canvas.width, canvas.height)
 
-      const x = round((mouseX - canvas.xOff) / camera.multiplierX), y = round((mouseY - canvas.yOff) / camera.multiplierY)
-      for (let name in this.buttons) {
-        if (p5.prototype.collidePointRect({x: x, y: y}, this.buttons[name])) {
-          this.pointing = this.buttonsName.indexOf(name)
+      if (this.defaultButtons) {
+        const x = round((mouseX - canvas.xOff) / camera.multiplierX), y = round((mouseY - canvas.yOff) / camera.multiplierY)
+        for (let name in this.buttons) {
+          if (p5.prototype.collidePointRect({x: x, y: y}, this.buttons[name])) {
+            this.pointing = this.buttonsName.indexOf(name)
+          }
         }
-      }
 
-      if (this.pointing != -1) {
-        const {x1, y1, x2, y2} = this.buttons[this.buttonsName[this.pointing]]
-        const w = this.sprite.pointer.width, h = this.sprite.pointer.height
-        const x3 = (x1 - w * 2)
-        const y3 = (y1 + (y2 - y1) / 2 - h / 2)
-        const x4 = (x2 + w)
-        canvas.image(this.sprite.pointer, x3, y3, w, h)
-        canvas.image(this.sprite.pointer, x4, y3, w, h)
+        if (this.pointing != -1) {
+          const {x1, y1, x2, y2} = this.buttons[this.buttonsName[this.pointing]]
+          const w = this.sprite.pointer.width, h = this.sprite.pointer.height
+          const x3 = (x1 - w * 2)
+          const y3 = (y1 + (y2 - y1) / 2 - h / 2)
+          const x4 = (x2 + w)
+          canvas.image(this.sprite.pointer, x3, y3, w, h)
+          canvas.image(this.sprite.pointer, x4, y3, w, h)
+        }
       }
     }
     drawCanvas()
@@ -100,14 +105,21 @@ class Menu {
   pre() { }
   post() { }
 
-  onInput(input) {
-    switch (input) {
-      case 'up': this.pointing--; break;
-      case 'down': this.pointing++; break;
-      case 'Enter': if (this.pointing != -1) this._buttonPressed(this.buttonsName[this.pointing]); break;
+  _onInput(input) {
+    if (typeof this.onInput == 'function') this.onInput(input)
+
+    if (this.defaultButtons) {
+      let updatePointer = () => {
+        if (this.pointing >= this.buttonsName.length) this.pointing = 0
+        else if (this.pointing < 0) this.pointing = this.buttonsName.length - 1
+      }
+
+      switch (input) {
+        case 'up': this.pointing--; updatePointer(); break;
+        case 'down': this.pointing++; updatePointer(); break;
+        case 'Enter': if (this.pointing != -1) this._buttonPressed(this.buttonsName[this.pointing]); break;
+      }
     }
-    if (this.pointing >= this.buttonsName.length) this.pointing = 0
-    else if (this.pointing < 0) this.pointing = this.buttonsName.length - 1
   }
 }
 

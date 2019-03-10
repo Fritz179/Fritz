@@ -7,8 +7,13 @@
 // pacman => loads in sprites to create a map pacman_like tile based game, block construction
 
 p5.prototype.sprites = {}
+p5.prototype.loadSpriteSheets = (...sprites) => {
+  sprites.forEach(sprite => {
+    loadSpriteSheet(sprite)
+  })
+}
 p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
-  addDefaultOptions(options, {path: './img', format: 'png', json: true, type: 'animations'})
+  addDefaultOptions(options, {path: './img/sprites', format: 'png', json: true, type: 'animations'})
   const ret = {}
 
   loadImage(options.src || `.${options.path}/${name}.${options.format}`, img => {

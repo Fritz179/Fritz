@@ -7,8 +7,8 @@ class Player extends Entity {
     this.speed = 15
     this.setVel(this.speed, this.speed)
     this.spriteDir = 0
-    follow(this, status)
-    listenInput(this, status)
+    status.camera.follow(this, status)
+    listenInput(this, currentStatus)
   }
 
   fixedUpdate() {

@@ -71,7 +71,7 @@ class Bullet extends Entity {
   die() {
     this.changeParentName('animations')
     this.dying = true
-    this.setSize(6, 16)
+    this.setSize(8, 16)
     this.setVel(0, 0)
     this.setPos(this.x, this.y - 5)
   }

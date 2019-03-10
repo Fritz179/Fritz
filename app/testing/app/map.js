@@ -1,11 +1,10 @@
-p5.prototype.maps = { tileMap: [], collisionMap: [], graphicalMap: [], IDToName: {}, nameToID: {}, w: 0, h: 0, s: 0, name: 'unnamed' }
 p5.prototype.flags = {
   collideTop: 0x1,
   collideRight: 0x2,
   collideBottom: 0x4,
   collideLeft: 0x8
 }
-p5.prototype.mapsSaved = {}
+// p5.prototype.mapsSaved = {}
 const originalMapJson = {}
 
 //encoding types available:
@@ -19,7 +18,9 @@ p5.prototype.loadMap = (name, options = {}, callback) => {
   else {
     //load map and save it
     loadJSON(options.src || `.${options.path}/${name}.json`, json => {
+      addDefaultOptions(json, {name: name})
       originalMapJson[name] = json
+      if (typeof callback == 'function') callback()
     }, e => {
       console.log(e);
       throw new Error(`Error loading json: ${name} at: `)
@@ -29,69 +30,98 @@ p5.prototype.loadMap = (name, options = {}, callback) => {
   return ret;
 };
 
-p5.prototype.setMap = (name, options = {}) => {
-  const {map, getOriginal, namespace} = options
-
-  if (map) setCurrentMap(map)
-  else if (!getOriginal && p5.prototype.mapsSaved[name]) setCurrentMap(p5.prototype.mapsSaved[name])
-  else if (originalMapJson[name]) setCurrentMap(parseMap(originalMapJson[name], {namespace: namespace || currentStatus}))
-  else throw new Error(`Invalid map name: ${name}`)
-}
-
-p5.prototype.loadAndSetMap = (name, options = {}, callback) => {
-  p5.prototype.loadMap(name, options, callback)
-  functionToCallBeforeSetup.push(() => {
-    p5.prototype.setMap(name, {namespace: options.namespace, getOriginal: true})
-  })
-}
-
-// 41 4c 50 48 41 4e 55 4d 45 52 49 43 41 4c 49 5a 45 20 54 48 45 20 54 48 49 52 44 20 53 45 47 4d 45 4e 54 3a 20 35 34 34 20 31 39 20 35 20 31 33 20 37 32 32 30 35 30 34
-// ALPHANUMERICALIZE THE THIRD SEGMENT: 544 19 5 13 7220504
-// ALPHANUMERICALIZE THE THIRD SEGMENT: 544 19 5 1013 722 504
-
 p5.prototype.registerPreloadMethod('loadMap', p5.prototype.loadMap);
 
-p5.prototype.saveCurrentMap = name => {
-  p5.prototype.saveMap(name, p5.prototype.maps)
+class Maps {
+  constructor(settings) {
+    this.tileMap = []
+    this.collisionMap = []
+    this.graphicalMap = []
+    this.w = this.h = 0
+    this.s = 16
+    this.type = 'arcade'
+    this.settings(settings)
+  }
+
+  setMap(name, options = {}) {
+    console.log('setMap', name, options);
+    const {map, getOriginal, namespace} = options
+    if (map) this._setMap(map)
+    // else if (!getOriginal && p5.prototype.mapsSaved[name]) this._setMap(p5.prototype.mapsSaved[name])
+    else if (originalMapJson[name]) this._setMap(parseMap(originalMapJson[name], this.type))
+    else throw new Error(`Invalid map name: ${name}`)
+  }
+
+  _setMap(maps) {
+    if (maps.name == this.name) console.warn(`Relaoding map: ${maps.name}`);
+
+    const neededKeys = ['tileMap', 'collisionMap', 'graphicalMap', 'w', 'h', 'name'].forEach(key => {
+      if (!maps[key]) throw new Error(`missing ${key} property on map`)
+      this[key] = maps[key]
+    })
+
+    if (maps.IDToName) this.IDToName = maps.IDToName
+    if (maps.nameToID) this.nameToID = maps.nameToID
+
+    _setProperty('maps', this)
+
+    status.ecs.clearAllEntitites()
+    const {spawners} = p5.prototype
+    for (key in maps.toSpawn) {
+      key = key.toLowerCase()
+      if (!spawners[key]) throw new Error(`faled to load map ${name}, ${key} spawner not found:\n`, spawners)
+      maps.toSpawn[key].forEach(args => {
+        spawners[key].spawn(...args, status)
+      })
+    }
+  }
+
+  settings(settings) {
+    addDefaultOptions(settings, {tileWidth: this.s, type: this.type})
+    if (!settings.type) throw new Error('please specify a map type')
+    if (!settings.tileWidth) throw new Error('please specify a size (s)')
+    this.type = settings.type
+    this.s = settings.tileWidth
+  }
 }
 
-p5.prototype.saveMap = (name, maps) => {
-  if (!name) throw new Error(`Name non specified for: \n`, maps)
-  if (p5.prototype.mapsSaved[name]) console.warn(`overwriting map: ${name}`);
-  p5.prototype.mapsSaved[name] = maps
+p5.prototype.setMap = map => {
+  if (!currentStatus) throw new Error(`call setCurrentStatus() before setting a map!`)
+  status.maps.setMap(map)
 }
 
-function setCurrentMap(maps) {
-  setDefaultOptions(p5.prototype.maps, maps)
-}
+// p5.prototype.saveCurrentMap = name => {
+//   p5.prototype.saveMap(name, p5.prototype.maps)
+// }
+//
+// p5.prototype.saveMap = (name, maps) => {
+//   if (!name) throw new Error(`Name non specified for: \n`, maps)
+//   if (p5.prototype.mapsSaved[name]) console.warn(`overwriting map: ${name}`);
+//   p5.prototype.mapsSaved[name] = maps
+// }
 
-function parseMap(json, options = {}) {
+
+function parseMap(json, type) {
   addDefaultOptions(json, {toSpawn: {}})
-  addDefaultOptions(options, {namespace: currentStatus})
-  const {namespace} = options
-  const {maps} = p5.prototype
-  const nS = getNS(namespace)
-
-  maps.toSpawn = json.toSpawn
+  const maps = {}
   const tileMap = json.tileMap || initialMapParse(json)
+  const w = maps.w = (tileMap.w || json.w), h = maps.h = (tileMap.h || json.h)
 
-  const w = maps.w = tileMap.w || json.w, h = maps.h = tileMap.h || json.h, s = maps.s = json.s || nS.settings.tileWidth
-  if (nS.settings.type == 'pacman') {
+  if (type == 'pacman') {
     maps.nameToID = {innerTile: 0, wallTile: 1, outerTile: 2}
     maps.IDToName = ['innerTile', 'wallTile', 'outerTile']
     maps.tileMap = parsePacmanTileMap(tileMap)
     maps.collisionMap = parsePacmanCollisionMap(tileMap)
     maps.graphicalMap = parsePacmanGraphicalMap(tileMap)
+  } else {
+    throw new Error(`Invalid maps type: ${type}`)
   }
 
-  const {spawners} = p5.prototype
-  for (key in json.toSpawn) {
-    key = key.toLowerCase()
-    if (!spawners[key]) throw new Error(`faled to load map, ${key} spawner not found:\n`, spawners)
-    json.toSpawn[key].forEach(args => {
-      spawners[key].spawn(...args, namespace || currentStatus)
-    })
-  }
+  if (json.s) maps.s = json.s
+  maps.name = json.name
+  maps.toSpawn = json.toSpawn
+
+  return maps
 }
 
 function initialMapParse(json) {

@@ -3,7 +3,7 @@
     "pointer": {"json": false}
   },
   "buttons": {
-    "play": {
+    "levelSelection": {
       "x1": 800,
       "y1": 430,
       "x2": 1205,

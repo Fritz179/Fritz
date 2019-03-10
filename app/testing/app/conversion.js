@@ -1,17 +1,18 @@
 p5.prototype.xyi = (x, y) => {
-  const {w, h} = p5.prototype.maps
+  const {w, h} = status.maps
   if (x >= w || x < 0 || y >= h || y < 0) return -1
   return y * w + x
 }
 
 p5.prototype.ixy = i => {
-  const {w, h} = p5.prototype.maps
+  const {w, h} = status.maps
   if (i > w * h || i < 0) return {x: -1, y: -1}
   return {x: i % w, y: (i - (i % w)) / h}
 }
 
 p5.prototype.xytxy = (x, y) => {
-  const {w, h, s} = p5.prototype.maps
+  const {w, h, s} = status.maps
+  const camera = status.camera
   const {x1, y1} = camera
 
   x = floor((x - canvas.xOff + x1 * camera.multiplierX) / (s * camera.multiplierX))
@@ -30,11 +31,13 @@ p5.prototype.txyxy = (x, y) => {
 }
 
 p5.prototype.txx = x => {
-  return (x -camera.x1) * camera.multiplierX + canvas.xOff
+  const camera = status.camera
+  return (x -camera.x1) * camera.multiplierX + camera.canvas.xOff
 }
 
 p5.prototype.tyy = y => {
-  return (y -camera.y1) * camera.multiplierY + canvas.yOff
+  const camera = status.camera
+  return (y -camera.y1) * camera.multiplierY + camera.canvas.yOff
 }
 
 let oldMousePosExist = false
