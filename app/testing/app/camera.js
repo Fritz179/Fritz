@@ -11,6 +11,11 @@ class Camera {
   }
 
   update() {
+    if (this.toResize) {
+      this.toResize = false
+      this.resize()
+    }
+
     this.center()
     const {x1, y1, xc, yc, x2, y2, multiplierX, multiplierY, canvas, layers} = this
 
@@ -43,6 +48,7 @@ class Camera {
 
     spriteLayer.update = () => {
       const {x1, y1, canvas} = this
+      if (!status.ecs) debugger
       const {entities, animations, blocks, hitboxes} = status.ecs
       canvas.noFill()
       canvas.stroke(255, 0, 0)
@@ -149,6 +155,18 @@ class Camera {
     this.layers.push(tileLayer)
   }
 
+  addForegroundLayer(updateFun) {
+    const foreGroundLayer = createGraphics(this.cameraWidth, this.cameraHeight)
+
+    foreGroundLayer.update = () => updateFun(foreGroundLayer)
+
+    foreGroundLayer.resize = () => {
+      foreGroundLayer.size(this.cameraWidth, this.cameraHeight)
+    }
+
+    this.layers.push(foreGroundLayer)
+  }
+
   drawCanvas() {
     const {canvas, multiplierX, multiplierY} = this
     image(canvas, round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplierX), round(canvas.height * multiplierY))
@@ -169,7 +187,7 @@ class Camera {
     this.cameraWidth = settings.cameraWidth
     this.cameraHeight = settings.cameraHeight
     this.ratio = settings.ratio
-    this.resize()
+    this.toResize = true
   }
 
   center() {
@@ -183,6 +201,7 @@ class Camera {
   }
 
   resize() {
+    console.log('resizing');
     const {cameraWidth, cameraHeight, cameraMode, cameraOverflow, canvas} = this
     resizingCamera = true
     resizeCanvas(windowWidth, windowHeight);

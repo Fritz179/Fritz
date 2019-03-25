@@ -7,8 +7,8 @@ class Player extends Entity {
     this.speed = 15
     this.setVel(this.speed, this.speed)
     this.spriteDir = 0
-    status.camera.follow(this, status)
-    listenInput(this, currentStatus)
+    status.camera.follow(this)
+    listenInputs(this, currentStatus)
   }
 
   fixedUpdate() {
@@ -30,7 +30,7 @@ class Player extends Entity {
       case 'down': if (!this.moving) {this.setVel(0, this.speed); this.spriteDir = 0;} break;
       case 'left': if (!this.moving) {this.setVel(-this.speed, 0); this.spriteDir = 1;} break;
       case 'p': console.log(this.x, this.y, this.xv, this.yv); break;
-      case 'Escape': changeStatus('mainMenu'); break;
+      case 'Escape': setCurrentStatus('mainMenu'); break;
     }
   }
 
@@ -46,7 +46,7 @@ class Player extends Entity {
 
   onBlockEntry({collider}) {
     if (collider.className == 'end') {
-      changeStatus('mainMenu')
+      setCurrentStatus('levelSelection')
     }
     console.log('colliding with', collider.className);
   }

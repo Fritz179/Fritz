@@ -25,6 +25,8 @@ function setup() {
   })
 }
 
+//zoom 110%?
+
 // TODO: 'update' README //wichtig ;-)
 
 // TODO: createPool => set global reference, return reference add to game.pools or game.spawners (pool class with reset)
@@ -74,4 +76,29 @@ function preload() {
   })
 
   setCurrentStatus('mainMenu')
+}
+
+class CustomEntity extends Entity {
+  constructor() {
+    this.collideWith([])
+    this.dontCollideWith([])
+
+    this.setSize()
+    this.setPos()
+    this.setVel()
+    this.affectedByGravity = false
+
+    this.listen('all', 'click', 'key', 'mouse')
+
+    this.onClick = () => console.log("i've been clicked");
+    this.onClickDragged = () => console.log("I've been dragged");
+    this.onClickReleased = () => console.log("I've been released");
+
+    this.onKey = key => console.log(`key: ${key} has been pressed`);
+    this.onKeyReleased = key => console.log(`key: ${key} has been released`);
+
+    this.onMouse = () => console.log('Mouse has been clicked');
+    this.onMouseDragged = () => console.log('Mouse has been dragged');
+    this.onMouseReleased = () => console.log('Mouse has been clicked');
+  }
 }

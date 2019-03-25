@@ -15,6 +15,19 @@ class Master {
   setVel(xv, yv) { this.xv = xv; this.yv = yv; return this }
   setAcc(xa, ya) { this.xa = xa; this.ya = ya; return this }
   setSize(w, h) { this.w = w; this.h = h; return this }
+  setCord({x1, y1, x2, y2}) { this.x = x1; this.y = y1; return this.setSize(x2 - x1, y2 - y1) }
+
+  listen(...toListen) {
+    toListen.forEach(val => {
+      switch (val) {
+        case 'all': this.listen('mouse', 'key', 'click'); break;
+        case 'mouse': this.listen('onMouse', 'onMouseDragged', 'onMouseReleased'); break;
+        case 'key': this.listen('onKey', 'onKeyReleased'); break;
+        case 'click': this.listen('onClick', 'onClickDragged', 'onClickReleased'); break;
+        default: p.protoype.addListener(val, this)
+      }
+    })
+  }
 
   update() { }
   fixedUpdate() { }

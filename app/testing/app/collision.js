@@ -80,3 +80,7 @@ p5.prototype.collideCircleCircle = (a, b) => {
 p5.prototype.collidePointRect = (a, b) => {
   return a.x < b.x2 && a.x > b.x1 && a.y < b.y2 && a.y > b.y1
 }
+
+p5.prototype.colliderRectMouse = a => {
+  return p5.prototype.collidePointRect({x: mouseX, y: mouseY}, a)
+}

@@ -1,4 +1,4 @@
-let _preFunction = () => { }, _postFunction = () => { }
+let _preFunction = () => { }, _postFunction = () => { }, preStatusUpdate = new Set(), postStatusUpdate = new Set()
 let debugEnabled = false, status, currentStatus, statuses = {}, resizingCamera = true
 
 function reload() {
@@ -13,12 +13,15 @@ p5.prototype.registerMethod('init', () => {
 
   window.setup = () => {
     p5.prototype.sprites.defaultTexture = createDefaultTexture()
-    createCanvas(windowWidth, windowHeight)
+    createCanvas(windowWidth, windowHeight).parent('screen');
     setupCopy()
 
     _preFunction = () => {
       if (resizingCamera) return resizingCamera = false
+
+      preStatusUpdate.forEach(fun => fun())
       status._update()
+      postStatusUpdate.forEach(fun => fun())
     }
 
     window.draw = drawCopy
@@ -32,20 +35,27 @@ p5.prototype.registerMethod('pre', () => { _preFunction() });
 p5.prototype.registerMethod('post', () => { _postFunction() });
 
 p5.prototype.createStatus = (statusName, init) => {
-  console.log(statusName);
   if (statuses[statusName]) throw new Error(`Status ${statusName} already exists!`)
 
-  status = statuses[statusName] = new Status()
+  status = statuses[statusName] = new Status(statusName)
   init(status)
 };
 
 p5.prototype.setCurrentStatus = (newStatus, ...args) => {
-  if (status) status._post(args)
+  if (!statuses[newStatus]) throw new Error(`Invalid Status: ${newStatus}`)
 
-  status = statuses[currentStatus = newStatus]
+  function oneTime() {
+    if (status) status._post(...args)
 
-  status._pre(args)
-  if (status.cameraEnabled) status.camera.resize()
+    status = statuses[currentStatus = newStatus]
+
+    status._pre(...args)
+    if (status.cameraEnabled) status.camera.resize()
+
+    preStatusUpdate.delete(oneTime)
+  }
+
+  preStatusUpdate.add(oneTime)
 }
 
 window.windowResized = () => { if (status && status.cameraEnabled) status.camera.resize() }

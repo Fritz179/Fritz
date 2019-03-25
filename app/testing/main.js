@@ -6,34 +6,29 @@ function preload() {
   loadSpriteSheets('player', 'End', 'shooter', 'bullet')
   loadMap('level_0')
 
-  // createStatus('mainMenu', () => {
-  //   cameraSettings({ratio: 16 / 9})
-  //   createMenu(Menu)
-  // })
-  //
-  // createStatus('levelSelection', () => {
-  //   cameraSettings({ratio: 16 / 9})
-  //   createMenu(LevelSelection)
-  // })
-}
-
-function setup() {
-
   createStatus('mainMenu', status => {
-    status.createMenu('mainMenu', {}, Menu)
+    status.createMenu(MainMenu)
   })
 
   createStatus('levelSelection', status => {
-    status.createMenu('levelSelection', LevelSelection)
+    status.createMenu(LevelSelection)
   })
 
   createStatus('play', status => {
     status.createGame('pacman', {tileWidth: 16})
-    status.camera.settings({ratio: 16 / 9, cameraWidth: 480})
+    status.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'hidden'})
     status.pre = level => setMap(level)
   })
-  setCurrentStatus('play', 'level_0')
 }
+
+function setup() {
+  setCurrentStatus('mainMenu')
+}
+
+function draw() {
+  //image(menuSprites.levelSelection.main, 0, 0)
+}
+
 
 
 // const options = {
