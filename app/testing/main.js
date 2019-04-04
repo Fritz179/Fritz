@@ -4,25 +4,25 @@ function preload() {
   console.log('preload');
   loadSpriteSheet('tiles', {type: 'pacmanTiles', json: false})
   loadSpriteSheets('player', 'End', 'shooter', 'bullet')
+
+  loadMenuSprite('mainMenu')
+  loadMenuSprite('LevelSelection')
+
   loadMap('level_0')
-
-  createStatus('mainMenu', status => {
-    status.createMenu(MainMenu)
-  })
-
-  createStatus('levelSelection', status => {
-    status.createMenu(LevelSelection)
-  })
-
-  createStatus('play', status => {
-    status.createGame('pacman', {tileWidth: 16})
-    status.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'hidden'})
-    status.pre = level => setMap(level)
-  })
 }
 
 function setup() {
+  createStatus(MainMenu)
+  createStatus(LevelSelection)
+
+  const game = createStatus('play', Game, {type: 'pacman', tileWidth: 16})
+  game.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'hidden'})
+  game.pre = level => setMap(level)
+
+  console.log(statuses);
   setCurrentStatus('mainMenu')
+
+  console.error(`Partial Version!!\nPress 'P' then '0'(zero) to start!!\nPress '$' to toggle debug`);
 }
 
 function draw() {

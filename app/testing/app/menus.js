@@ -1,5 +1,7 @@
-class Menu {
-  constructor() {
+class Menu extends Status {
+  constructor(options) {
+    super()
+    this.addPreFunction(() => this.listen('onKey'))
     this.pointing = -1
     this.status = null
     this.buttons = []
@@ -30,7 +32,7 @@ class Menu {
   //   }
   // }
 
-  _onclick() {
+  _onClick() {
     const {multiplierX, multiplierY, canvas} = this.status.camera
     const x = round((mouseX - canvas.xOff) / multiplierX), y = round((mouseY - canvas.yOff) / multiplierY)
     this.buttons.forEach(button => {
@@ -78,18 +80,18 @@ class Menu {
     }
   }
 
-  _getSprite(canvas) {
-    if (this.sprite.main) canvas.image(this.sprite.main, 0, 0)
-    else canvas.background(255, 0, 0)
-
-    if (typeof this.getSprite == 'function') return this.getSprite(canvas)
-
-    this.buttons.forEach(button => {
-      canvas.image(button.getSprite(), button.x1, button.y1)
-    })
-
-    return canvas
-  }
+  // _getSprite(canvas) {
+  //   if (this.sprite.main) canvas.image(this.sprite.main, 0, 0)
+  //   else canvas.background(255, 0, 0)
+  //
+  //   if (typeof this.getSprite == 'function') return this.getSprite(canvas)
+  //
+  //   this.buttons.forEach(button => {
+  //     canvas.image(button.getSprite(), button.x1, button.y1)
+  //   })
+  //
+  //   return canvas
+  // }
 }
 
 class pointerMenu extends Menu {

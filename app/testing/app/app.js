@@ -20,6 +20,7 @@ p5.prototype.registerMethod('init', () => {
       if (resizingCamera) return resizingCamera = false
 
       preStatusUpdate.forEach(fun => fun())
+      status._fixedUpdate()
       status._update()
       postStatusUpdate.forEach(fun => fun())
     }
@@ -34,50 +35,70 @@ p5.prototype.registerMethod('init', () => {
 p5.prototype.registerMethod('pre', () => { _preFunction() });
 p5.prototype.registerMethod('post', () => { _postFunction() });
 
-p5.prototype.createStatus = (statusName, init) => {
+p5.prototype.createStatus = (statusName, Constructor, options) => {
+  if (typeof statusName == 'function') return p5.prototype.createStatus(deCapitalize(statusName.name), statusName, options)
   if (statuses[statusName]) throw new Error(`Status ${statusName} already exists!`)
+  if (!Constructor) Constructor = Status
+  if (!(Constructor.prototype instanceof Status)) throw new Error(`${statusName} is not a instanceof Status: ${Constructor}`)
 
-  status = statuses[statusName] = new Status(statusName)
-  init(status)
+  return statuses[statusName] = new Constructor(options)
 };
 
 p5.prototype.setCurrentStatus = (newStatus, ...args) => {
+  //check if the new status exist
   if (!statuses[newStatus]) throw new Error(`Invalid Status: ${newStatus}`)
 
+  //create a function that runs only one time before the next statusUpdate
+  //if status is swapped while updating another status, for the rest of the update status points to the new status
   function oneTime() {
-    if (status) status._post(...args)
+    //if there was a previous status, false only on first setCurrentStatus
+    if (status) {
+      status._post(...args)
+      p5.prototype.removeAllListeners()
+    }
 
+    //hot-swap
     status = statuses[currentStatus = newStatus]
 
     status._pre(...args)
-    if (status.cameraEnabled) status.camera.resize()
+    console.log(status);
+    status.camera.resize()
 
+    //remove the function once it has been called
     preStatusUpdate.delete(oneTime)
   }
 
   preStatusUpdate.add(oneTime)
 }
 
-window.windowResized = () => { if (status && status.cameraEnabled) status.camera.resize() }
+//resize camera of current status if window is resized
+window.windowResized = () => { if (status) status.camera.resize() }
 
-function addDefaultOptions(settings, defaults) {
-  for (let key in defaults) {
-    if (typeof settings[key] == 'undefined') {
-      settings[key] = defaults[key]
+//helper function, like object.assign but assign only if undefined in target
+function addDefaultOptions(target, source) {
+  for (let key in source) {
+    if (typeof target[key] == 'undefined') {
+      target[key] = source[key]
     }
   }
-  return settings
+  return target
 }
 
-function setDefaultOptions(defaults, settings) {
-  for (let key in settings) {
-    if (typeof defaults[key] != 'undefined') {
-      defaults[key] = settings[key]
+//helper function, like
+function setDefaultOptions(target, source) {
+  console.log('setDefaultOptions called!!');
+  for (let key in source) {
+    if (typeof target[key] != 'undefined') {
+      target[key] = source[key]
     } else {
-      console.warn(`cannot change default settings, invalid key: ${key} of: `, settings);
+      console.warn(`cannot change default source, invalid key: ${key} of: `, source);
     }
   }
-  return defaults
+  return target
+}
+
+function deCapitalize(string) {
+    return string.charAt(0).toLowerCase() + string.slice(1);
 }
 
 function createDefaultTexture() {

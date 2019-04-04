@@ -27,7 +27,7 @@ function setup() {
 
 //zoom 110%?
 
-// TODO: 'update' README //wichtig ;-)
+// TODO: 'update' README
 
 // TODO: createPool => set global reference, return reference add to game.pools or game.spawners (pool class with reset)
 // pool return => {pool, storeAll, poolSize, activeSize, set(options)}
@@ -102,3 +102,79 @@ class CustomEntity extends Entity {
     this.onMouseReleased = () => console.log('Mouse has been clicked');
   }
 }
+
+
+//camera extends Master
+//x1 e x2 = gamePos w, w1
+//x3 e x4 = spritePos w2
+//x5 e x6 = realPos? w3
+
+//w1 = hitboxGame w
+//w2 = sprite
+//w3 = sprite
+
+//x0 xO
+
+//setForm('rect', 'circle')
+
+//Master extends:
+  //Animations
+    //entity
+    //Status
+    //game
+    //menu
+    //camera
+
+
+//ecs just updates all entities
+//ecs may contain ohter stauteses
+//camera just helps getting the image
+
+//createGame
+//createMenu
+//createStatus
+
+createSpawners(Shooter, Bullet, Player, End)
+
+function preload() {
+  console.log('preload');
+  loadSpriteSheet('tiles', {type: 'pacmanTiles', json: false})
+  loadSpriteSheets('player', 'End', 'shooter', 'bullet')
+  loadMap('level_0')
+
+  createMenu('mainMenu', MainMenu)
+  createMenu('levelSelection', LevelSelection)
+
+  createGame('play', status => {
+    status.createGame('pacman', {tileWidth: 16})
+    status.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'hidden'})
+    status.pre = level => setMap(level)
+  })
+}
+
+function setup() {
+  setCurrentStatus('mainMenu')
+}
+
+//MainMenu extends menu extends status extends master
+//Play extends game extends stauts extends master => parses default, adds spritelayer,
+//staushandler extends status extends Master => keeps all statuses or windows open and updates them
+//camera extends Master => getSpriteSheet? layers
+//entity extends Master => gravity, collision
+
+//ecs = {entities, other?(stauts)}
+//ecs.add & ecs.addEntity or instanceof
+
+
+//animation can be solid?
+
+//on update of ecs on onCollisionEntry add a function parameters => die => set flag they wonna die
+//unify onCollisionExit and onCollisionEntry to onCollission
+
+//file directory pattern: app\testing, !libraries, !_app, !app_1
+
+//create class spawner, set some function like spawnrate, spawntype => word, point, area
+//remove changeParentName
+
+//fix bullet collision, end collision, push
+//StopCollisio add parameter for callback

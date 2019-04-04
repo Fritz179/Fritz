@@ -8,7 +8,7 @@ class Player extends Entity {
     this.setVel(this.speed, this.speed)
     this.spriteDir = 0
     status.camera.follow(this)
-    listenInputs(this, currentStatus)
+    this.listen('onKey')
   }
 
   fixedUpdate() {
@@ -23,7 +23,7 @@ class Player extends Entity {
     // if (this.x < 0) this.x = maps.w * maps.s
   }
 
-  onInput(input) {
+  onKey(input) {
     switch (input) {
       case 'up': if (!this.moving) {this.setVel(0, -this.speed); this.spriteDir = 2;} break;
       case 'right': if (!this.moving) {this.setVel(this.speed, 0); this.spriteDir = 3;} break;
@@ -34,29 +34,20 @@ class Player extends Entity {
     }
   }
 
-  onCollisionEntry({collider, stopCollison, stopOtherCollision}) {
+  onCollision({collider, stopCollison, stopOtherCollision}) {
     switch (collider.className) {
-      case 'bullet':
-        console.log('damaged');
-        break;
-      default:
-      console.log('colliding with', collider.className);
+      case 'bullet': console.log('damaged'); break;
+      case 'end': setCurrentStatus('levelSelection'); break;
+      default: console.log('colliding with', collider.className);
     }
-  }
-
-  onBlockEntry({collider}) {
-    if (collider.className == 'end') {
-      setCurrentStatus('levelSelection')
-    }
-    console.log('colliding with', collider.className);
   }
 
   getSprite() {
-    return this.sprite.idle[0]
+    return this.sprite.idle[this.spriteDir]
   }
 }
 
-class End extends Block {
+class End extends Entity {
   constructor(x, y) {
     super()
     this.setPos(x * 16, y * 16)
@@ -71,7 +62,7 @@ class End extends Block {
     if (this.lifetime >= this.maxLifetime) this.lifetime = 0
   }
 
-  onCollisionEntry() { }
+  onCollision({stopCollision}) { stopCollision() }
 
   getSprite() {
     return this.sprite.idle[floor(this.lifetime / this.maxLifetime * this.sprite.idle.length)]

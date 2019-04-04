@@ -33,7 +33,7 @@ p5.prototype.loadMap = (name, options = {}, callback) => {
 p5.prototype.registerPreloadMethod('loadMap', p5.prototype.loadMap);
 
 class Maps {
-  constructor(settings) {
+  constructor(settings = {}) {
     this.tileMap = []
     this.collisionMap = []
     this.graphicalMap = []
@@ -254,6 +254,7 @@ function getPacmanGraphicalString(tl, t, tr, l, r, bl, b, br) {
   let tile = []
 
   getCorner(tl, t, tr, l, r, bl, b, br, 0)
+  
   function getCorner(tl, t, tr, l, r, bl, b, br, depth) {
     if (depth > 3) {
       return

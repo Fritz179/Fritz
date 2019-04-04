@@ -1,5 +1,5 @@
 class Camera {
-  constructor(settings) {
+  constructor() {
     this.layers = []
     this.canvas = createGraphics(100, 100)
     this.toFollow = false
@@ -7,7 +7,7 @@ class Camera {
     this.x2 = this.y2 = 100
     this.xc = this.yc = 50
     this.multiplierX = this.multiplierY = 1
-    this.settings(settings)
+    this.settings({cameraMode: 'multiple', cameraOverflow: 'hidden', ratio: 16 / 9, cameraWidth: 480})
   }
 
   update() {
@@ -49,38 +49,18 @@ class Camera {
     spriteLayer.update = () => {
       const {x1, y1, canvas} = this
       if (!status.ecs) debugger
-      const {entities, animations, blocks, hitboxes} = status.ecs
+      const {entities, animations, others} = status.ecs
       canvas.noFill()
       canvas.stroke(255, 0, 0)
 
-      for (let i = entities.length - 1; i >= 0; i--) {
-        if (p5.prototype.collideRectRect(this, entities[i])) {
-          canvas.image(entities[i].getSprite(), round(entities[i].x - x1), round(entities[i].y - y1))
-          if (debugEnabled) canvas.rect(round(entities[i].x - x1), round(entities[i].y - y1), round(entities[i].w - 1), round(entities[i].h - 1))
-        }
-      }
-
-      for (let i = animations.length - 1; i >= 0; i--) {
-        if (p5.prototype.collideRectRect(this, animations[i])) {
-          canvas.image(animations[i].getSprite(), round(animations[i].x - x1), round(animations[i].y - y1))
-          if (debugEnabled) canvas.rect(round(animations[i].x - x1), round(animations[i].y - y1), round(animations[i].w - 1), round(animations[i].h - 1))
-        }
-      }
-
-      for (let i = blocks.length - 1; i >= 0; i--) {
-        if (p5.prototype.collideRectRect(this, blocks[i])) {
-          canvas.image(blocks[i].getSprite(), round(blocks[i].x - x1), round(blocks[i].y - y1))
-          if (debugEnabled) canvas.rect(round(blocks[i].x - x1), round(blocks[i].y - y1), round(blocks[i].w - 1), round(blocks[i].h - 1))
-        }
-      }
-
-      if (debugEnabled) {
-        for (let i = hitboxes.length - 1; i >= 0; i--) {
-          if (p5.prototype.collideRectRect(this, hitboxes[i])) {
-            canvas.rect(round(hitboxes[i].x - x1), round(hitboxes[i].y - y1), round(hitboxes[i].w - 1), round(hitboxes[i].h - 1))
+      let types = [entities, animations, others].forEach(type => {
+        type.forEach(e => {
+          if (p5.prototype.collideRectRect(this, e)) {
+            canvas.image(e.getSprite(), round(e.x - x1), round(e.y - y1))
+            if (debugEnabled) canvas.rect(round(e.x - x1), round(e.y - y1), round(e.w - 1), round(e.h - 1))
           }
-        }
-      }
+        })
+      })
     }
 
     spriteLayer.resize = () => {
@@ -179,7 +159,7 @@ class Camera {
     noSmooth()
   }
 
-  settings(settings) {
+  settings(settings = {}) {
     addDefaultOptions(settings, {cameraMode: this.cameraMode, cameraOverflow: this.cameraOverflow})
     addDefaultOptions(settings, getCameraRatio(settings))
     this.cameraMode = settings.cameraMode

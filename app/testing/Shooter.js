@@ -1,4 +1,4 @@
-class Shooter extends Block {
+class Shooter extends Entity {
   constructor(x, y, r) {
     super()
     this.setSprite(sprites.shooter)
@@ -22,7 +22,9 @@ class Shooter extends Block {
   }
 
 
-  onCollisionEntry() { }
+  onCollision({stopCollision}) {
+    stopCollision()
+  }
 }
 
 class Bullet extends Entity {
@@ -41,14 +43,15 @@ class Bullet extends Entity {
     if (this.dying) {
       this.deadTime++
       if (this.deadTime >= this.maxDeadTime) {
-        this.kill()
+        this.die()
       }
     }
   }
 
   onMapCollision({solveCollision}) {
+    if (this.dying) console.log('asdfkjhasdfkj');
     solveCollision()
-    this.die()
+    this.secondPhase()
   }
 
   getSprite() {
@@ -59,20 +62,15 @@ class Bullet extends Entity {
     }
   }
 
-  onCollisionEntry({stopOtherCollision}) {
+  onCollision({stopCollision, stopOtherCollision}) {
     stopOtherCollision()
+    this.secondPhase()
   }
 
-  onCollisionExit() {
-    this.die()
-    return true
-  }
-
-  die() {
-    this.changeParentName('animations')
+  secondPhase() {
+    this.setType('animations')
     this.dying = true
     this.setSize(8, 16)
-    this.setVel(0, 0)
     this.setPos(this.x, this.y - 5)
   }
 }

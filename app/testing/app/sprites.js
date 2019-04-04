@@ -6,12 +6,45 @@
 // animations => varius named animations, usufull for multi-actions entity, mirror available if needed
 // pacman => loads in sprites to create a map pacman_like tile based game, block construction
 
+//define global references
 p5.prototype.sprites = {}
+p5.prototype.menuSprites = {}
+
+//load mnore sprites with the default options
 p5.prototype.loadSpriteSheets = (...sprites) => {
   sprites.forEach(sprite => {
-    loadSpriteSheet(sprite)
+    p5.prototype.loadSpriteSheet(sprite)
   })
 }
+
+p5.prototype.loadMenuSprite = (name, options = {}, callback) => {
+  addDefaultOptions(options, {path: './img/menus', json: true, main: true})
+
+  const sprite = p5.prototype.menuSprites[options.name || name] = {}
+
+  //load mainImage if necessary, defaults to true
+  if (options.main) loadSpriteSheet(name, {json: false, path: '/img/menus'}, img => sprite.main = img)
+
+  if (options.json) {
+    //get json and parse it
+    loadJSON(options.jsonPath || `.${options.path}/${name}.json`, json => {
+      addDefaultOptions(json, {sprites: [], buttons: [], options: {}})
+
+      //keep reference
+      sprite.json = json
+
+      //add sprites
+      for (key in json.sprites) {
+        const opt = addDefaultOptions(json.sprites[key], {path: './img/menus'})
+        loadSpriteSheet(key, opt, img => sprite[key] = img)
+      }
+    }, e => {
+      console.log(e);
+      throw new Error(`Error json loading: ${name} at: `)
+    })
+  }
+}
+
 p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
   addDefaultOptions(options, {path: './img/sprites', format: 'png', json: true, type: 'animations'})
   const ret = {}

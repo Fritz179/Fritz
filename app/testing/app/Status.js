@@ -1,65 +1,29 @@
-p5.prototype.menuSprites = {}
-
-class Status {
+class Status extends Master {
   constructor(statusName) {
+    super()
     this.statusName = statusName
     this.preFunctions = []
     this.postFunctions = []
     this.updateFunctions = []
+    this.fixedUpdateFunctions = []
     this.pre = () => { }
     this.post = () => { }
     this.update = () => { }
-    this.cameraEnabled = this.mapsEnabled = this.ECSEnabled = false
+
+    this.camera = new Camera()
+    this.ecs = new ECS()
   }
 
   addPreFunction(fun) { this.preFunctions.push(fun) }
   addPostFunction(fun) { this.postFunctions.push(fun) }
   addUpdateFunction(fun) { this.updateFunctions.push(fun) }
+  addFixedUpdateFunction(fun) { this.fixedUpdateFunctions.push(fun) }
 
-  _update() { this.updateFunctions.forEach(fun => fun()); if (this.cameraEnabled) this.camera.update() }
   _pre(...args) { this.preFunctions.forEach(fun => fun(...args)); this.pre(...args) }
   _post(...args) { this.postFunctions.forEach(fun => fun(...args)); this.post(...args) }
-
-  addCamera(settings) {
-    if (this.cameraEnabled) throw new Error('camera already enabled')
-    this.cameraEnabled = true
-    this.camera = new Camera(settings)
-  }
-
-  addMaps(settings) {
-    if (this.mapsEnabled) throw new Error('maps already enabled')
-    this.mapsEnabled = true
-    this.maps = new Maps(settings)
-  }
-
-  addECS(settings) {
-    if (this.ECSEnabled) throw new Error('ECS already enabled')
-    this.ECSEnabled = true
-    this.ecs = new ECS(settings)
-    this.addUpdateFunction(() => {
-      this.ecs.update()
-      this.ecs.fixedUpdate()
-    })
-  }
-
-  createGame(type, options) {
-    if (this.gameType) throw new Error(`Game already initialized`)
-    addDefaultOptions(options, {type: 'pacman', tileWidth: 16})
-
-    this.gameType = type
-    if (type == 'pacman') {
-      this.addCamera({cameraMode: 'auto', cameraOverflow: 'display', ratio: 16 / 9, cameraWidth: 480})
-      this.camera.addTileLayer()
-      this.camera.addSpriteLayer()
-
-      this.addMaps({tileWidth: options.tileWidth, type: 'pacman'})
-      this.addECS()
-
-      this.addPreFunction(() => { this.camera.noSmooth() })
-    } else {
-      throw new Error(`unknown game type: ${type}`)
-    }
-  }
+  _update() { this.updateFunctions.forEach(fun => fun()); this.ecs.update(); this.camera.update() }
+  _getSprite() { }
+  _fixedUpdate() { this.fixedUpdateFunctions.forEach(fun => fun()); this.ecs.fixedUpdate() }
 
   createMenu(Constructor, name, options = {}) {
     //if the only parameter is a string, create default menu
@@ -72,13 +36,9 @@ class Status {
     //create menu
     const menu = new Constructor()
     menu.status = status
-    const sprite = menu.sprite = p5.prototype.menuSprites[statusName] = {}
+    menu.sprite = p5.prototype.menuSprites[statusName]
 
-    //load main if necessary
-    if (options.mainImage) {
-      const opt = addDefaultOptions(options.mainImage, {json: false, path: '/img/menus'})
-      loadSpriteSheet(name, opt, img => sprite.main = img)
-    }
+
 
     if (options.json) {
       //get json and parse it
@@ -97,7 +57,7 @@ class Status {
         }
 
         //listen to inputs
-        p5.prototype.listenInputs(menu, statusName)
+        menu.listenInputs('click')
 
         //add camera and addForegroundLayer
         this.addCamera({cameraMode: 'auto', cameraOverflow: 'hidden', ratio: 16 / 9, cameraWidth: 1920})

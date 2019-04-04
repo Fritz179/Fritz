@@ -15,8 +15,7 @@ class LevelSelection extends Menu {
     }
   }
 
-  onInput(input) {
-    console.log(input);
+  onKey(input) {
     switch (input) {
       case '0': setCurrentStatus('play', 'level_0'); break;
       case '1': setCurrentStatus('play', 'level_1'); break;

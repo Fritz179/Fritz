@@ -3,16 +3,10 @@ class MainMenu extends Menu {
     super()
   }
 
-  onInput(input) {
+  onKey(input) {
     switch (input) {
       case 'p': setCurrentStatus('levelSelection'); break;
       case 'o': setCurrentStatus('Options'); break;
     }
-  }
-}
-
-class MainButton extends Animation {
-  constructor() {
-    super()
   }
 }
