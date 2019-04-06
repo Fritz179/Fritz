@@ -26,11 +26,7 @@ class LevelSelection extends Menu {
 
   }
 
-  getSprite(canvas) {
-    this.levels.forEach((level, i) => {
-      canvas.image(level, i * 200, 400)
-    })
-  }
+  
 }
 
 class LevelsButton extends Animation {

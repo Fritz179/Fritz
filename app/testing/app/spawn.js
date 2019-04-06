@@ -1,24 +1,28 @@
 const entitiesToKill = []
 const entitiesToChange = new Map()
 
+p5.prototype.spawners = {}
+p5.prototype.pools = {}
+
 class ECS {
   constructor()  {
     this.entities = new Set()
     this.animations = new Set()
-    this.others = new Set()
   }
 
   update() {
     this.entities.forEach(entity => entity.update())
     this.animations.forEach(animation => animation.update())
-    this.others.forEach(other => other.update())
 
     this.killEntitiesToKill()
   }
 
   fixedUpdate() {
-    const {animations, others} = this
+    const {animations} = this
     const entities = [...this.entities]
+
+    //update all entitites, subStatus
+    animations.forEach(a => a.fixedUpdate())
 
     //fixedUpdate entities
     this.entities.forEach(e => {
@@ -64,7 +68,7 @@ class ECS {
 
     for (let [entity, to] of entitiesToChange) {
       if (this.deleteEntity(entity)) {
-        entity.parentName = to
+        entity._parentName = to
         this[to].add(entity)
       } else {
         throw new Error(`entity not present in ecs!!`)
@@ -78,29 +82,24 @@ class ECS {
 
   deleteEntity(entity) {
     p5.prototype.removeListener(entity)
-    return this.entities.delete(entity) || this.animations.delete(entity) || this.others.delete(entity)
+    return this.entities.delete(entity) || this.animations.delete(entity)
   }
 
   clearAllEntitites() {
     this.entities.clear()
     this.animations.clear()
-    this.others.clear()
   }
 }
 
-p5.prototype.spawners = {}
-p5.prototype.pools = {}
-
 function getParentName(target) {
   //if it already has the name, return it
-  if (target.parentName) return target.parentName
+  if (target._parentName) return target._parentName
 
   //if it douesn't, crete flag
   let name
 
   //check all possibility
   if (target instanceof Entity) name = 'entities'
-  else if (target instanceof Status) name = 'others'
   else if (target instanceof Animation) name = 'animation'
   else if (target instanceof Master) throw new Error(`Extending only Master? ${target}`)
 
@@ -108,74 +107,57 @@ function getParentName(target) {
   if (!name) throw new Error(`Plese extend calls Entity, Status, Animation, Game or Menu, invalid: ${target}`)
 
   //set to prototype and return
-  return target.parentName = name
+  return target._parentName = name
 }
 
+//if spawnOne is called, spawn it in the current stauts
 p5.prototype.spawnOne = (Constructor, ...args) => {
   if (!currentStatus) throw new Error(`call setCurrentStatus() before spawning entities!`)
-  if (!Constructor.prototype.parentName) Constructor.prototype.parentName = getParentName(Constructor.prototype)
-  if (!Constructor.prototype.className) Constructor.prototype.className = deCapitalize(Constructor.name)
 
-  const entity = new Constructor(...args)
-  const {parentName} = entity
-
-  status.ecs[parentName].add(entity)
-
-  return entity
+  status.spawn(Constructor, ...args)
 }
 
-window.createSpawner = (Constructor, key) => {
-  if (!key) key = deCapitalize(Constructor.name)
+//if createSpawner is called outside of a ecs, call it on the currentStatus
+p5.prototype.createSpawner = (Constructor, key) => {
+  if (!currentStatus) throw new Error(`call setCurrentStatus() before creating spawner!`)
 
-  const parentName = getParentName(Constructor.prototype)
-  Constructor.prototype.className = deCapitalize(Constructor.name)
-
-  console.log(`new spawner for ${key} extending ${parentName}`);
-
-  if (p5.prototype.spawners[key]) {
-    console.error(`Spawner named: ${key} already exists!`)
-  } else {
-
-    const spawner = {spawn: (...args) => p5.prototype.spawnOne(Constructor, ...args)}
-
-    return p5.prototype.spawners[key] = spawner
-  }
+  status.createSpawner(Constructor, key)
 }
 
-window.createSpawners = (...toCreate) => {
+p5.prototype.createSpawners = (...toCreate) => {
   toCreate.forEach(constructor => {
-    window.createSpawner(constructor)
+    p5.prototype.createSpawner(constructor)
   })
 }
 
-p5.prototype.createPool = (key, constructor, options) => {
-  if (p5.prototype.pools[key]) {
-    throw new Error(`Pool named: ${key} already exists!`)
-  }
-
-  addDefaultOptions(options, defaultOptions.createPool)
-
-  const pool = p5.prototype.pools[key] = {
-    constructor: constructor,
-    active: [],
-    inactive: [],
-  }
-
-  for (let i = 0; i < options.max; i++) {
-    pool.inactive = new constructor()
-  }
-
-  return {
-    get: () => {
-      if (pool.inactive.size) {
-        return pool.inactive.splice(0, 1)
-      } else if (options.overflow != 'stop') {
-        if (options.overflow == 'last') {
-          return pool.active.splice(0, 1)
-        } else if (options.overflow == 'create') {
-          return new constructor()
-        }
-      }
-    }
-  }
-}
+// p5.prototype.createPool = (key, constructor, options) => {
+//   if (p5.prototype.pools[key]) {
+//     throw new Error(`Pool named: ${key} already exists!`)
+//   }
+//
+//   addDefaultOptions(options, defaultOptions.createPool)
+//
+//   const pool = p5.prototype.pools[key] = {
+//     constructor: constructor,
+//     active: [],
+//     inactive: [],
+//   }
+//
+//   for (let i = 0; i < options.max; i++) {
+//     pool.inactive = new constructor()
+//   }
+//
+//   return {
+//     get: () => {
+//       if (pool.inactive.size) {
+//         return pool.inactive.splice(0, 1)
+//       } else if (options.overflow != 'stop') {
+//         if (options.overflow == 'last') {
+//           return pool.active.splice(0, 1)
+//         } else if (options.overflow == 'create') {
+//           return new constructor()
+//         }
+//       }
+//     }
+//   }
+// }

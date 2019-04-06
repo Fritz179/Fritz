@@ -1,7 +1,6 @@
 class Shooter extends Entity {
   constructor(x, y, r) {
     super()
-    this.setSprite(sprites.shooter)
     this.setPos(x * 16, y * 16)
     this.r = r
     this.setSize(16, 16)
@@ -30,7 +29,6 @@ class Shooter extends Entity {
 class Bullet extends Entity {
   constructor(x, y) {
     super()
-    this.setSprite(sprites.bullet)
     this.setPos(x - 3, y - 3)
     this.setSize(6, 6)
     this.setVel(-5, 0)

@@ -39,12 +39,15 @@ class Master {
 }
 
 class Animation extends Master {
-  constructor(sprite) {
+  constructor() {
     super()
     this.killed = false
 
-    this.sprite = sprite || createDefaultTexture()
+    this.sprite = sprites[this._className] || createDefaultTexture()
+
   }
+
+  get className() { return this._className }
 
   setSprite(sprite) { this.sprite = sprite }
   getSprite() { return this.sprite }
@@ -68,7 +71,7 @@ class Entity extends Animation {
   }
 
   onCollision() {
-    console.error(`${this.parentName}: ${this.className}, without onCollision`)
+    console.error(`${this._parentName}: ${this._className}, without onCollision`)
     this.onCollision = () => { }
   }
 

@@ -1,6 +1,7 @@
 class Camera {
   constructor() {
     this.layers = []
+    this.port = createGraphics(100, 100)
     this.canvas = createGraphics(100, 100)
     this.toFollow = false
     this.x1 = this.y1 = 0
@@ -19,27 +20,42 @@ class Camera {
     this.center()
     const {x1, y1, xc, yc, x2, y2, multiplierX, multiplierY, canvas, layers} = this
 
-    background(debugEnabled ? 51 : 0)
     canvas.fill(debugEnabled ? 30 : 0)
     canvas.rect(-10, -10, canvas.width + 20, canvas.height + 20)
+    canvas.strokeWeight(1)
 
     layers.forEach(layer => {
       if (typeof layer.update == 'function') layer.update()
       canvas.image(layer, -x1 + (layer.x1 || 0), -y1 + (layer.y1 || 0))
     })
 
-    this.drawCanvas()
-
     if (debugEnabled) {
-      noFill()
-      strokeWeight(2)
       layers.forEach(layer => {
         if (typeof layer.debugg == 'function') layer.debugg()
       })
-      noFill()
-      strokeWeight(2)
-      stroke(255)
-      rect(round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplierX) - 1, round(canvas.height * multiplierY) - 1)
+      canvas.noFill()
+      canvas.strokeWeight(2)
+      canvas.stroke(255)
+      canvas.rect(0, 0, canvas.width - 1, canvas.height - 1)
+    }
+  }
+
+  getSprite() {
+    const {canvas, port, multiplierX, multiplierY} = this
+
+    //if the canvas alredy has the rigth dimensions, just return it
+    //otherwise draw it on the port
+    if (multiplierX == 1 && multiplierY == 1) {
+      return canvas
+    } else {
+      const w = round(canvas.width * multiplierX), h = round(canvas.height * multiplierY)
+
+      //check if port has the right dimensions
+      if (port.width != w || port.height != h) port.size(w, h)
+
+      //draw and return it
+      port.image(canvas, 0, 0, w, h)
+      return port
     }
   }
 
@@ -49,11 +65,11 @@ class Camera {
     spriteLayer.update = () => {
       const {x1, y1, canvas} = this
       if (!status.ecs) debugger
-      const {entities, animations, others} = status.ecs
+      const {entities, animations} = status.ecs
       canvas.noFill()
       canvas.stroke(255, 0, 0)
 
-      let types = [entities, animations, others].forEach(type => {
+      let types = [entities, animations].forEach(type => {
         type.forEach(e => {
           if (p5.prototype.collideRectRect(this, e)) {
             canvas.image(e.getSprite(), round(e.x - x1), round(e.y - y1))
@@ -147,15 +163,10 @@ class Camera {
     this.layers.push(foreGroundLayer)
   }
 
-  drawCanvas() {
-    const {canvas, multiplierX, multiplierY} = this
-    image(canvas, round(canvas.xOff), round(canvas.yOff), round(canvas.width * multiplierX), round(canvas.height * multiplierY))
-    // image(canvas, 0, 0)
-  }
-
   noSmooth() {
     this.layers.forEach(layer => layer.noSmooth())
     this.canvas.noSmooth()
+    this.port.noSmooth()
     noSmooth()
   }
 

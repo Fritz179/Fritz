@@ -1,7 +1,6 @@
 class Player extends Entity {
   constructor(x, y, status) {
     super()
-    this.setSprite(sprites.player)
     this.setSize(16, 16)
     this.setPos(x, y)
     this.speed = 15
@@ -52,7 +51,6 @@ class End extends Entity {
     super()
     this.setPos(x * 16, y * 16)
     this.setSize(16, 16)
-    this.setSprite(sprites.End)
     this.lifetime = 0
     this.maxLifetime = 20
   }

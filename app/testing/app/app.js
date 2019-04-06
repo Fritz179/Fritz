@@ -6,41 +6,59 @@ function reload() {
   status.camera.resize()
 }
 
+//init => called after p5 constructor and before preload
 p5.prototype.registerMethod('init', () => {
   console.log('init');
+  //keep a reference to the users function
   const setupCopy = window.setup || (() => { throw new Error('function setup is not defined') })
   const drawCopy = window.draw || (() => { })
 
+  //modify setup function
   window.setup = () => {
     p5.prototype.sprites.defaultTexture = createDefaultTexture()
     createCanvas(windowWidth, windowHeight).parent('screen');
+
+    //call users setup
     setupCopy()
 
+    //set function to be always called before draw
     _preFunction = () => {
       if (resizingCamera) return resizingCamera = false
 
       preStatusUpdate.forEach(fun => fun())
       status._fixedUpdate()
       status._update()
+
+      background(debugEnabled ? 51 : 0)
+      image(status.getSprite(), status.x, status.y)
+
       postStatusUpdate.forEach(fun => fun())
     }
 
+    //restore draw function
     window.draw = drawCopy
 
     _postFunction = () => { }
   }
+
+  //clear draw function, else is called in creteCanvas and setup is not finished
   window.draw = () => { }
 });
 
+//pre => called always before draw, post => after draw
 p5.prototype.registerMethod('pre', () => { _preFunction() });
 p5.prototype.registerMethod('post', () => { _postFunction() });
 
 p5.prototype.createStatus = (statusName, Constructor, options) => {
-  if (typeof statusName == 'function') return p5.prototype.createStatus(deCapitalize(statusName.name), statusName, options)
+  //(Constructor, [options])
+  if (typeof statusName == 'function') return p5.prototype.createStatus(deCapitalize(statusName.name), statusName, Constructor)
   if (statuses[statusName]) throw new Error(`Status ${statusName} already exists!`)
-  if (!Constructor) Constructor = Status
-  if (!(Constructor.prototype instanceof Status)) throw new Error(`${statusName} is not a instanceof Status: ${Constructor}`)
 
+  //(statusName, [options])
+  if (typeof Constructor != 'function') return p5.prototype.createStatus(statusName, Menu, Constructor)
+
+  //check if it extends Status
+  if (!(Constructor.prototype instanceof Status)) throw new Error(`${statusName} is not a instanceof Status: ${Constructor}`)
   return statuses[statusName] = new Constructor(options)
 };
 
@@ -61,7 +79,6 @@ p5.prototype.setCurrentStatus = (newStatus, ...args) => {
     status = statuses[currentStatus = newStatus]
 
     status._pre(...args)
-    console.log(status);
     status.camera.resize()
 
     //remove the function once it has been called
