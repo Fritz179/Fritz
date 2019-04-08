@@ -17,74 +17,72 @@ p5.prototype.loadSpriteSheets = (...sprites) => {
   })
 }
 
-p5.prototype.loadMenuSprite = (name, options = {}, callback) => {
+p5.prototype.loadMenuSprite = async (name, options = {}, callback) => {
   addDefaultOptions(options, {path: './img/menus', json: true, main: true})
-
-  const sprite = p5.prototype.menuSprites[options.name || name] = {}
+  const sprite = p5.prototype.menuSprites[name] = {}
 
   //load mainImage if necessary, defaults to true
-  if (options.main) loadSpriteSheet(name, {json: false, path: '/img/menus'}, img => sprite.main = img)
+  const [json, main] = await Promise.all([startJSON(name, options), options.main ? startImg(name, options) : false])
+  if (main) sprite.main = main
 
-  if (options.json) {
-    //get json and parse it
-    loadJSON(options.jsonPath || `.${options.path}/${name}.json`, json => {
-      addDefaultOptions(json, {sprites: [], buttons: [], options: {}})
+  //parse json
+  addDefaultOptions(json, {sprites: [], buttons: [], options: {}})
 
-      //keep reference
-      sprite.json = json
+  //keep reference
+  sprite.json = json
 
-      //add sprites
-      for (key in json.sprites) {
-        const opt = addDefaultOptions(json.sprites[key], {path: './img/menus'})
-        loadSpriteSheet(key, opt, img => sprite[key] = img)
-      }
-    }, e => {
-      console.log(e);
-      throw new Error(`Error json loading: ${name} at: `)
-    })
+  //add sprites
+  for (key in json.sprites) {
+    const opt = addDefaultOptions(json.sprites[key], {path: './img/menus'})
+    loadSpriteSheet(key, opt, img => sprite[key] = img)
   }
+
 }
 
-p5.prototype.loadSpriteSheet = (name, options = {}, callback) => {
-  addDefaultOptions(options, {path: './img/sprites', format: 'png', json: true, type: 'animations'})
-  const ret = {}
+p5.prototype.loadSpriteSheet = async (name, options = {}, callback) => {
+  addDefaultOptions(options, {json: true, type: 'animations'})
 
-  loadImage(options.src || `.${options.path}/${name}.${options.format}`, img => {
-    //load image, if no json is specified available just save the image
-    let sprite
-    if (!options.json) {
-      if (options.customSpriteSheetParser) {
-        sprite = options.customSpriteSheetParser(img, json)
-      } else {
-        sprite = parseSpriteSheet(img, false, options)
-      }
-      callback ? callback(sprite) : p5.prototype.sprites[name] = sprite
-      return
-    }
+  //load img and json if needed
+  const [img, json] = await Promise.all([startImg(name, options), startJSON(name, options)])
+  const customParser = options.customSpriteSheetParser
 
-    //get json and parse it
+  //if it has a customSpriteSheetParser, use it to parse the sprite
+  const sprite = typeof customParser == 'function' ? customParser(img, josn) : parseSpriteSheet(img, json, options)
+
+  //if a callback is supplied, call it
+  callback ? callback(sprite) : p5.prototype.sprites[name] = sprite
+};
+
+//helper function to load img
+function startImg(name, options) {
+  addDefaultOptions(options, {path: './img/sprites', format: 'png'})
+  return new Promise(resolve => {
+    loadImage(options.src || `.${options.path}/${name}.${options.format}`, img => {
+      //load img
+      resolve(img)
+    }, (e) => {
+      //if image failed to load, throw an error
+      console.log(e);
+      throw new Error(`Error loading image at: ${e.path[0].src}`);
+    })
+  });
+}
+
+//helper function to load JSON
+function startJSON(name, options) {
+  //if no json is needed, return
+  if (!options.json) return false
+
+  return new Promise(resolve => {
     loadJSON(options.jsonPath || `.${options.path}/${name}.json`, json => {
-      //if no custom function is available parse it
-      if (options.customSpriteSheetParser) {
-        sprite = customSpriteSheetParser(img, json)
-      } else {
-        sprite = parseSpriteSheet(img, json, options)
-      }
-      callback ? callback(sprite) : p5.prototype.sprites[name] = sprite
+      //get json and return it
+      resolve(json)
     }, e => {
       console.log(e);
       throw new Error(`Error json loading: ${name} at: `)
     })
-  }, (e) => {
-    //if image failed to load, throw an error
-    console.log(e);
-    throw new Error(`Error loading image at: ${e.path[0].src}`);
   })
-
-  return ret;
-};
-
-p5.prototype.registerPreloadMethod('loadSpriteSheet', p5.prototype.loadSpriteSheet);
+}
 
 function parseSpriteSheet(img, json, options) {
   if (options.type == 'pacmanTiles') return parsePacmanTiles(img)

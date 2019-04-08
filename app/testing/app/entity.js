@@ -6,6 +6,8 @@ class Master {
     this.xa = this.ya = 0
     this.w = this.h = 16
     this.w2 = this.h2 = 0
+
+    this._getRealX = this._getRealY = pos => {debugger};
   }
 
   setPos(x, y) { this.x = x; this.y = y; return this }
@@ -26,6 +28,11 @@ class Master {
   get y1() { return this.y }
   get x2() { return this.x + this.w }
   get y2() { return this.y + this.h }
+
+  get realX() { return this._getRealX(this.x1) }
+  get realY() { return this._getRealY(this.y1) }
+  get realX2() { return this._getRealX(this.x2) }
+  get realY2() { return this._getRealY(this.y2) }
 
   get w1() { return this.w }
   get h1() { return this.h }

@@ -4,7 +4,7 @@ function preload() {
   loadSpriteSheets('player', 'end', 'shooter', 'bullet')
 
   loadMenuSprite('mainMenu')
-  loadMenuSprite('LevelSelection')
+  loadMenuSprite('levelSelection')
 
   loadMap('level_0')
 }
@@ -24,7 +24,7 @@ function draw() {
 class Play extends Game {
   constructor() {
     super()
-    this.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'hidden'})
+    this.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'display'})
     this.pre = level => setMap(level)
 
     this.createSpawners(Shooter, Bullet, Player, End)

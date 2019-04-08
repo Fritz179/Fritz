@@ -178,3 +178,11 @@ function setup() {
 
 //fix bullet collision, end collision, push
 //StopCollisio add parameter for callback
+
+//getRealY
+
+//x = 100, multiplierX = 2, xOff = 50 => 250
+//(250 - xOff) / multiplierX
+
+//x = 250, multiplierX = 3, xOff = 100 => 850
+//((850 - xOff) / multiplierX - xOff) / multiplierX

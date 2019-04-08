@@ -76,7 +76,7 @@ window.mousePressed = () => {
 
   //if the mouse is over the entity, call custom function
   listeners.onClick.forEach(entity => {
-    if (p5.protoype.realMouseIsOver(entity)) {
+    if (p5.prototype.realMouseIsOver(entity)) {
       entity.onClick()
       entity._wasOnClick = true
     }
@@ -100,7 +100,7 @@ window.mouseReleased = () => {
   //if the mouse was over the entity, call it's custom function
   listeners.onClickReleased.forEach(entity => {
     if (entity._wasOnClick) {
-      entity.onMouseReleased()
+      entity.onClickReleased()
       entity._wasOnClick = false
     }
   })
@@ -108,7 +108,7 @@ window.mouseReleased = () => {
 
 window.keyPressed = () => {
   if (key == '$') debugEnabled = !debugEnabled
-  
+
   listeners.onKey.forEach(entity => entity.onKey(names[key] || key))
 }
 

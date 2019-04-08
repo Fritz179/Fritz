@@ -1,5 +1,6 @@
 class Camera {
-  constructor() {
+  constructor(parent) {
+    this.status = parent
     this.layers = []
     this.port = createGraphics(100, 100)
     this.canvas = createGraphics(100, 100)
@@ -8,24 +9,31 @@ class Camera {
     this.x2 = this.y2 = 100
     this.xc = this.yc = 50
     this.multiplierX = this.multiplierY = 1
-    this.settings({cameraMode: 'multiple', cameraOverflow: 'hidden', ratio: 16 / 9, cameraWidth: 480})
+    this.settings({cameraMode: 'auto', cameraOverflow: 'display', ratio: 16 / 9, cameraWidth: 480})
   }
 
-  update() {
+  update(oldRealX, oldRealY) {
+    //it gets resized only before drawing, this is to prevent resizing multiple without drawing
+    //resizing the p5 defaultCanvas0 also calls draw
     if (this.toResize) {
       this.toResize = false
       this.resize()
     }
 
+    //center the camera, move it in the right position
     this.center()
     const {x1, y1, xc, yc, x2, y2, multiplierX, multiplierY, canvas, layers} = this
+
+    //create new formula to get the realX and realY
+    const getRealX = x => oldRealX(x * multiplierX + canvas.xOff)
+    const getRealY = y => oldRealY(y * multiplierY + canvas.yOff)
 
     canvas.fill(debugEnabled ? 30 : 0)
     canvas.rect(-10, -10, canvas.width + 20, canvas.height + 20)
     canvas.strokeWeight(1)
 
     layers.forEach(layer => {
-      if (typeof layer.update == 'function') layer.update()
+      if (typeof layer.update == 'function') layer.update(getRealX, getRealY)
       canvas.image(layer, -x1 + (layer.x1 || 0), -y1 + (layer.y1 || 0))
     })
 
@@ -40,7 +48,9 @@ class Camera {
     }
   }
 
-  getSprite() {
+  getSprite(getRealX, getRealY) {
+    this.update(getRealX, getRealY)
+
     const {canvas, port, multiplierX, multiplierY} = this
 
     //if the canvas alredy has the rigth dimensions, just return it
@@ -60,26 +70,42 @@ class Camera {
   }
 
   addSpriteLayer() {
+    if (this._spriteLayer) return
+    this._spriteLayer = true
+
     const spriteLayer = createGraphics()
 
-    spriteLayer.update = () => {
+    spriteLayer.update = (getRealX, getRealY) => {
       const {x1, y1, canvas} = this
-      if (!status.ecs) debugger
-      const {entities, animations} = status.ecs
+      const {entities, animations} = this.status.ecs
+
       canvas.noFill()
       canvas.stroke(255, 0, 0)
 
       let types = [entities, animations].forEach(type => {
         type.forEach(e => {
+          e._getRealX = x => getRealX(x - x1)
+          e._getRealY = y => getRealY(y - y1)
           if (p5.prototype.collideRectRect(this, e)) {
-            canvas.image(e.getSprite(), round(e.x - x1), round(e.y - y1))
+            //get the sprite and pos of the entity
+            let sprite = e.getSprite(), x = round(e.x - x1), y = round(e.y - y1)
+            //if a sprite is returned, draw it else if false is returned don't draw
+            //but if nothing is retunred, throw an error
+
+            if (sprite) canvas.image(sprite, x, y)
+            else if (sprite !== false) {
+              console.error('Illegal return of getSprite: ', e);
+              throw new Error('If no sprite must be drawn, return false')
+            }
+
+            //if debugEnabled draw the hitbox
             if (debugEnabled) canvas.rect(round(e.x - x1), round(e.y - y1), round(e.w - 1), round(e.h - 1))
           }
         })
       })
     }
 
-    spriteLayer.resize = () => {
+    spriteLayer.updateSize = () => {
       spriteLayer.size(this.canvas.width, this.canvas.height)
     }
 
@@ -90,7 +116,7 @@ class Camera {
     const tileLayer = createGraphics(16, 16)
 
     tileLayer.redrawAll = () => {
-      const {w, h, s, graphicalMap} = status.maps
+      const {w, h, s, graphicalMap} = this.status.maps
       const {canvas} = this
       const xc = tileLayer.xc = this.xc
       const yc = tileLayer.yc = this.yc
@@ -131,7 +157,7 @@ class Camera {
     }
 
     tileLayer.debugg = () => {
-      const {w, h, s} = status.maps
+      const {w, h, s} = this.status.maps
       //draw map border
       stroke(255, 0, 0)
       drawBox({x1: 0, y1: 0, x2: w * s, y2: h * s}, this)
@@ -151,12 +177,16 @@ class Camera {
     this.layers.push(tileLayer)
   }
 
+  addBackgroundLayer(img) {
+    this.layers.push(img)
+  }
+
   addForegroundLayer(updateFun) {
     const foreGroundLayer = createGraphics(this.cameraWidth, this.cameraHeight)
 
     foreGroundLayer.update = () => updateFun(foreGroundLayer)
 
-    foreGroundLayer.resize = () => {
+    foreGroundLayer.updateSize = () => {
       foreGroundLayer.size(this.cameraWidth, this.cameraHeight)
     }
 
@@ -233,7 +263,7 @@ class Camera {
     }
 
     this.layers.forEach(layer => {
-      if (typeof layer.resize == 'function') layer.resize()
+      if (typeof layer.updateSize == 'function') layer.updateSize()
     })
   }
 

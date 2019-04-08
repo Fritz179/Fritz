@@ -1,11 +1,22 @@
 class Menu extends Status {
-  constructor(options) {
+  constructor() {
     super()
-    this.addPreFunction(() => this.listen('onKey'))
+    this.camera.settings({cameraWidth: 1920, ratio: 16 / 9, cameraOverflow: 'hidden'})
+    if (this.sprite.main) this.camera.addBackgroundLayer(this.sprite.main)
+
     this.pointing = -1
     this.status = null
-    this.buttons = []
-    this.buttonConstructor = Animation
+    this.buttons = new Set()
+
+    this.addPreFunction(() => this.buttons.forEach(button => button.listen('onClick')))
+    this.addPreFunction(() => this.listen('onKey'))
+
+    if (this.sprite) {
+      const {buttons} = this.sprite.json
+      for (key in buttons) {
+        this._addButton(key, buttons[key])
+      }
+    }
   }
 
   // _update() {
@@ -32,20 +43,8 @@ class Menu extends Status {
   //   }
   // }
 
-  _onClick() {
-    const {multiplierX, multiplierY, canvas} = this.status.camera
-    const x = round((mouseX - canvas.xOff) / multiplierX), y = round((mouseY - canvas.yOff) / multiplierY)
-    this.buttons.forEach(button => {
-      if (p5.prototype.collidePointRect({x: x, y: y}, button)) {
-        if (typeof button.onClick == 'function') button.onClick()
-        else this.buttonClicked(button.name)
-      }
-    })
-
-    if (typeof this.onclick == 'function') this.onclick(x, y)
-  }
-
   buttonClicked(status) {
+    console.log(status);
     if (statuses[status]) setCurrentStatus(status)
     else throw new Error(`Unhandled button press: ${status}`)
   }
@@ -71,45 +70,39 @@ class Menu extends Status {
   // }
 
   _addButton(name, pos) {
+    //if no custom addButton function, add it the default way
     if (typeof this.addButton == 'function') this.addButton(name, pos)
-    else {
-      const btn = new this.buttonConstructor()
-      btn.name = name
-      btn.setCord(pos)
-      this.buttons.push(this.buttons[name] = btn)
-    }
+    else this.insertButton(new Button(() => this.buttonClicked(name)).setCord(pos))
   }
 
-  // _getSprite(canvas) {
-  //   if (this.sprite.main) canvas.image(this.sprite.main, 0, 0)
-  //   else canvas.background(255, 0, 0)
-  //
-  //   if (typeof this.getSprite == 'function') return this.getSprite(canvas)
-  //
-  //   this.buttons.forEach(button => {
-  //     canvas.image(button.getSprite(), button.x1, button.y1)
-  //   })
-  //
-  //   return canvas
-  // }
+  insertButton(button) {
+    //add spriteLayer to see button, if it was alredy added, the camera won't add anotherone
+    this.camera.addSpriteLayer()
+
+    this.ecs.animations.add(button)
+    this.buttons.add(button)
+  }
 }
 
-class pointerMenu extends Menu {
-  constructor() {
+class Button extends Entity {
+  constructor(_onClick) {
     super()
+    this._onClick = _onClick
   }
 
-  onclick() {
-
+  onClick() {
+    //if _onClick is a function, call it, else if it is a string and the status exist, set it as the currentStatus
+    if (typeof this._onClick == 'function') this._onClick()
+    else if (typeof this._onClick == 'string' && statuses[this._onClick]) setCurrentStatus(this._onClick)
   }
 
   getSprite() {
-
+    return false
   }
 }
 
 p5.prototype.Menu = Menu
-p5.prototype.pointerMenu = pointerMenu
+p5.prototype.Button = Button
 
 function createDefaultMenuPointer() {
   return createDefaultTexture()

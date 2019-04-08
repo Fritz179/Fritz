@@ -11,18 +11,16 @@ class Status extends Master {
 
     //get statusName and if a menuSprite was already loaded, add a reference to it
     this.statusName = deCapitalize(this.constructor.name)
-    if (menuSprites[this.statusName]) this.sprite = menuSprites[this.statusName]
+    this.sprite = menuSprites[this.statusName] || {}
 
-    this.camera = new Camera()
+    this.camera = new Camera(this)
     this.ecs = new ECS()
 
     this._x = this._y = 0
   }
 
-  get x() { return this._x + this.camera.canvas.xOff }
-  get y() { return this._y + this.camera.canvas.yOff }
-  set x(x) { this._x = x }
-  set y(y) { this._y = y }
+  get x1() { return this.x + this.camera.canvas.xOff }
+  get y1() { return this.y + this.camera.canvas.yOff }
 
   addPreFunction(fun) { this.preFunctions.push(fun) }
   addPostFunction(fun) { this.postFunctions.push(fun) }
@@ -31,10 +29,10 @@ class Status extends Master {
 
   _pre(...args) { this.preFunctions.forEach(fun => fun(...args)); this.pre(...args) }
   _post(...args) { this.postFunctions.forEach(fun => fun(...args)); this.post(...args) }
-  _update() { this.updateFunctions.forEach(fun => fun()); this.ecs.update(); this.camera.update() }
+  _update() { this.updateFunctions.forEach(fun => fun()); this.ecs.update();}
   _fixedUpdate() { this.fixedUpdateFunctions.forEach(fun => fun()); this.ecs.fixedUpdate() }
 
-  getSprite() { return this.camera.getSprite() }
+  getSprite(getRealX, getRealY) { return this.camera.getSprite(getRealX, getRealY) }
 
   spawn(entity) { p5.prototype.spawnOne() }
 

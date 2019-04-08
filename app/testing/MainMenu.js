@@ -1,7 +1,6 @@
 class MainMenu extends Menu {
   constructor() {
     super()
-    
   }
 
   onKey(input) {

@@ -28,7 +28,7 @@ class Player extends Entity {
       case 'right': if (!this.moving) {this.setVel(this.speed, 0); this.spriteDir = 3;} break;
       case 'down': if (!this.moving) {this.setVel(0, this.speed); this.spriteDir = 0;} break;
       case 'left': if (!this.moving) {this.setVel(-this.speed, 0); this.spriteDir = 1;} break;
-      case 'p': console.log(this.x, this.y, this.xv, this.yv); break;
+      case 'p': console.log(this.x, this.y, this.xv, this.yv, this.realX, this.realY); break;
       case 'Escape': setCurrentStatus('mainMenu'); break;
     }
   }

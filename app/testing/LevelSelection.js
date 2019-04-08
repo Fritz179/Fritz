@@ -2,16 +2,8 @@ class LevelSelection extends Menu {
   constructor() {
     super()
 
-    this.levels = []
     for (let i = 0; i < 100; i++) {
-      const level = createGraphics(150, 100)
-      level.background(255, 255, 0)
-      level.fill(0)
-      level.ellipse(25, 25, 50)
-      level.fill(255, 255, 0)
-      level.textSize(50)
-      level.text(i, 25, 25)
-      this.levels[i] = level
+      this.insertButton(new LevelButton(i))
     }
   }
 
@@ -21,16 +13,34 @@ class LevelSelection extends Menu {
       case '1': setCurrentStatus('play', 'level_1'); break;
     }
   }
-
-  onClick() {
-
-  }
-
-  
 }
 
-class LevelsButton extends Animation {
-  constructor() {
+class LevelButton extends Button {
+  constructor(level) {
     super()
+    this.level = level
+
+    //set the position depending on the level
+    this.setPos(300 + 600 * level, 500)
+
+    //create custon sprite depending on the level it rappresents
+    const sprite = this.sprite = createGraphics(300, 200)
+    this.setSize(300, 200)
+
+    sprite.background(255, 255, 0)
+    sprite.fill(0)
+    sprite.ellipse(sprite.width / 2, sprite.height / 2, sprite.height * 0.9)
+    sprite.fill(255, 255, 0)
+    sprite.textSize(100)
+    sprite.textAlign(CENTER, CENTER)
+    sprite.text(level, sprite.width / 2, sprite.height / 2)
+  }
+
+  onClick() {
+    console.log(this.level);
+  }
+
+  getSprite() {
+    return this.sprite
   }
 }

@@ -37,7 +37,6 @@ class Game extends Status {
     if (!Constructor.prototype._className) Constructor.prototype._className = deCapitalize(Constructor.name)
 
     const {_parentName, _className} = Constructor.prototype
-    console.log(`new spawner for ${_parentName}, with key ${key}, extending ${_parentName}`);
 
     if (p5.prototype.spawners[key]) {
       console.error(`Spawner named: ${key} already exists!`)

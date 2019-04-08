@@ -81,6 +81,6 @@ p5.prototype.collidePointRect = (a, b) => {
   return a.x < b.x2 && a.x > b.x1 && a.y < b.y2 && a.y > b.y1
 }
 
-p5.prototype.colliderRectMouse = a => {
-  return p5.prototype.collidePointRect({x: mouseX, y: mouseY}, a)
+p5.prototype.realMouseIsOver = entity => {
+  return p5.prototype.collidePointRect({x: mouseX, y: mouseY}, {x1: entity.realX, y1: entity.realY, x2: entity.realX2, y2: entity.realY2})
 }
