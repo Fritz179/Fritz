@@ -12,7 +12,6 @@ const originalMapJson = {}
 
 p5.prototype.loadMap = (name, options = {}, callback) => {
   addDefaultOptions(options, {path: '/levels'})
-  const ret = {}
 
   if (originalMapJson[name]) console.warn(`Map already loaded: ${name}`);
   else {
@@ -26,21 +25,22 @@ p5.prototype.loadMap = (name, options = {}, callback) => {
       throw new Error(`Error loading json: ${name} at: `)
     })
   }
+}
 
-  return ret;
-};
-
-p5.prototype.registerPreloadMethod('loadMap', p5.prototype.loadMap);
 
 class Maps {
-  constructor(settings = {}) {
+  constructor(parent) {
+    this._status = parent
+    this.statusName = parent.statusName
+    this.spawners = parent.ecs.spawners
+    this.ecs = parent.ecs
+
     this.tileMap = []
     this.collisionMap = []
     this.graphicalMap = []
     this.w = this.h = 0
     this.s = 16
     this.type = 'arcade'
-    this.settings(settings)
   }
 
   setMap(name, options = {}) {
@@ -63,15 +63,15 @@ class Maps {
     if (maps.IDToName) this.IDToName = maps.IDToName
     if (maps.nameToID) this.nameToID = maps.nameToID
 
-    _setProperty('maps', this)
 
-    status.ecs.clearAllEntitites()
+    this.ecs.entities.forEach(e => this.ecs.despawn(e))
     const {spawners} = p5.prototype
+
     for (key in maps.toSpawn) {
       key = key.toLowerCase()
-      if (!spawners[key]) throw new Error(`faled to load map ${name}, ${key} spawner not found:\n`, spawners)
+      if (!this.spawners[key]) throw new Error(`faled to load map ${name}, ${key} spawner not found:\n`, spawners)
       maps.toSpawn[key].forEach(args => {
-        spawners[key].spawn(...args, status)
+        this.spawners[key](...args, this._status)
       })
     }
   }
@@ -83,11 +83,6 @@ class Maps {
     this.type = settings.type
     this.s = settings.tileWidth
   }
-}
-
-p5.prototype.setMap = map => {
-  if (!currentStatus) throw new Error(`call setCurrentStatus() before setting a map!`)
-  status.maps.setMap(map)
 }
 
 // p5.prototype.saveCurrentMap = name => {
@@ -254,7 +249,7 @@ function getPacmanGraphicalString(tl, t, tr, l, r, bl, b, br) {
   let tile = []
 
   getCorner(tl, t, tr, l, r, bl, b, br, 0)
-  
+
   function getCorner(tl, t, tr, l, r, bl, b, br, depth) {
     if (depth > 3) {
       return

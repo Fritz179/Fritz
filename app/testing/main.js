@@ -24,10 +24,10 @@ function draw() {
 class Play extends Game {
   constructor() {
     super()
-    this.camera.settings({ratio: 16 / 9, cameraWidth: 480, cameraMode: 'multiple', cameraOverflow: 'display'})
-    this.pre = level => setMap(level)
+    this.camera.settings({w: 480, r: 16 / 9, mode: 'multiple', overflow: 'hidden'})
+    this.pre = level => this.maps.setMap(level)
 
-    this.createSpawners(Shooter, Bullet, Player, End)
+    this.ecs.createSpawners(Shooter, Bullet, Player, End)
   }
 }
 

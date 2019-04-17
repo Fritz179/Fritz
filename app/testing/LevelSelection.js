@@ -1,9 +1,10 @@
 class LevelSelection extends Menu {
   constructor() {
     super()
+    this.listen('onKey')
 
-    for (let i = 0; i < 100; i++) {
-      this.insertButton(new LevelButton(i))
+    for (let i = 0; i < 5; i++) {
+      this.addButton(new LevelButton(i))
     }
   }
 
@@ -25,6 +26,8 @@ class LevelButton extends Button {
 
     //create custon sprite depending on the level it rappresents
     const sprite = this.sprite = createGraphics(300, 200)
+    sprite.noSmooth()
+    
     this.setSize(300, 200)
 
     sprite.background(255, 255, 0)

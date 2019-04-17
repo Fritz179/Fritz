@@ -1,25 +1,22 @@
 class Master {
   constructor() {
     this.x = this.y = 0
-    this.xd
     this.xv = this.yv = 0
     this.xa = this.ya = 0
     this.w = this.h = 16
     this.w2 = this.h2 = 0
 
-    this._getRealX = this._getRealY = pos => {debugger};
+    this._getRealX = this._getRealY = pos => pos;
+    this._status = this._ecs = null
   }
 
   setPos(x, y) { this.x = x; this.y = y; return this }
+  setCenter(x, y) { this.xc = x; this.yc = y; return this }
   setVel(xv, yv) { this.xv = xv; this.yv = yv; return this }
   setAcc(xa, ya) { this.xa = xa; this.ya = ya; return this }
   setSize(w, h) { this.w = w; this.h = h; return this }
   setCord({x1, y1, x2, y2}) { this.x = x1; this.y = y1; return this.setSize(x2 - x1, y2 - y1) }
-  setDiff(w2, h2) { this.w2 = w2, this.h2 = h2 }
-
-  listen(...toListen) { p5.prototype.addListener(this, ...toListen) }
-  unListen() { p5.prototype.removeListener(this) }
-  unListenTo(...toUnListen) { p5.prototype.removeListenerTo(this, ...toUnListen) }
+  setDiff(w2, h2) { this.w2 = w2, this.h2 = h2; return this}
 
   update() { }
   fixedUpdate() { }
@@ -28,6 +25,9 @@ class Master {
   get y1() { return this.y }
   get x2() { return this.x + this.w }
   get y2() { return this.y + this.h }
+  get xc() { return this.x + this.w / 2 }
+  get yc() { return this.y + this.h / 2 }
+  get center() { return {x: this.xc, y: this.yc} }
 
   get realX() { return this._getRealX(this.x1) }
   get realY() { return this._getRealY(this.y1) }
@@ -43,44 +43,42 @@ class Master {
   set y1(y) { this.y = y }
   set x2(x) { this.x = x - this.w }
   set y2(y) { this.y = y - this.h }
+  set xc(x) { this.x = x - this.w / 2 }
+  set yc(y) { this.y = y - this.h / 2 }
+  set center({x, y}) { this.xc = x, this.yc = y }
+
+  set w1(w) { this.w = w }
+  set h1(h) { this.h = h }
+  set x3(x) { this.x = w - this.w2 }
+  set y3(y) { this.y = h - this.h2 }
 }
 
-class Animation extends Master {
+class Entity extends Master {
   constructor() {
     super()
-    this.killed = false
 
-    this.sprite = sprites[this._className] || createDefaultTexture()
+    this._name = deCapitalize(this.constructor.name)
+    this._toListenFor = []
 
+    this._killed = false
+    this.sprite = sprites[this._name] || createDefaultTexture()
   }
 
-  get className() { return this._className }
-
+  listen(...toListen) { this._toListenFor = this._toListenFor.concat(toListen) }
   setSprite(sprite) { this.sprite = sprite }
   getSprite() { return this.sprite }
 
-  die() {
-    this.killed = true
-    entitiesToKill.push(this)
-  }
+  die() { this._killed = true }
 
   setType(type) {
+    console.error('// TODO: setType');
     if (type != 'animations' && type != 'entitites') throw new Error(`Invalid new type: ${type}, available: animations, entitites`)
 
     this.killed = true
     entitiesToChange.set(this, type)
   }
-}
 
-class Entity extends Animation {
-  constructor() {
-    super()
-  }
-
-  onCollision() {
-    console.error(`${this._parentName}: ${this._className}, without onCollision`)
-    this.onCollision = () => { }
-  }
+  onCollision() { }
 
   _onMapCollision(side, x, y, s) {
     if (debugEnabled) console.log(side, x, y, s, typeof this.onMapCollision == 'function');
@@ -102,8 +100,8 @@ class Entity extends Animation {
     }
   }
 
-  get moving() { return this.xv || this.yv }
+  get isMoving() { return this.xv || this.yv }
 }
 
-p5.prototype.Animation = Animation
+p5.prototype.Master = Master
 p5.prototype.Entity = Entity

@@ -12,7 +12,7 @@ class Shooter extends Entity {
     this.lifetime ++
     if (this.lifetime >= this.maxLifetime) {
       this.lifetime = 0
-      spawners.bullet.spawn(this.x, this.y + 8)
+      spawners.play.bullet(this.x, this.y + 8)
     }
   }
 
@@ -47,7 +47,7 @@ class Bullet extends Entity {
   }
 
   onMapCollision({solveCollision}) {
-    if (this.dying) console.log('asdfkjhasdfkj');
+    if (this.dying) debugger
     solveCollision()
     this.secondPhase()
   }
@@ -66,7 +66,7 @@ class Bullet extends Entity {
   }
 
   secondPhase() {
-    this.setType('animations')
+    //this.setType('animations')
     this.dying = true
     this.setSize(8, 16)
     this.setPos(this.x, this.y - 5)

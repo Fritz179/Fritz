@@ -4,7 +4,8 @@ class Player extends Entity {
     this.setSize(16, 16)
     this.setPos(x, y)
     this.speed = 15
-    this.setVel(this.speed, this.speed)
+    // this.setVel(this.speed, this.speed)
+    this.setVel(0, 0)
     this.spriteDir = 0
     status.camera.follow(this)
     this.listen('onKey')
@@ -24,10 +25,10 @@ class Player extends Entity {
 
   onKey(input) {
     switch (input) {
-      case 'up': if (!this.moving) {this.setVel(0, -this.speed); this.spriteDir = 2;} break;
-      case 'right': if (!this.moving) {this.setVel(this.speed, 0); this.spriteDir = 3;} break;
-      case 'down': if (!this.moving) {this.setVel(0, this.speed); this.spriteDir = 0;} break;
-      case 'left': if (!this.moving) {this.setVel(-this.speed, 0); this.spriteDir = 1;} break;
+      case 'up': if (!this.isMoving) {this.setVel(0, -this.speed); this.spriteDir = 2;} break;
+      case 'right': if (!this.isMoving) {this.setVel(this.speed, 0); this.spriteDir = 3;} break;
+      case 'down': if (!this.isMoving) {this.setVel(0, this.speed); this.spriteDir = 0;} break;
+      case 'left': if (!this.isMoving) {this.setVel(-this.speed, 0); this.spriteDir = 1;} break;
       case 'p': console.log(this.x, this.y, this.xv, this.yv, this.realX, this.realY); break;
       case 'Escape': setCurrentStatus('mainMenu'); break;
     }

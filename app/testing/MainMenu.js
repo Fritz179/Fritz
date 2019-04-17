@@ -1,6 +1,7 @@
 class MainMenu extends Menu {
   constructor() {
     super()
+    this.listen('onKey')
   }
 
   onKey(input) {

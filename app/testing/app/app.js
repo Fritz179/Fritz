@@ -1,10 +1,6 @@
 let _preFunction = () => { }, _postFunction = () => { }, preStatusUpdate = new Set(), postStatusUpdate = new Set()
 let debugEnabled = false, status, currentStatus, statuses = {}, resizingCamera = true
-
-function reload() {
-  console.warn('reloading!');
-  status.camera.resize()
-}
+let masterStatus
 
 //init => called after p5 constructor and before preload
 p5.prototype.registerMethod('init', () => {
@@ -18,6 +14,8 @@ p5.prototype.registerMethod('init', () => {
     p5.prototype.sprites.defaultTexture = createDefaultTexture()
     createCanvas(windowWidth, windowHeight).parent('screen');
 
+    masterStatus = new MasterStatus()
+
     //call users setup
     setupCopy()
 
@@ -30,7 +28,7 @@ p5.prototype.registerMethod('init', () => {
       status._update()
 
       background(debugEnabled ? 51 : 0)
-      image(status.getSprite(x => x, y => y), status.x1, status.y1)
+      image(masterStatus.getSprite(), 0, 0)
 
       postStatusUpdate.forEach(fun => fun())
     }
@@ -49,47 +47,11 @@ p5.prototype.registerMethod('init', () => {
 p5.prototype.registerMethod('pre', () => { _preFunction() });
 p5.prototype.registerMethod('post', () => { _postFunction() });
 
-p5.prototype.createStatus = (statusName, Constructor, options) => {
-  //(Constructor, [options])
-  if (typeof statusName == 'function') return p5.prototype.createStatus(deCapitalize(statusName.name), statusName, Constructor)
-  if (statuses[statusName]) throw new Error(`Status ${statusName} already exists!`)
-
-  //(statusName, [options])
-  if (typeof Constructor != 'function') return p5.prototype.createStatus(statusName, Menu, Constructor)
-
-  //check if it extends Status
-  if (!(Constructor.prototype instanceof Status)) throw new Error(`${statusName} is not a instanceof Status: ${Constructor}`)
-  return statuses[statusName] = new Constructor(options)
-};
-
-p5.prototype.setCurrentStatus = (newStatus, ...args) => {
-  //check if the new status exist
-  if (!statuses[newStatus]) throw new Error(`Invalid Status: ${newStatus}`)
-
-  //create a function that runs only one time before the next statusUpdate
-  //if status is swapped while updating another status, for the rest of the update status points to the new status
-  function oneTime() {
-    //if there was a previous status, false only on first setCurrentStatus
-    if (status) {
-      status._post(...args)
-      p5.prototype.removeAllListeners()
-    }
-
-    //hot-swap
-    status = statuses[currentStatus = newStatus]
-
-    status._pre(...args)
-    status.camera.resize()
-
-    //remove the function once it has been called
-    preStatusUpdate.delete(oneTime)
-  }
-
-  preStatusUpdate.add(oneTime)
-}
-
 //resize camera of current status if window is resized
-window.windowResized = () => { if (status) status.camera.resize() }
+window.windowResized = () => {
+  resizeCanvas(windowWidth, windowHeight);
+  masterStatus.setSize(windowWidth, windowHeight)
+}
 
 //helper function, like object.assign but assign only if undefined in target
 function addDefaultOptions(target, source) {
@@ -120,6 +82,7 @@ function deCapitalize(string) {
 
 function createDefaultTexture() {
   let g = createGraphics(16, 16)
+  g.noSmooth()
   g.noStroke()
   g.fill(0)
   g.rect(0, 0, 8, 8)
@@ -128,19 +91,4 @@ function createDefaultTexture() {
   g.rect(8, 0, 16, 8)
   g.rect(0, 8, 8, 16)
   return g
-}
-
-function getCameraRatio(settings) {
-  let {ratio, cameraWidth, cameraHeight} = settings
-  if (ratio && cameraWidth && cameraHeight && cameraHeight * ratio == cameraWidth) return settings
-  else if (!ratio && cameraWidth && cameraHeight) ratio = cameraWidth / cameraHeight
-  else if (!cameraWidth && ratio && cameraHeight) cameraWidth = cameraHeight * ratio
-  else if (!cameraHeight && cameraWidth && ratio) cameraHeight = cameraWidth / ratio
-  else if (!cameraHeight && !cameraWidth && ratio) {
-    const {width, height} = window.screen
-    if (width / height == ratio) { cameraWidth = width, cameraHeight = height }
-    else if (width / height > ratio) { cameraWidth = height * ratio, cameraHeight = height }
-    else { cameraWidth = width, cameraHeight = width / cameraHeight }
-  } else throw new Error(`unable to crete camera, not enough parameters specified, minimun 2 (ratio, cameraWidth, cameraHeight)`)
-  return {ratio: ratio, cameraWidth: cameraWidth, cameraHeight: cameraHeight}
 }

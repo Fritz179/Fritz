@@ -1,4 +1,4 @@
-class Status extends Master {
+class Status extends Entity {
   constructor(statusName) {
     super()
     this.preFunctions = []
@@ -13,14 +13,23 @@ class Status extends Master {
     this.statusName = deCapitalize(this.constructor.name)
     this.sprite = menuSprites[this.statusName] || {}
 
+    this.listener = new Listener()
     this.camera = new Camera(this)
-    this.ecs = new ECS()
+    this.ecs = new ECS(this)
 
-    this._x = this._y = 0
+    this.spawn = this.ecs.spawn
+
+    this.camera.settings({w : 1920, h: 1080, mode: 'auto', overflow: 'hidden'})
+    this.setSize(1920, 1080)
   }
 
-  get x1() { return this.x + this.camera.canvas.xOff }
-  get y1() { return this.y + this.camera.canvas.yOff }
+  get w() { return this.camera ? this.camera.w : 0}
+  get h() { return this.camera ? this.camera.h : 0 }
+
+  set w(w) { return this.setSize(w, this.h) }
+  set h(h) { return this.setSize(this.w, h) }
+
+  setSize(w, h) { if (this.camera) this.camera.setSize(w, h) }
 
   addPreFunction(fun) { this.preFunctions.push(fun) }
   addPostFunction(fun) { this.postFunctions.push(fun) }
@@ -33,31 +42,6 @@ class Status extends Master {
   _fixedUpdate() { this.fixedUpdateFunctions.forEach(fun => fun()); this.ecs.fixedUpdate() }
 
   getSprite(getRealX, getRealY) { return this.camera.getSprite(getRealX, getRealY) }
-
-  spawn(entity) { p5.prototype.spawnOne() }
-
-  createMenu(Constructor, name, options = {}) {
-    console.log('asdfknasdhkjfhkjasdfkl');
-    //if the only parameter is a string, create default menu
-    if (typeof Constructor == 'string') return this.createMenu(Menu, Constructor)
-    if (!name) name = Constructor.name.toLowerCase()
-    const {statusName} = this
-
-    addDefaultOptions(options, {json: true, path: '/img/menus', mainImage: {}, cameraMode: 'auto', cameraOverflow: 'hidden'})
-
-    //create menu
-    const menu = new Constructor()
-    menu.status = status
-    menu.sprite = p5.prototype.menuSprites[statusName]
-
-
-    //listen to inputs
-    menu.listenInputs('click')
-
-    //add camera and addForegroundLayer
-    this.addCamera({cameraMode: 'auto', cameraOverflow: 'hidden', ratio: 16 / 9, cameraWidth: 1920})
-    this.camera.addForegroundLayer(menu._getSprite.bind(menu))
-  }
 }
 /*
   createMenu(String)

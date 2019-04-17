@@ -171,7 +171,7 @@ function setup() {
 //on update of ecs on onCollisionEntry add a function parameters => die => set flag they wonna die
 //unify onCollisionExit and onCollisionEntry to onCollission
 
-//file directory pattern: app\testing, !libraries, !_app, !app_1
+//file directory pattern: app\testing, !libraries, !_app, !app_1, !app_9_4
 
 //create class spawner, set some function like spawnrate, spawntype => word, point, area
 //remove changeParentName
@@ -186,3 +186,11 @@ function setup() {
 
 //x = 250, multiplierX = 3, xOff = 100 => 850
 //((850 - xOff) / multiplierX - xOff) / multiplierX
+
+
+//camera setSize => update graphic
+//or with set w => this.graphic.width
+//and with set h => this.graphic.height
+
+
+//!!!!CAMERA => LAYERS => CAMERARESIZED!!!!

@@ -1,36 +1,92 @@
-const entitiesToKill = []
-const entitiesToChange = new Map()
-
 p5.prototype.spawners = {}
 p5.prototype.pools = {}
 
 class ECS {
-  constructor()  {
+  constructor(parent)  {
     this.entities = new Set()
-    this.animations = new Set()
+    this.classes = { statuses: new Set() }
+
+    this._status = parent
+    this._listener = parent.listener
+    this.statusName = parent.statusName
+    this.spawners = p5.prototype.spawners[this.statusName] = []
+
+    this.entitiesToKill = new Map()
+  }
+
+  createSpawner(Constructor, key) {
+    if (typeof Constructor != 'function') throw new Error('Constructor must be a function!')
+    if (!(Constructor.prototype instanceof Entity)) throw new Error('Constructor must extend Entity!')
+
+    //check for key
+    if (!key) key = deCapitalize(Constructor.name)
+
+    if (this.classes[key]) throw new Error(`Invalid className: ${key}, it already exists!`)
+    this.classes[key] = new Set()
+
+    //return and add reference of spawner for maps
+    return p5.prototype.spawners[this.statusName][key] = this.spawners[key] = (...args) => this._addEntity(new Constructor(...args), key)
+  }
+
+  createSpawners(...spawners) {
+    spawners.forEach(spawner => this.createSpawner(spawner))
+  }
+
+  _addEntity(entity, name) {
+    //add it to the right class
+    this.entities.add(entity)
+    this.classes[name].add(entity)
+
+    //listen for its listeners
+    this._listener.addListener(entity, ...entity._toListenFor)
+
+    //add references to the entity
+    entity._status = this._status
+    entity._ecs = this
+  }
+
+  spawn(entity) {
+    //entity must extend Entity class
+    if (!(entity instanceof Entity)) throw new Error('Entity must extend Entity!')
+
+    //if its a status, add it without className distinction
+    if (entity instanceof Status) return this._addEntity(entity, 'statuses')
+
+    //check if classes set exist
+    const {name} = entity.constructor
+    if (!this.classes[name]) this.classes[name] = new Set()
+
+    this._addEntity(entity, name)
+  }
+
+  despawn(entity) {
+    this.entities.delete(entity)
+
+    for (let key in this.classes) {
+      this.classes[key].delete(entity)
+    }
+
+    this._listener.removeListener(entity)
   }
 
   update() {
     this.entities.forEach(entity => entity.update())
-    this.animations.forEach(animation => animation.update())
 
     this.killEntitiesToKill()
   }
 
   fixedUpdate() {
-    const {animations} = this
     const entities = [...this.entities]
-
-    //update all entitites, subStatus
-    animations.forEach(a => a.fixedUpdate())
 
     //fixedUpdate entities
     this.entities.forEach(e => {
       e.xv += e.xa; e.yv += e.ya
       e.x += e.xv; e.y += e.yv
-      p5.prototype.collideRectMap(e)
+      if (e._collideWithMap) p5.prototype.collideRectMap(e)
       e.fixedUpdate()
     })
+
+    this.killEntitiesToKill()
 
     //check collisons, for every entity
     for (let i = entities.length - 1; i >= 0; i--) {
@@ -62,32 +118,20 @@ class ECS {
 
   killEntitiesToKill() {
     //remove all entitiesToKill
-    entitiesToKill.forEach(entity => {
+    this.entitiesToKill.forEach(entity => {
       this.deleteEntity(entity)
     })
 
-    for (let [entity, to] of entitiesToChange) {
+    for (let [entity, to] of this.entitiesToKill) {
       if (this.deleteEntity(entity)) {
-        entity._parentName = to
-        this[to].add(entity)
+        if (to) this._addEntity(entity, to)
       } else {
         throw new Error(`entity not present in ecs!!`)
         debugger
       }
     }
 
-    entitiesToKill.splice(0)
-    entitiesToChange.clear()
-  }
-
-  deleteEntity(entity) {
-    p5.prototype.removeListener(entity)
-    return this.entities.delete(entity) || this.animations.delete(entity)
-  }
-
-  clearAllEntitites() {
-    this.entities.clear()
-    this.animations.clear()
+    this.entitiesToKill.clear()
   }
 }
 

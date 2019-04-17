@@ -11,56 +11,74 @@ const names = {
   Insert: 0,
 }
 
-//keep trak of all entities to listen for
-const listeners = {
-  onMouse: new Set(),
-  onMouseReleased: new Set(),
-  onMouseDragged: new Set(),
-  onKey: new Set(),
-  onKeyReleased: new Set(),
-  onClick: new Set(),
-  onClickDragged: new Set(),
-  onClickReleased: new Set()
-}
+const validListeners = ['onMouse', 'onMouseDragged', 'onMouseReleased', 'onClick', 'onClickDragged', 'onClickReleased', 'onKey', 'onKeyReleased']
 
-p5.prototype.addListener = (listener, ...toArr) => {
-  toArr.forEach(to => {
-    //if its a keyWord, expand it
-    if (to == 'all') return p5.prototype.addListener(listener, 'mouse', 'key', 'click')
-    if (to == 'mouse') return p5.prototype.addListener(listener, 'onMouse', 'onMouseDragged', 'onMouseReleased')
-    if (to == 'key') return p5.prototype.addListener(listener, 'onKey', 'onKeyReleased')
-    if (to == 'click') return p5.prototype.addListener(listener, 'onClick', 'onClickDragged', 'onClickReleased')
-
-    //check if event exists and has an EventHandler function
-    if (!listeners[to]) throw new Error(`Cannot listen to: ${to}, valid events: ${Object.keys(listeners)}`)
-    if (typeof listener[to] != 'function' && typeof listener[`_${to}`] != 'function') throw new Error(`Listener doesn't have a ${to}() function`)
-
-    //add listener
-    listeners[to].add(listener)
-  })
-}
-
-p5.prototype.removeListenerOf = (listener, ...toUnlisten) => {
-  toUnlisten.forEach(of => {
-    //check if event exists
-    if (!listeners[of]) throw new Error(`Cannot remove listener of: ${of}, valid events: ${Object.keys(listeners)}`)
-
-    //add entity
-    listeners[of].delete(listener)
-  })
-}
-
-p5.prototype.removeListener = listener => {
-  //loop trough all listeners clear it
-  for (let key in listeners) {
-    listeners[key].delete(listener)
+class Listener {
+  constructor() {
+    //keep trak of all entities to listen for
+    this.onMouse = new Set()
+    this.onMouseReleased = new Set()
+    this.onMouseDragged = new Set()
+    this.onKey = new Set()
+    this.onKeyReleased = new Set()
+    this.onClick = new Set()
+    this.onClickDragged = new Set()
+    this.onClickReleased = new Set()
+    this.subListeners = new Set()
   }
-}
 
-p5.prototype.removeAllListeners = () => {
-  //loop trough all listeners clear it
-  for (let key in listeners) {
-    listeners[key].clear()
+  addListener(listener, ...toArr) {
+    toArr.forEach(to => {
+      //if its a keyWord, expand it
+      if (to == 'all') return this.addListener(listener, 'mouse', 'key', 'click')
+      if (to == 'mouse') return this.addListener(listener, 'onMouse', 'onMouseDragged', 'onMouseReleased')
+      if (to == 'key') return this.addListener(listener, 'onKey', 'onKeyReleased')
+      if (to == 'click') return this.addListener(listener, 'onClick', 'onClickDragged', 'onClickReleased')
+
+      //check for subListener
+      if (to == 'subListeners' && listener.listener instanceof Listener) return this.subListeners.add(listener.listener)
+      if (to == 'subListeners') debugger
+      //check if event exists and has an EventHandler function
+      if (!validListeners.includes(to)) throw new Error(`Cannot listen to: ${to}, valid events: ${validListeners}`)
+
+      //check if listener has valid function
+      if (typeof listener[to] != 'function' && typeof listener[`_${to}`] != 'function') {
+        throw new Error(`Listener doesn't have a ${to}() function`)
+      }
+
+      //add listener
+      this[to].add(listener)
+    })
+  }
+
+  removeListenerOf(listener, ...toUnlisten) {
+    toUnlisten.forEach(of => {
+      //check if event exists
+      if (!validListeners.includes(of) || of != 'subListeners') throw new Error(`Cannot remove listener of: ${of}, valid events: ${validListeners}`)
+
+      //remove entity
+      this[of].delete(listener)
+    })
+  }
+
+  removeListener(listener) {
+    //loop trough all listeners clear it
+    validListeners.forEach(of => {
+      this[of].delete(listener)
+    })
+
+    //Also check if its a sublistener
+    this.subListeners.delete(listener)
+  }
+
+  removeAllListeners() {
+    //loop trough all listeners clear it
+    validListeners.forEach(of => {
+      this[of].clear()
+    })
+
+    //also remove all subListeners
+    this.subListeners.remove(listener)
   }
 }
 
@@ -70,48 +88,69 @@ p5.prototype.removeAllListeners = () => {
                           ///////////////////////
 
 
-window.mousePressed = () => {
-  //normal event
-  listeners.onMouse.forEach(entity => entity.onMouse())
-
-  //if the mouse is over the entity, call custom function
-  listeners.onClick.forEach(entity => {
-    if (p5.prototype.realMouseIsOver(entity)) {
-      entity.onClick()
-      entity._wasOnClick = true
-    }
+function handleEvent(eventName, listener, allowed = alwaysAllowed, args = []) {
+  //if the listener has 'sublisteners', recursively handle them
+  //else call it's eventName
+  listener[eventName].forEach(entity => {
+    if (allowed(entity)) entity[eventName](...args)
   })
+
+  listener.subListeners.forEach(sub => {
+    if (allowed(sub)) handleEvent(eventName, sub, allowed, args)
+  })
+}
+
+const alwaysAllowed = () => true
+
+
+window.mousePressed = () => {
+  //begin the loop to check all subListeners of onMouse
+  handleEvent('onMouse', masterStatus.listener)
+  handleEvent('onClick', masterStatus.listener, allowClick)
+
+  //helper function, keep loop only if realMouseIsOver the listener
+  function allowClick(entity) {
+    if (p5.prototype.realMouseIsOver(entity)) {
+      //add flag for onClickDragged and onClickReleased
+      listener._wasOnClick = true
+      //indicate that entity is allowed to be called
+      return true
+    }
+  }
 }
 
 window.mouseDragged = () => {
-  //normal event
-  listeners.onMouseDragged.forEach(entity => entity.onMouseDragged())
+  //begin the loop to check all subListeners of onMouseDragged
+  handleEvent('onMouseDragged', masterStatus.listener)
+  handleEvent('onClickDragged', masterStatus.listener, allowClickDragged)
 
-  //if the mouse was over the entity, call it's custom function
-  listeners.onClickDragged.forEach(entity => {
-    if (entity._wasOnClick) entity.onClickDragged()
-  })
+  //helper function, keep loop only if listener._wasOnClick
+  function allowClickDragged(entity) { return entity._wasOnClick }
 }
 
 window.mouseReleased = () => {
-  //normal event
-  listeners.onMouseReleased.forEach(entity => entity.onMouseReleased())
+  //begin the loop to check all subListeners of onMouseReleased
+  handleEvent('onMouseReleased', masterStatus.listener)
+  handleEvent('onClickReleased', masterStatus.listener, allowClickReleased)
 
-  //if the mouse was over the entity, call it's custom function
-  listeners.onClickReleased.forEach(entity => {
+  //helper function, keep loop only if listener._wasOnClick
+  function allowClickReleased(entity) {
     if (entity._wasOnClick) {
-      entity.onClickReleased()
+      //remove the _wasOnClick flag
       entity._wasOnClick = false
+      return true
     }
-  })
+  }
 }
 
 window.keyPressed = () => {
   if (key == '$') debugEnabled = !debugEnabled
 
-  listeners.onKey.forEach(entity => entity.onKey(names[key] || key))
+  //handle all the listeners
+  handleEvent('onKey', masterStatus.listener, alwaysAllowed, [names[key] || key])
 }
 
 window.keyReleased = () => {
-  listeners.onKeyReleased.forEach(entity => entity.onKeyReleased(names[key] || key))
+  //handle all the listeners
+  handleEvent('onKeyReleased', masterStatus.listener, alwaysAllowed, [names[key] || key])
 }
