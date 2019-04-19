@@ -5,11 +5,6 @@ class Camera extends Layer {
     this._status = parent
     this.layers = []
 
-    this.camera = createGraphics(100, 100)
-    this.camera.noSmooth()
-
-    this.setPos(0, 0)
-
     this.toFollow = false
     this.multiplierX = this.multiplierY = 1
     this.cameraWidth = this.cameraHeight = 100
@@ -18,47 +13,29 @@ class Camera extends Layer {
   }
 
   getSprite(oldRealX, oldRealY) {
-    //it gets resized only before drawing, this is to prevent resizing multiple without drawing
-    //resizing the p5 defaultCanvas0 also calls draw
-    if (this.resizedGraphic) this.resize()
-
     //center the camera, move it in the right position
     this.centerFollower()
-    const {x1, y1, xc, yc, x2, y2, multiplierX, multiplierY, camera, graphic, layers} = this
+
+    const {x1, y1, multiplierX, multiplierY, graphic, layers} = this
 
     //create new formula to get the realX and realY
-    const getRealX = x => oldRealX(x * multiplierX + canvas.xOff)
-    const getRealY = y => oldRealY(y * multiplierY + canvas.yOff)
+    const getRealX = x => oldRealX(x * multiplierX + this.x3)
+    const getRealY = y => oldRealY(y * multiplierY + this.y3)
 
-    graphic.strokeWeight(1)
-    graphic.fill(debugEnabled ? 30 : 0)
-    graphic.rect(-10, -10, graphic.width + 20, graphic.height + 20)
-    camera.clear()
+    graphic.background(0)
 
+    //draw every layer
     layers.forEach(layer => {
       const sprite = layer.getSprite(getRealX, getRealY)
-      camera.image(sprite, -x1 + layer.x1, -y1 + layer.y1)
+      graphic.image(sprite, -x1 + layer.x3, -y1 + layer.y3)
     })
 
-    //if the canvas alredy has the rigth dimensions, just return it
-    //otherwise draw it on the port
-    if (multiplierX == 1 && multiplierY == 1) {
-      return camera
-    } else {
-      const w = round(camera.width * multiplierX), h = round(camera.height * multiplierY)
-      //if (w != graphic.width || h != graphic.height) debugger
-
-      //draw and return it
-
-      graphic.image(camera, camera.xOff, camera.yOff, w, h)
-      return graphic
-    }
+    return this.graphic
   }
 
   noSmooth() {
     this.layers.forEach(layer => layer.graphic.noSmooth())
     this.graphic.noSmooth()
-    this.camera.noSmooth()
     noSmooth()
   }
 
@@ -73,13 +50,14 @@ class Camera extends Layer {
       if (camera.w) this.cameraWidth = camera.w
       if (camera.h) this.cameraHeight = camera.h
     }
+
     this.resize()
   }
 
   centerFollower() {
-    const {cameraWidth, cameraHeight, toFollow} = this
+    const {toFollow} = this
 
-    if (toFollow) this.setPos(toFollow.xc - cameraWidth / 2, toFollow.yc - cameraHeight / 2)
+    if (toFollow) this.center = toFollow.center
     else this.setCenter(this.w / 2, this.h / 2)
   }
 
@@ -87,7 +65,7 @@ class Camera extends Layer {
     this.resizedGraphic = false
 
     const {cameraWidth, cameraHeight, mode, overflow, graphic} = this
-    const w = graphic.width, h = graphic.height
+    const {w, h} = this._status
     let multiplierX, multiplierY
 
     if (mode == 'multiple') {
@@ -109,19 +87,20 @@ class Camera extends Layer {
 
     this.multiplierX = multiplierX
     this.multiplierY = multiplierY
-    this.camera.xOff = this.camera.yOff = 0
 
-    this.camera.remove()
     if (overflow == 'hidden') {
-      this.camera = createGraphics(cameraWidth, cameraHeight)
-      this.camera.xOff = round((w - cameraWidth * multiplierX) / 2)
-      this.camera.yOff = round((h - cameraHeight * multiplierY) / 2)
+      this.setSize(cameraWidth, cameraHeight)
+      const w2 = round((w - cameraWidth * multiplierX) / 2)
+      const h2 = round((h - cameraHeight * multiplierY) / 2)
+      this.setDiff(w2, h2)
+      this.setSpriteSize(cameraWidth * multiplierX, cameraHeight * multiplierY)
     } else if (overflow == 'display') {
-      this.camera = createGraphics(w, h)
+      this.setSize(w, h)
+      this.setDiff(0, 0)
+      this.setSpriteSize(w, h)
     } else {
       console.error('// TODO: overflow not hidder or display?');
     }
-    this.camera.noSmooth()
 
     this.layers.forEach(layer => {
       layer.setSize(cameraWidth, cameraHeight)
@@ -138,7 +117,7 @@ class Camera extends Layer {
 
     layer._status = this._status
     layer.camera = this
-    layer.setSize(this.camera.width, this.camera.height)
+    layer.setSize(this.w, this.h)
 
     this.layers.push(layer)
   }
@@ -146,7 +125,6 @@ class Camera extends Layer {
   addBackgroundLayer(img) { this.addLayer(new BackgroundLayer(img)) }
   addTileLayer() { this.addLayer(new TileLayer(this)) }
   addSpriteLayer() { this.addLayer(new SpriteLayer(this)) }
-
 }
 
 function getCameraSize(w, h, r) {

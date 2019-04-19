@@ -5,9 +5,15 @@ class Master {
     this.xa = this.ya = 0
     this.w = this.h = 16
     this.w2 = this.h2 = 0
+    this.w3 = this.h3 = 0
 
     this._getRealX = this._getRealY = pos => pos;
     this._status = this._ecs = null
+    this._collideWithMap = false
+    this._toCollideWith = []
+    this.name = deCapitalize(this.constructor.name)
+
+    this._toListenFor = []
   }
 
   setPos(x, y) { this.x = x; this.y = y; return this }
@@ -17,6 +23,7 @@ class Master {
   setSize(w, h) { this.w = w; this.h = h; return this }
   setCord({x1, y1, x2, y2}) { this.x = x1; this.y = y1; return this.setSize(x2 - x1, y2 - y1) }
   setDiff(w2, h2) { this.w2 = w2, this.h2 = h2; return this}
+  setSpriteSize(w3, h3) { this.w3 = w3, this.h3 = h3; return this}
 
   update() { }
   fixedUpdate() { }
@@ -51,32 +58,30 @@ class Master {
   set h1(h) { this.h = h }
   set x3(x) { this.x = w - this.w2 }
   set y3(y) { this.y = h - this.h2 }
+
+  collideWithMap(bool = true) { this._collideWithMap = bool }
+
+  listen(...toListen) { this._toListenFor = this._toListenFor.concat(toListen) }
+  setSprite(sprite) { this.sprite = sprite }
+  getSprite() { return this.sprite }
 }
 
 class Entity extends Master {
   constructor() {
     super()
 
-    this._name = deCapitalize(this.constructor.name)
-    this._toListenFor = []
-
     this._killed = false
-    this.sprite = sprites[this._name] || createDefaultTexture()
+    this.sprite = sprites[this.name] || createDefaultTexture()
   }
 
-  listen(...toListen) { this._toListenFor = this._toListenFor.concat(toListen) }
-  setSprite(sprite) { this.sprite = sprite }
-  getSprite() { return this.sprite }
+  die() { this.killed = true; this._ecs.entitiesToKill.set(this, false) }
 
-  die() { this._killed = true }
-
-  setType(type) {
-    console.error('// TODO: setType');
-    if (type != 'animations' && type != 'entitites') throw new Error(`Invalid new type: ${type}, available: animations, entitites`)
-
+  changeType(type) {
     this.killed = true
-    entitiesToChange.set(this, type)
+    this._ecs.entitiesToKill.set(this, type)
   }
+
+  collideWith(arr) { this._toCollideWith = arr }
 
   onCollision() { }
 

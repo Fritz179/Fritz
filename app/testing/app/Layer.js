@@ -52,7 +52,7 @@ class SpriteLayer extends Layer {
 
     graphic.clear()
     graphic.noFill()
-    graphic.strokeWeight(3)
+    graphic.strokeWeight(1)
     graphic.stroke(255, 0, 0)
 
     entities.forEach(e => {
@@ -61,7 +61,7 @@ class SpriteLayer extends Layer {
 
       if (p5.prototype.collideRectRect(this, e)) {
         //get the sprite and pos of the entity
-        let sprite = e.getSprite(), x = round(e.x3 - x1), y = round(e.y3 - y1)
+        let sprite = e.getSprite(getRealX, getRealY), x = round(e.x3 - x1), y = round(e.y3 - y1)
         //if a sprite is returned, draw it else if false is returned don't draw
         //but if nothing is retunred, throw an error
         if (sprite) graphic.image(sprite, x, y)
@@ -73,8 +73,8 @@ class SpriteLayer extends Layer {
         //if debugEnabled draw the hitbox
         if (debugEnabled) {
           graphic.rect(round(e.x - x1), round(e.y - y1), round(e.w - 1), round(e.h - 1))
-          graphic.line(round(e.x - x1), round(e.y - y1), round(e.x2 - 1 - x1), round(e.y2 - 1 - y1))
-          graphic.line(round(e.x - x1), round(e.y2 - 1 - y1), round(e.x2 - 1 - x1), round(e.y - y1))
+          // graphic.line(round(e.x - x1), round(e.y - y1), round(e.x2 - 1 - x1), round(e.y2 - 1 - y1))
+          // graphic.line(round(e.x - x1), round(e.y2 - 1 - y1), round(e.x2 - 1 - x1), round(e.y - y1))
         }
       }
     })
@@ -121,7 +121,7 @@ class TileLayer extends Layer {
     const xd = round((xc - this.w / 2) - x1 * s)
     const yd = round((yc - this.h / 2) - y1 * s)
     if (!Number.isInteger(x1) || !Number.isInteger(xd)) throw new Error(`Invalid tilelayer redraw, maybe map not parsed?`)
-    console.log(this.w, this.h);
+
     for (let y = 0; y < ym; y++) {
       for (let x = 0; x < xm; x++) {
         const i = xyi(x + x1, y + y1)

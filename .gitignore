@@ -3,10 +3,6 @@
 node_modules
 
 /app/testing/libraries
-/app/testing/_app
-/app/testing/app_1
-/app/testing/app_9_4
-/app/testing__
 /app/testing/img/old
 /app/public
 /videos

@@ -69,7 +69,7 @@ class Maps {
 
     for (key in maps.toSpawn) {
       key = key.toLowerCase()
-      if (!this.spawners[key]) throw new Error(`faled to load map ${name}, ${key} spawner not found:\n`, spawners)
+      if (!this.spawners[key]) throw new Error(`failed to load map ${name}, ${key} spawner not found:\n`, spawners)
       maps.toSpawn[key].forEach(args => {
         this.spawners[key](...args, this._status)
       })

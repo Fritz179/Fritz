@@ -43,20 +43,21 @@ class ECS {
     //add references to the entity
     entity._status = this._status
     entity._ecs = this
+    entity.name = name
   }
 
-  spawn(entity) {
+  spawn(entity, key) {
+    //if its a status, add it without className distinction
+    if (entity instanceof Status) return this._addEntity(entity, 'statuses')
+    
     //entity must extend Entity class
     if (!(entity instanceof Entity)) throw new Error('Entity must extend Entity!')
 
-    //if its a status, add it without className distinction
-    if (entity instanceof Status) return this._addEntity(entity, 'statuses')
-
     //check if classes set exist
-    const {name} = entity.constructor
-    if (!this.classes[name]) this.classes[name] = new Set()
+    if (!key) key = entity.constructor.name
+    if (!this.classes[key]) this.classes[key] = new Set()
 
-    this._addEntity(entity, name)
+    this._addEntity(entity, key)
   }
 
   despawn(entity) {
@@ -82,53 +83,52 @@ class ECS {
     this.entities.forEach(e => {
       e.xv += e.xa; e.yv += e.ya
       e.x += e.xv; e.y += e.yv
-      if (e._collideWithMap) p5.prototype.collideRectMap(e)
-      e.fixedUpdate()
     })
-
     this.killEntitiesToKill()
 
-    //check collisons, for every entity
-    for (let i = entities.length - 1; i >= 0; i--) {
-      //check all others entity
-      for (let j = i - 1; j >= 0; j--) {
-        //if they are colliding
-        if (p5.prototype.collideRectRect(entities[i], entities[j])) {
-          //create flags and check if they want to collide
-          let e1 = entities[i], e2 = entities[j], solve1 = true, solve2 = true
-          e1.onCollision({collider: e2, stopCollision: () => solve1 = false, stopOtherCollision: () => solve2 = false})
-          e2.onCollision({collider: e1, stopCollision: () => solve2 = false, stopOtherCollision: () => solve1 = false})
+    //collide entitiess with map
+    const {maps} = this._status
+    if (maps) entities.forEach(e => { if (e._collideWithMap) p5.prototype.collideRectMap(e, maps) })
+    this.killEntitiesToKill()
 
-          //depending on how they want to collide, collide them
-          if (solve1 && solve2) p5.prototype.solveRectRect(e1, e2)
-          else if (solve1) p5.prototype.solveRectIRect(e1, e2)
-          else if (solve2) p5.prototype.solveRectIRect(e2, e1)
+    //call fixedUpdate
+    entities.forEach(e => e.fixedUpdate())
+    this.killEntitiesToKill()
 
-          //if some died, skip loop properly
-          if (e1.killed && e2.killed) {i--; break}
-          else if (e1.killed) i--
-          else if (e2.killed) break
 
-          //once the loop was skipped, remove extra entity
-          this.killEntitiesToKill()
+    for (const e1 of entities) {
+      e1_killed: {
+        for (const collider of e1._toCollideWith) {
+          for (const e2 of this.classes[collider]) {
+            if (p5.prototype.collideRectRect(e1, e2)) {
+              //create flags and check if they want to collide
+              let solve1 = true, solve2 = true
+              e1.onCollision({collider: e2, stopCollision: () => solve1 = false, stopOtherCollision: () => solve2 = false})
+              e2.onCollision({collider: e1, stopCollision: () => solve2 = false, stopOtherCollision: () => solve1 = false})
+
+              //depending on how they want to collide, collide them
+              if (solve1 && solve2) p5.prototype.solveRectRect(e1, e2)
+              else if (solve1) p5.prototype.solveRectIRect(e1, e2)
+              else if (solve2) p5.prototype.solveRectIRect(e2, e1)
+
+              //remove extra entity
+              this.killEntitiesToKill()
+
+              if (e1._killed) break e1_killed
+            }
+          }
         }
       }
     }
   }
 
   killEntitiesToKill() {
-    //remove all entitiesToKill
-    this.entitiesToKill.forEach(entity => {
-      this.deleteEntity(entity)
-    })
-
     for (let [entity, to] of this.entitiesToKill) {
-      if (this.deleteEntity(entity)) {
-        if (to) this._addEntity(entity, to)
-      } else {
-        throw new Error(`entity not present in ecs!!`)
-        debugger
-      }
+      //remove all entitiesToKill
+      this.despawn(entity)
+
+      //add entity if the change type
+      if (to) this.spawn(entity, to)
     }
 
     this.entitiesToKill.clear()

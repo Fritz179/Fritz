@@ -9,10 +9,9 @@ class LevelSelection extends Menu {
   }
 
   onKey(input) {
-    switch (input) {
-      case '0': setCurrentStatus('play', 'level_0'); break;
-      case '1': setCurrentStatus('play', 'level_1'); break;
-    }
+    const int = parseInt(input)
+
+    if (!isNaN(int)) setCurrentStatus('play', `level_${int}`)
   }
 }
 
@@ -27,7 +26,7 @@ class LevelButton extends Button {
     //create custon sprite depending on the level it rappresents
     const sprite = this.sprite = createGraphics(300, 200)
     sprite.noSmooth()
-    
+
     this.setSize(300, 200)
 
     sprite.background(255, 255, 0)
@@ -41,6 +40,7 @@ class LevelButton extends Button {
 
   onClick() {
     console.log(this.level);
+    setCurrentStatus('play', `level_${this.level}`)
   }
 
   getSprite() {

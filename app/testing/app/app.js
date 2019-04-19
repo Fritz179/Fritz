@@ -28,7 +28,7 @@ p5.prototype.registerMethod('init', () => {
       status._update()
 
       background(debugEnabled ? 51 : 0)
-      image(masterStatus.getSprite(), 0, 0)
+      image(masterStatus.getSprite(x => x, y => y), 0, 0)
 
       postStatusUpdate.forEach(fun => fun())
     }

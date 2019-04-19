@@ -1,4 +1,4 @@
-class Status extends Entity {
+class Status extends Layer {
   constructor(statusName) {
     super()
     this.preFunctions = []
@@ -23,14 +23,6 @@ class Status extends Entity {
     this.setSize(1920, 1080)
   }
 
-  get w() { return this.camera ? this.camera.w : 0}
-  get h() { return this.camera ? this.camera.h : 0 }
-
-  set w(w) { return this.setSize(w, this.h) }
-  set h(h) { return this.setSize(this.w, h) }
-
-  setSize(w, h) { if (this.camera) this.camera.setSize(w, h) }
-
   addPreFunction(fun) { this.preFunctions.push(fun) }
   addPostFunction(fun) { this.postFunctions.push(fun) }
   addUpdateFunction(fun) { this.updateFunctions.push(fun) }
@@ -41,10 +33,22 @@ class Status extends Entity {
   _update() { this.updateFunctions.forEach(fun => fun()); this.ecs.update();}
   _fixedUpdate() { this.fixedUpdateFunctions.forEach(fun => fun()); this.ecs.fixedUpdate() }
 
-  getSprite(getRealX, getRealY) { return this.camera.getSprite(getRealX, getRealY) }
+  getSprite(oldRealX, oldRealY) {
+    if (this.resizedGraphic) {
+      this.camera.resize()
+      this.resizedGraphic = false
+    }
+
+    const sprite = this.camera.getSprite(oldRealX, oldRealY)
+
+    //if the canvas alredy has the rigth dimensions, just return it
+    //otherwise draw it on the port
+    if (sprite.width == this.w && sprite.height == this.h) {
+      return sprite
+    } else {
+      //draw and return it
+      this.graphic.image(sprite, this.camera.w2, this.camera.h2, this.camera.w3, this.camera.h3)
+    }
+    return this.graphic
+  }
 }
-/*
-  createMenu(String)
-  createMenu(Constructor)
-  createMenu(Constructor, String)
-*/

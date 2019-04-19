@@ -6,21 +6,11 @@ class Player extends Entity {
     this.speed = 15
     // this.setVel(this.speed, this.speed)
     this.setVel(0, 0)
+    this.collideWithMap()
     this.spriteDir = 0
     status.camera.follow(this)
     this.listen('onKey')
-  }
-
-  fixedUpdate() {
-    // console.log(this.sprite);
-  }
-
-  update() {
-    // console.log(this.x, this.y);
-    // if (this.y > maps.h * maps.s) this.y = 0
-    // if (this.y < 0) this.y = maps.h * maps.s
-    // if (this.x > maps.w * maps.s) this.x = 0
-    // if (this.x < 0) this.x = maps.w * maps.s
+    this.collideWith(['bullet', 'end', 'shooter'])
   }
 
   onKey(input) {
@@ -35,10 +25,10 @@ class Player extends Entity {
   }
 
   onCollision({collider, stopCollison, stopOtherCollision}) {
-    switch (collider.className) {
+    switch (collider.name) {
       case 'bullet': console.log('damaged'); break;
       case 'end': setCurrentStatus('levelSelection'); break;
-      default: console.log('colliding with', collider.className);
+      default: console.log('colliding with', collider.name, collider);
     }
   }
 

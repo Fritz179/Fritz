@@ -17,10 +17,6 @@ function setup() {
   setCurrentStatus('mainMenu')
 }
 
-function draw() {
-  //image(menuSprites.levelSelection.main, 0, 0)
-}
-
 class Play extends Game {
   constructor() {
     super()
@@ -28,46 +24,10 @@ class Play extends Game {
     this.pre = level => this.maps.setMap(level)
 
     this.ecs.createSpawners(Shooter, Bullet, Player, End)
+    this.listen('onMouse')
+  }
+
+  onMouse() {
+    console.log(this._getRealX(mouseX), this._getRealY(mouseY));
   }
 }
-
-
-
-// const options = {
-//   type: 'pacman',
-//   levels: true,
-//   tileWidth: 16,
-//   cameraMode: 'multiple',
-//   cameraOverflow: 'display',
-//   cameraRatio: 16 / 9,
-//   cameraWidth: 480
-// }
-// createSpawners(Shooter, Bullet, Player, End)
-// createGame('play', options)
-//
-// // let playerSpawner = createSpawner(Player), player
-//
-// function preload() {
-//   createMenu('mainMenu', {cameraRatio: 16 / 9})
-//   createMenu('levelSelection', {cameraRatio: 16 / 9}, LevelSelection)
-//   // createMenu('selectLevel', {cameraRatio: 16 / 9})
-//   loadSpriteSheet('tiles', {type: 'pacmanTiles', json: false})
-//   loadSpriteSheet('player')
-//   loadSpriteSheet('End')
-//   loadSpriteSheet('shooter')
-//   loadSpriteSheet('bullet', {type: 'animations'}, sprite => { sprites.bullet = sprite })
-//   loadAndSetMap('level_0', {namespace: 'play'})
-//   // loadMap('level_0')
-//   // loadMap('level_1')
-// }
-//
-// function setup() {
-//   changeStatus('mainMenu')
-//   // player = playerSpawner.spawn().setPos(16, 16)
-//   // follow(player)
-//   // listenInput(player, 'play')
-// }
-//
-// function draw() {
-//
-// }

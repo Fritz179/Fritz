@@ -36,7 +36,7 @@ class Listener {
       if (to == 'click') return this.addListener(listener, 'onClick', 'onClickDragged', 'onClickReleased')
 
       //check for subListener
-      if (to == 'subListeners' && listener.listener instanceof Listener) return this.subListeners.add(listener.listener)
+      if (to == 'subListeners' && listener.listener instanceof Listener) return this.subListeners.add(listener)
       if (to == 'subListeners') debugger
       //check if event exists and has an EventHandler function
       if (!validListeners.includes(to)) throw new Error(`Cannot listen to: ${to}, valid events: ${validListeners}`)
@@ -96,7 +96,7 @@ function handleEvent(eventName, listener, allowed = alwaysAllowed, args = []) {
   })
 
   listener.subListeners.forEach(sub => {
-    if (allowed(sub)) handleEvent(eventName, sub, allowed, args)
+    if (allowed(sub)) handleEvent(eventName, sub.listener, allowed, args)
   })
 }
 
@@ -112,7 +112,7 @@ window.mousePressed = () => {
   function allowClick(entity) {
     if (p5.prototype.realMouseIsOver(entity)) {
       //add flag for onClickDragged and onClickReleased
-      listener._wasOnClick = true
+      entity._wasOnClick = true
       //indicate that entity is allowed to be called
       return true
     }

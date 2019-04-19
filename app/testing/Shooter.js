@@ -35,6 +35,7 @@ class Bullet extends Entity {
     this.dying = false
     this.deadTime = 0
     this.maxDeadTime = 30
+    this.collideWithMap()
   }
 
   update() {
@@ -66,7 +67,7 @@ class Bullet extends Entity {
   }
 
   secondPhase() {
-    //this.setType('animations')
+    this.changeType('bullet_dying')
     this.dying = true
     this.setSize(8, 16)
     this.setPos(this.x, this.y - 5)

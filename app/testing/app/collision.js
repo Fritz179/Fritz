@@ -1,5 +1,5 @@
-p5.prototype.collideRectMap = rect => {
-  const {collisionMap, w, h, s} = status.maps
+p5.prototype.collideRectMap = (rect, maps) => {
+  const {collisionMap, w, h, s} = maps
 
   if (p5.prototype.rectInsideRect(rect, {x1: 0, y1: 0, x2: w * s, y2: h * s})) { //on Map
     //chex x-axis
