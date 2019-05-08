@@ -18,6 +18,7 @@ p5.prototype.registerMethod('init', () => {
 
     //call users setup
     setupCopy()
+    noSmooth()
 
     //set function to be always called before draw
     _preFunction = () => {
@@ -28,7 +29,10 @@ p5.prototype.registerMethod('init', () => {
       status._update()
 
       background(debugEnabled ? 51 : 0)
-      image(masterStatus.getSprite(x => x, y => y), 0, 0)
+
+      const sprite = masterStatus.getSprite(mouseX, mouseY)
+      const {x3, y3, x4, y4} = masterStatus
+      image(sprite, x3, y3, x4, y4)
 
       postStatusUpdate.forEach(fun => fun())
     }

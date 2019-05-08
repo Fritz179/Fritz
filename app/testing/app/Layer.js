@@ -17,7 +17,7 @@ class Layer extends Master {
   set h(h) { return this.setSize(this.w, h) }
 
   setSize(w, h) {
-    if (this.graphic) {
+    if (this.graphic && (this.graphic.width != w || this.graphic.height != h)) {
       this.graphic.remove()
       this.graphic = createGraphics(w, h)
       this.graphic.noSmooth()
@@ -26,8 +26,8 @@ class Layer extends Master {
     return this
   }
 
-  getSprite(getRealX, getRealY) {
-    this.update(getRealX, getRealY)
+  getSprite(getRealX, getRealY, getMouseX, getMouseY) {
+    this.update(getRealX, getRealY, getMouseX, getMouseY)
     return this.graphic
   }
 
@@ -43,8 +43,8 @@ class SpriteLayer extends Layer {
     this.ecs = parent._status.ecs
   }
 
-  update(getRealX, getRealY) {
-    this.setPos(this.camera.x1, this.camera.y1)
+  update(getMouseX, getMouseY) {
+    this.center = this.camera.center
 
     const {x1, y1} = this
     const {entities} = this.ecs
@@ -56,12 +56,12 @@ class SpriteLayer extends Layer {
     graphic.stroke(255, 0, 0)
 
     entities.forEach(e => {
-      e._getRealX = x => getRealX(x - x1)
-      e._getRealY = y => getRealY(y - y1)
+      e.mouseX = getMouseX - e.x1
+      e.mouseY = getMouseY - e.y1
 
       if (p5.prototype.collideRectRect(this, e)) {
         //get the sprite and pos of the entity
-        let sprite = e.getSprite(getRealX, getRealY), x = round(e.x3 - x1), y = round(e.y3 - y1)
+        let sprite = e.getSprite(getMouseX, getMouseY), x = round(e.x3 - x1), y = round(e.y3 - y1)
         //if a sprite is returned, draw it else if false is returned don't draw
         //but if nothing is retunred, throw an error
         if (sprite) graphic.image(sprite, x, y)
@@ -92,10 +92,18 @@ class TileLayer extends Layer {
     const {camera} = this
     const rect = {x1: camera.x1, y1: camera.y1, x2: camera.x1 + camera.cameraWidth, y2: camera.y1 + camera.cameraHeight}
 
-    if (!p5.prototype.rectInsideRect(rect, this)) {
-      if (debugEnabled) console.log('redrawing tileLayer');
-      this.redrawAll()
-    }
+    // if (!p5.prototype.rectInsideRect(rect, this)) {
+    //   console.log('redrawing tileLayer');
+    //   this.redrawAll()
+    // }
+    this.setPos(camera.x, camera.y)
+    this.graphic.clear()
+
+    this.maps.chunks.forEach((col, x) => {
+      col.forEach((chunk, y) => {
+        this.graphic.image(chunk.graphic, x * this.maps.chunkWidth - camera.x, y * this.maps.chunkHeight - camera.y)
+      })
+    })
   }
 
   redrawAll() {
@@ -106,6 +114,7 @@ class TileLayer extends Layer {
       //set new size
       const w = cameraWidth * 3, h = cameraHeight * 3
       this.setSize(w, h)
+      this.graphic.clear()
     }
 
     const graphic = this.graphic
@@ -125,7 +134,7 @@ class TileLayer extends Layer {
     for (let y = 0; y < ym; y++) {
       for (let x = 0; x < xm; x++) {
         const i = xyi(x + x1, y + y1)
-        if (i != -1) graphic.image(p5.prototype.sprites.tiles[graphicalMap[i]], x * s - xd, y * s - yd, s, s)
+        //if (i != -1) graphic.image(p5.prototype.sprites.tiles[graphicalMap[i]], x * s - xd, y * s - yd, s, s)
       }
     }
   }

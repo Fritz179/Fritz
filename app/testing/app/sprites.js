@@ -109,16 +109,17 @@ function parsePacmanTiles(img) {
     outer: cut(img, w * 4, 0, w, h),
     empty: cut(img, w * 5, 0, w, h),
     converter: {},
-    add: tile => {
+    collision: {},
+    add: (tile, collision) => {
       if (typeof sprite.tilePieces.converter[tile] == 'undefined') {
-        // console.log(sprite.length, tile);
         sprite.tilePieces.converter[tile] = sprite.length
+        sprite.tilePieces.collision[sprite.length] = collision
         sprite[sprite.length] = compose(tile.split('_'), w, h)
       }
     }
   }
 
-  sprite.tilePieces.add('empty_empty_empty_empty')
+  sprite.tilePieces.add('empty_empty_empty_empty', 0)
 
   function compose(pieces, w, h) {7
     let g =  createGraphics(w * 2, h * 2)

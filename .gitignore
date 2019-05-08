@@ -4,5 +4,8 @@ node_modules
 
 /app/testing/libraries
 /app/testing/img/old
+/app/testing/blocks
 /app/public
 /videos
+
+.eslintrc.json

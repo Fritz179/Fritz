@@ -49,7 +49,7 @@ class ECS {
   spawn(entity, key) {
     //if its a status, add it without className distinction
     if (entity instanceof Status) return this._addEntity(entity, 'statuses')
-    
+
     //entity must extend Entity class
     if (!(entity instanceof Entity)) throw new Error('Entity must extend Entity!')
 

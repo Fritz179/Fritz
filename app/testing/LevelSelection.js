@@ -3,9 +3,12 @@ class LevelSelection extends Menu {
     super()
     this.listen('onKey')
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       this.addButton(new LevelButton(i))
     }
+
+    this.setPos(960, 540)
+    this.setSize(960, 540)
   }
 
   onKey(input) {
@@ -39,7 +42,6 @@ class LevelButton extends Button {
   }
 
   onClick() {
-    console.log(this.level);
     setCurrentStatus('play', `level_${this.level}`)
   }
 

@@ -171,7 +171,7 @@ function setup() {
 //on update of ecs on onCollisionEntry add a function parameters => die => set flag they wonna die
 //unify onCollisionExit and onCollisionEntry to onCollission
 
-//file directory pattern: app\testing, !libraries, !_app, !app_1, !app_9_4
+//file directory pattern: app\testing, !libraries
 
 //create class spawner, set some function like spawnrate, spawntype => word, point, area
 //remove changeParentName
@@ -193,4 +193,8 @@ function setup() {
 //and with set h => this.graphic.height
 
 
-// TODO: conversions 
+// TODO: conversions
+
+//!!DELETE CHUNK GRAPCHICS ON DESPAWN!!
+//p5.Renderer2D.prototype.rImage
+//p5.Renderer2D.prototype.oImage

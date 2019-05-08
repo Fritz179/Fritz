@@ -12,22 +12,20 @@ class Camera extends Layer {
     this.overflow = 'display'
   }
 
-  getSprite(oldRealX, oldRealY) {
+  getSprite(oldMouseX, oldMouseY) {
     //center the camera, move it in the right position
     this.centerFollower()
 
-    const {x1, y1, multiplierX, multiplierY, graphic, layers} = this
-
-    //create new formula to get the realX and realY
-    const getRealX = x => oldRealX(x * multiplierX + this.x3)
-    const getRealY = y => oldRealY(y * multiplierY + this.y3)
+    const {x3, y3, multiplierX, multiplierY, graphic, layers} = this
+    const newMouseX = this._status.cameraX = oldMouseX / this._status.w1 * this.cameraWidth
+    const newMouseY = this._status.cameraY = oldMouseY / this._status.h1 * this.cameraHeight
 
     graphic.background(0)
 
     //draw every layer
     layers.forEach(layer => {
-      const sprite = layer.getSprite(getRealX, getRealY)
-      graphic.image(sprite, -x1 + layer.x3, -y1 + layer.y3)
+      const sprite = layer.getSprite(newMouseX, newMouseY)
+      graphic.image(sprite, -x3 + layer.x3, -y3 + layer.y3)
     })
 
     return this.graphic
@@ -58,7 +56,7 @@ class Camera extends Layer {
     const {toFollow} = this
 
     if (toFollow) this.center = toFollow.center
-    else this.setCenter(this.w / 2, this.h / 2)
+    else this.setPos(0, 0)
   }
 
   resize() {
@@ -90,13 +88,14 @@ class Camera extends Layer {
 
     if (overflow == 'hidden') {
       this.setSize(cameraWidth, cameraHeight)
-      const w2 = round((w - cameraWidth * multiplierX) / 2)
-      const h2 = round((h - cameraHeight * multiplierY) / 2)
-      this.setDiff(w2, h2)
-      this.setSpriteSize(cameraWidth * multiplierX, cameraHeight * multiplierY)
+      const marginX = round(w - cameraWidth * multiplierX)
+      const marginY = round(h - cameraHeight * multiplierY)
+      this._status.setDiff(marginX / 2, marginY / 2)
+      this._status.setSpriteSize(w - marginX, h - marginY)
     } else if (overflow == 'display') {
+      console.error('// TODO: display?');
       this.setSize(w, h)
-      this.setDiff(0, 0)
+      this._status.setDiff(0, 0)
       this.setSpriteSize(w, h)
     } else {
       console.error('// TODO: overflow not hidder or display?');

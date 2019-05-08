@@ -15,16 +15,16 @@ class Player extends Entity {
 
   onKey(input) {
     switch (input) {
-      case 'up': if (!this.isMoving) {this.setVel(0, -this.speed); this.spriteDir = 2;} break;
-      case 'right': if (!this.isMoving) {this.setVel(this.speed, 0); this.spriteDir = 3;} break;
-      case 'down': if (!this.isMoving) {this.setVel(0, this.speed); this.spriteDir = 0;} break;
-      case 'left': if (!this.isMoving) {this.setVel(-this.speed, 0); this.spriteDir = 1;} break;
+      case 'up': if (!this.isMoving) { this.setVel(0, -this.speed); this.spriteDir = 2; } break;
+      case 'right': if (!this.isMoving) { this.setVel(this.speed, 0); this.spriteDir = 3; } break;
+      case 'down': if (!this.isMoving) { this.setVel(0, this.speed); this.spriteDir = 0; } break;
+      case 'left': if (!this.isMoving) { this.setVel(-this.speed, 0); this.spriteDir = 1; } break;
       case 'p': console.log(this.x, this.y, this.xv, this.yv, this.realX, this.realY); break;
       case 'Escape': setCurrentStatus('mainMenu'); break;
     }
   }
 
-  onCollision({collider, stopCollison, stopOtherCollision}) {
+  onCollision({collider, stopCollision, stopOtherCollision}) {
     switch (collider.name) {
       case 'bullet': console.log('damaged'); break;
       case 'end': setCurrentStatus('levelSelection'); break;

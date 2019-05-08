@@ -1,5 +1,5 @@
 p5.prototype.collideRectMap = (rect, maps) => {
-  const {collisionMap, w, h, s} = maps
+  const {collisions, w, h, s} = maps
 
   if (p5.prototype.rectInsideRect(rect, {x1: 0, y1: 0, x2: w * s, y2: h * s})) { //on Map
     //chex x-axis
@@ -10,14 +10,14 @@ p5.prototype.collideRectMap = (rect, maps) => {
     if (rect.xv > 0) { //right
       x = floor(rect.x2 / s)
       do {
-        if (collisionMap[y * w + x] & 8) rect._onMapCollision('right', x, y, s)
+        if (collisions[maps.tileAt(x, y)] & 8) rect._onMapCollision('right', x, y, s)
         y += 1
       } while (y < y2)
 
     } else if (rect.xv < 0) { //left
       x = floor(rect.x1 / s)
       do {
-        if (collisionMap[y * w + x] & 2) rect._onMapCollision('left', x, y, s)
+        if (collisions[maps.tileAt(x, y)] & 2) rect._onMapCollision('left', x, y, s)
         y += 1
       } while (y < y2)
     }
@@ -32,14 +32,14 @@ p5.prototype.collideRectMap = (rect, maps) => {
     if (rect.yv > 0) { //bottom
       y = floor(rect.y2 / s)
       do {
-        if (collisionMap[y * w + x] & 1) rect._onMapCollision('bottom', x, y, s)
+        if (collisions[maps.tileAt(x, y)] & 1) rect._onMapCollision('bottom', x, y, s)
         x += 1
       } while (x < x2)
 
     } else if (rect.yv < 0) { //top
       y = floor(rect.y1 / s)
       do {
-        if (collisionMap[y * w + x] & 4) rect._onMapCollision('top', x, y, s)
+        if (collisions[maps.tileAt(x, y)] & 4) rect._onMapCollision('top', x, y, s)
         x += 1
       } while (x < x2)
     }
@@ -81,6 +81,6 @@ p5.prototype.collidePointRect = (a, b) => {
   return a.x < b.x2 && a.x > b.x1 && a.y < b.y2 && a.y > b.y1
 }
 
-p5.prototype.realMouseIsOver = entity => {
-  return p5.prototype.collidePointRect({x: mouseX, y: mouseY}, {x1: entity.realX, y1: entity.realY, x2: entity.realX2, y2: entity.realY2})
+p5.prototype.realMouseIsOver = a => {
+  return a.mouseX > 0 && a.mouseY > 0 && a.mouseX < a.w && a.mouseY < a.h
 }

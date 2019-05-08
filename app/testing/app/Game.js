@@ -3,7 +3,9 @@ class Game extends Status {
     super()
 
     this.gameType = type
-    this.maps = new Maps(this)
+    this.maps = new LevelMaps(this)
+
+    this.addUpdateFunction(() => this.maps.update())
 
     if (type == 'pacman') {
       this.maps.settings({tileWidth, type})
@@ -15,4 +17,10 @@ class Game extends Status {
       throw new Error(`unknown game type: ${type}`)
     }
   }
+
+  get mapX() { return this.cameraX + this.camera.x }
+  get mapY() { return this.cameraY + this.camera.y }
+
+  get tileX() { return this.mapX / this.maps.s | 0 }
+  get tileY() { return this.mapY / this.maps.s | 0 }
 }

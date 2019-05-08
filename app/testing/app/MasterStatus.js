@@ -21,7 +21,7 @@ class MasterStatus extends Status {
   }
 
   setCurrentStatus(newStatus, ...args) {
-    console.log(newStatus);
+    console.log(`New Status: ${newStatus}`);
     //check if the new status exist
     if (!this.statuses[newStatus]) throw new Error(`Invalid Status: ${newStatus}`)
 

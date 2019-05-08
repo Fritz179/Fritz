@@ -24,6 +24,14 @@ class Shooter extends Entity {
   onCollision({stopCollision}) {
     stopCollision()
   }
+
+  onChuckUnload() {
+    return [this.x, this.y, this.r]
+  }
+
+  onOffscreen() {
+    return false
+  }
 }
 
 class Bullet extends Entity {
@@ -71,5 +79,13 @@ class Bullet extends Entity {
     this.dying = true
     this.setSize(8, 16)
     this.setPos(this.x, this.y - 5)
+  }
+
+  onOffscreen() {
+    return true
+  }
+
+  onChuckUnload() {
+    return true
   }
 }
