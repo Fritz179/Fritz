@@ -15,10 +15,17 @@ p5.prototype.registerMethod('init', () => {
     createCanvas(windowWidth, windowHeight).parent('screen');
 
     masterStatus = new MasterStatus()
+    
+    window.cameraSettings = settings => {
+      if (typeof settings.smooth == 'boolean') {
+        if (settings.smooth) smooth()
+        else noSmooth()
+      }
+      masterStatus.cameraSettings(settings)
+    }
 
     //call users setup
     setupCopy()
-    noSmooth()
 
     //set function to be always called before draw
     _preFunction = () => {
@@ -30,9 +37,10 @@ p5.prototype.registerMethod('init', () => {
 
       background(debugEnabled ? 51 : 0)
 
-      const sprite = masterStatus.getSprite(mouseX, mouseY)
+      const sprite = masterStatus.getSprite(() => mouseX, () => mouseY, () => pmouseX, () => pmouseY)
       const {x3, y3, x4, y4} = masterStatus
-      image(sprite, x3, y3, x4, y4)
+
+      image(sprite, x3, y3)
 
       postStatusUpdate.forEach(fun => fun())
     }
@@ -85,14 +93,14 @@ function deCapitalize(string) {
 }
 
 function createDefaultTexture() {
-  let g = createGraphics(16, 16)
+  let g = createGraphics(256, 256)
   g.noSmooth()
   g.noStroke()
   g.fill(0)
-  g.rect(0, 0, 8, 8)
-  g.rect(8, 8, 16, 16)
+  g.rect(0, 0, 128, 128)
+  g.rect(128, 128, 256, 256)
   g.fill(255, 0, 255)
-  g.rect(8, 0, 16, 8)
-  g.rect(0, 8, 8, 16)
+  g.rect(128, 0, 256, 128)
+  g.rect(0, 128, 128, 256)
   return g
 }

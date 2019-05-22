@@ -3,7 +3,6 @@ class Layer extends Master {
     super()
 
     this.graphic = createGraphics(100, 100)
-    this.graphic.noSmooth()
     this.resizedGraphic = true;
 
     this.camera = null
@@ -20,7 +19,12 @@ class Layer extends Master {
     if (this.graphic && (this.graphic.width != w || this.graphic.height != h)) {
       this.graphic.remove()
       this.graphic = createGraphics(w, h)
-      this.graphic.noSmooth()
+
+      if (this.camera) {
+        if (this.camera._toSmooth) this.graphic.smooth()
+        else this.graphic.noSmooth()
+      }
+
       this.resizedGraphic = true;
     }
     return this
@@ -43,7 +47,7 @@ class SpriteLayer extends Layer {
     this.ecs = parent._status.ecs
   }
 
-  update(getMouseX, getMouseY) {
+  update(getMouseX, getMouseY, getPmouseX, getPmouseY) {
     this.center = this.camera.center
 
     const {x1, y1} = this
@@ -56,12 +60,14 @@ class SpriteLayer extends Layer {
     graphic.stroke(255, 0, 0)
 
     entities.forEach(e => {
-      e.mouseX = getMouseX - e.x1
-      e.mouseY = getMouseY - e.y1
+      e._mouseX = () => getMouseX() - e.x1
+      e._mouseY = () => getMouseY() - e.y1
+      e._pmouseX = () => getPmouseX() - e.x1
+      e._pmouseY = () => getPmouseY() - e.y1
 
       if (p5.prototype.collideRectRect(this, e)) {
         //get the sprite and pos of the entity
-        let sprite = e.getSprite(getMouseX, getMouseY), x = round(e.x3 - x1), y = round(e.y3 - y1)
+        let sprite = e.getSprite(getMouseX, getMouseY, getPmouseX, getPmouseY), x = round(e.x3 - x1), y = round(e.y3 - y1)
         //if a sprite is returned, draw it else if false is returned don't draw
         //but if nothing is retunred, throw an error
         if (sprite) graphic.image(sprite, x, y)
@@ -85,7 +91,7 @@ class TileLayer extends Layer {
   constructor(parent) {
     super()
 
-    this.maps = parent._status.maps
+    this.maps = parent._status
   }
 
   update() {
@@ -150,7 +156,20 @@ class BackgroundLayer extends Layer {
   update() {
     if (this.resizedGraphic) {
       this.resizedGraphic = false
-      this.graphic.image(this.img, 0, 0, this.graphic.width, this.graphic.height)
+
+      if (this.camera._toSmooth) this.graphic.smooth()
+      else this.graphic.noSmooth()
+      this.redraw()
     }
+  }
+
+  redraw() {
+    this.graphic.image(this.img, 0, 0, this.graphic.width, this.graphic.height)
+  }
+
+  setImg(img) {
+    this.img = img
+    this.setSize(img.width, img.height)
+    this.redraw()
   }
 }

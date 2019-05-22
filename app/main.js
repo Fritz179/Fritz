@@ -4,8 +4,16 @@ const app = express()
 
 app.use(express.static(__dirname + '/testing'))
 
-app.get('*', (req, res) => {
-  res.sendFile(__dirname + '/testing/index.html')
+app.get('Terraria', (req, res) => {
+  res.sendFile(__dirname + '/testing/Terraria/index.html')
+})
+
+app.get('Amazon', (req, res) => {
+  res.sendFile(__dirname + '/testing/Terraria/index.html')
+})
+
+app.get('Block_Racer', (req, res) => {
+  res.sendFile(__dirname + '/testing/Block_Racer/index.html')
 })
 
 const Server = app.listen(process.env.PORT || 1234, () => {

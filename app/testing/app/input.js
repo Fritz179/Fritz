@@ -11,7 +11,7 @@ const names = {
   Insert: 0,
 }
 
-const validListeners = ['onMouse', 'onMouseDragged', 'onMouseReleased', 'onClick', 'onClickDragged', 'onClickReleased', 'onKey', 'onKeyReleased']
+const validListeners = ['onMouse', 'onMouseDragged', 'onMouseReleased', 'onClick', 'onClickDragged', 'onClickReleased', 'onKey', 'onKeyReleased', 'onWheel']
 
 class Listener {
   constructor() {
@@ -24,6 +24,7 @@ class Listener {
     this.onClick = new Set()
     this.onClickDragged = new Set()
     this.onClickReleased = new Set()
+    this.onWheel = new Set()
     this.subListeners = new Set()
   }
 
@@ -120,6 +121,7 @@ window.mousePressed = () => {
 }
 
 window.mouseDragged = () => {
+
   //begin the loop to check all subListeners of onMouseDragged
   handleEvent('onMouseDragged', masterStatus.listener)
   handleEvent('onClickDragged', masterStatus.listener, allowClickDragged)
@@ -153,4 +155,12 @@ window.keyPressed = () => {
 window.keyReleased = () => {
   //handle all the listeners
   handleEvent('onKeyReleased', masterStatus.listener, alwaysAllowed, [names[key] || key])
+}
+
+window.mouseWheel = event => {
+  //handle weel event
+  handleEvent('onWheel', masterStatus.listener, alwaysAllowed, Math.sign(event.delta))
+
+  //prevent default
+  return false
 }

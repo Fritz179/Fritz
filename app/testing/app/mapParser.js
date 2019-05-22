@@ -13,12 +13,13 @@ const originalMapJson = {}
 p5.prototype.loadMap = (name, options = {}, callback) => {
   addDefaultOptions(options, {path: '/levels'})
 
-  if (originalMapJson[name]) console.warn(`Map already loaded: ${name}`);
+  if (originalMapJson[name] && typeof callback == 'function') callback(originalMapJson[name])
   else {
     //load map and save it
     loadJSON(options.src || `.${options.path}/${name}.json`, json => {
-      addDefaultOptions(json, {name: name})
+      addDefaultOptions(json, {name})
       originalMapJson[name] = json
+
       if (typeof callback == 'function') callback(json)
     }, e => {
       console.log(e);
@@ -56,7 +57,7 @@ function parseMap(json, type) {
   if (json.s) maps.s = json.s
   maps.name = json.name
   maps.toSpawn = json.toSpawn
-
+  console.log(maps);
   return maps
 }
 

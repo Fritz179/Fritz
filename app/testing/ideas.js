@@ -198,3 +198,12 @@ function setup() {
 //!!DELETE CHUNK GRAPCHICS ON DESPAWN!!
 //p5.Renderer2D.prototype.rImage
 //p5.Renderer2D.prototype.oImage
+
+
+//Maps
+
+//tile => a
+//block => name => 'stone'
+//tile(offset = 0, length = 1) => 0 = a, 1 = b, 2 = c, 3 = d
+//setTile(a, b, c, d)
+//setBlock(name, spritePos?)

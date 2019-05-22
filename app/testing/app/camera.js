@@ -10,35 +10,33 @@ class Camera extends Layer {
     this.cameraWidth = this.cameraHeight = 100
     this.mode = 'auto'
     this.overflow = 'display'
+    this._toSmooth = false
   }
 
-  getSprite(oldMouseX, oldMouseY) {
+  getSprite(oldMouseX, oldMouseY, oldPmouseX, oldPmouseY) {
     //center the camera, move it in the right position
     this.centerFollower()
 
     const {x3, y3, multiplierX, multiplierY, graphic, layers} = this
-    const newMouseX = this._status.cameraX = oldMouseX / this._status.w1 * this.cameraWidth
-    const newMouseY = this._status.cameraY = oldMouseY / this._status.h1 * this.cameraHeight
+
+    const newMouseX = this._status._cameraX = () => oldMouseX() / this._status.w1 * this.cameraWidth
+    const newMouseY = this._status._cameraY = () => oldMouseY() / this._status.h1 * this.cameraHeight
+    const newPmouseX = this._status._pcameraX = () => oldPmouseX() / this._status.w1 * this.cameraWidth
+    const newPmouseY = this._status._pcameraY = () => oldPmouseY() / this._status.h1 * this.cameraHeight
 
     graphic.background(0)
 
     //draw every layer
     layers.forEach(layer => {
-      const sprite = layer.getSprite(newMouseX, newMouseY)
+      const sprite = layer.getSprite(newMouseX, newMouseY, newPmouseX, newPmouseY)
       graphic.image(sprite, -x3 + layer.x3, -y3 + layer.y3)
     })
 
     return this.graphic
   }
 
-  noSmooth() {
-    this.layers.forEach(layer => layer.graphic.noSmooth())
-    this.graphic.noSmooth()
-    noSmooth()
-  }
-
   settings(settings = {}) {
-    let {w, h, r, mode, overflow} = settings
+    let {w, h, r, mode, overflow, smooth} = settings
 
     if (mode) this.mode = mode
     if (overflow) this.overflow = overflow
@@ -49,14 +47,30 @@ class Camera extends Layer {
       if (camera.h) this.cameraHeight = camera.h
     }
 
+    if (typeof smooth == 'boolean' && smooth != this._toSmooth) {
+      this._toSmooth = smooth
+      this.reSmooth()
+    }
+
     this.resize()
+  }
+
+  reSmooth() {
+    const smooth = this._toSmooth
+
+    if (smooth) this.graphic.smooth()
+    else this.graphic.noSmooth()
+
+    this.layers.forEach(layer => {
+      if (smooth) layer.graphic.smooth()
+      else layer.graphic.noSmooth()
+    })
   }
 
   centerFollower() {
     const {toFollow} = this
 
     if (toFollow) this.center = toFollow.center
-    else this.setPos(0, 0)
   }
 
   resize() {
@@ -67,8 +81,15 @@ class Camera extends Layer {
     let multiplierX, multiplierY
 
     if (mode == 'multiple') {
-      multiplierX = (w - (w % cameraWidth)) / cameraWidth
-      multiplierY = (h - (h % cameraHeight)) / cameraHeight
+      //if the camera is bigger then the status (multiplier >= 1)
+      if (w >= cameraWidth && h >= cameraHeight) {
+        multiplierX = (w - (w % cameraWidth)) / cameraWidth
+        multiplierY = (h - (h % cameraHeight)) / cameraHeight
+      } else { // if camera is smaller (multiplier < 1 => 0.5, 0.25, 0.125)
+        multiplierX = 1 / 2 ** ((cameraWidth - (cameraWidth % w)) / w)
+        multiplierY = 1 / 2 ** ((cameraHeight - (cameraHeight % h)) / h)
+      }
+
       multiplierX = multiplierY = multiplierX < multiplierY ? multiplierX : multiplierY
     } else if (mode == 'auto') {
       multiplierX = w / cameraWidth
@@ -104,6 +125,8 @@ class Camera extends Layer {
     this.layers.forEach(layer => {
       layer.setSize(cameraWidth, cameraHeight)
     })
+
+    this.reSmooth()
   }
 
   follow(e) {
@@ -118,12 +141,17 @@ class Camera extends Layer {
     layer.camera = this
     layer.setSize(this.w, this.h)
 
+    if (this._toSmooth) layer.graphic.smooth()
+    else layer.graphic.noSmooth()
+
     this.layers.push(layer)
+
+    return layer
   }
 
-  addBackgroundLayer(img) { this.addLayer(new BackgroundLayer(img)) }
-  addTileLayer() { this.addLayer(new TileLayer(this)) }
-  addSpriteLayer() { this.addLayer(new SpriteLayer(this)) }
+  addBackgroundLayer(img) { return this.addLayer(new BackgroundLayer(img)) }
+  addTileLayer() { return this.addLayer(new TileLayer(this)) }
+  addSpriteLayer() { return this.addLayer(new SpriteLayer(this)) }
 }
 
 function getCameraSize(w, h, r) {

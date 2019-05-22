@@ -14,6 +14,7 @@ class Master {
     this.name = deCapitalize(this.constructor.name)
 
     this._toListenFor = []
+    this.sprite = null
   }
 
   setPos(x, y) { this.x = x; this.y = y; return this }
@@ -58,6 +59,16 @@ class Master {
   set h1(h) { this.h = h }
   set x3(x) { this.x = w - this.w2 }
   set y3(y) { this.y = h - this.h2 }
+
+  get mouseX() { return this._mouseX() || 0 }
+  get mouseY() { return this._mouseY() || 0 }
+  get pmouseX() { return this._pmouseX() || 0 }
+  get pmouseY() { return this._pmouseY() || 0 }
+
+  _mouseX() { }
+  _mouseY() { }
+  _pmouseX() { }
+  _pmouseY() { }
 
   collideWithMap(bool = true) { this._collideWithMap = bool }
 

@@ -4,23 +4,40 @@ class LevelSelection extends Menu {
     this.listen('onKey')
 
     for (let i = 0; i < 3; i++) {
-      this.addButton(new LevelButton(i))
+      this.addButton(new LevelButton(this, i))
     }
 
     this.setPos(960, 540)
     this.setSize(960, 540)
+
+    this.loading = false
+  }
+
+  pre() {
+    this.loading = false
   }
 
   onKey(input) {
     const int = parseInt(input)
 
-    if (!isNaN(int)) setCurrentStatus('play', `level_${int}`)
+    if (!isNaN(int)) this.load(int)
+  }
+
+  load(level) {
+    if (this.loading) return
+
+    this.loading = true
+
+    loadMap(`level_${level}`, {}, json => {
+      setCurrentStatus('play', json)
+    })
   }
 }
 
 class LevelButton extends Button {
-  constructor(level) {
+  constructor(parent, level) {
     super()
+    this._status = parent
     this.level = level
 
     //set the position depending on the level
@@ -28,7 +45,6 @@ class LevelButton extends Button {
 
     //create custon sprite depending on the level it rappresents
     const sprite = this.sprite = createGraphics(300, 200)
-    sprite.noSmooth()
 
     this.setSize(300, 200)
 
@@ -42,7 +58,7 @@ class LevelButton extends Button {
   }
 
   onClick() {
-    setCurrentStatus('play', `level_${this.level}`)
+    this._status.load(this.level)
   }
 
   getSprite() {

@@ -8,11 +8,12 @@ class ECS {
 
     this._status = parent
     this._listener = parent.listener
-    this.statusName = parent.statusName
     this.spawners = p5.prototype.spawners[this.statusName] = []
 
     this.entitiesToKill = new Map()
   }
+
+  get statusName() { return this._status.statusName }
 
   createSpawner(Constructor, key) {
     if (typeof Constructor != 'function') throw new Error('Constructor must be a function!')
@@ -70,6 +71,18 @@ class ECS {
     this._listener.removeListener(entity)
   }
 
+  despawnAll() {
+    this.entities.forEach(entity => {
+      this._listener.removeListener(entity)
+    })
+
+    this.entities.clear()
+
+    for (let key in this.classes) {
+      this.classes[key].clear()
+    }
+  }
+
   update() {
     this.entities.forEach(entity => entity.update())
 
@@ -87,8 +100,7 @@ class ECS {
     this.killEntitiesToKill()
 
     //collide entitiess with map
-    const {maps} = this._status
-    if (maps) entities.forEach(e => { if (e._collideWithMap) p5.prototype.collideRectMap(e, maps) })
+    if (this._status.chunks) entities.forEach(e => { if (e._collideWithMap) p5.prototype.collideRectMap(e, this._status) })
     this.killEntitiesToKill()
 
     //call fixedUpdate

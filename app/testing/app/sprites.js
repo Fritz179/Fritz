@@ -57,7 +57,7 @@ p5.prototype.loadSpriteSheet = async (name, options = {}, callback) => {
 function startImg(name, options) {
   addDefaultOptions(options, {path: './img/sprites', format: 'png'})
   return new Promise(resolve => {
-    loadImage(options.src || `.${options.path}/${name}.${options.format}`, img => {
+    loadImage(options.src || `${options.path}/${name}.${options.format}`, img => {
       //load img
       resolve(img)
     }, (e) => {
@@ -74,7 +74,7 @@ function startJSON(name, options) {
   if (!options.json) return false
 
   return new Promise(resolve => {
-    loadJSON(options.jsonPath || `.${options.path}/${name}.json`, json => {
+    loadJSON(options.jsonPath || `${options.path}/${name}.json`, json => {
       //get json and return it
       resolve(json)
     }, e => {
@@ -86,12 +86,18 @@ function startJSON(name, options) {
 
 function parseSpriteSheet(img, json, options) {
   if (options.type == 'pacmanTiles') return parsePacmanTiles(img)
+  else if (options.type == 'tiles') return parseNormalTiles(img, json)
   else if (options.type == 'animations') {
     if (!json) return img
     if (!json.animations) throw new Error(`No animation key on json of:\n ${json}, options:\n ${options}`)
     return parseAnimation(img, json)
   }
-  console.log(img, json, options);
+
+  console.error('Cannot parse: ', img, json, options);
+}
+
+function parseNormalTiles(img, json) {
+  console.log(img, json);
 }
 
 function parsePacmanTiles(img) {

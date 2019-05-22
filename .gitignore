@@ -3,8 +3,10 @@
 node_modules
 
 /app/testing/libraries
-/app/testing/img/old
-/app/testing/blocks
+/app/testing/app_
+/app/testing/terraria
+/app/testing/block_racer/blocks
+/app/testing/block_racer/img/old
 /app/public
 /videos
 

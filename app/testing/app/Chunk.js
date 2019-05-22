@@ -1,38 +1,25 @@
 class Chunk extends Layer {
-  constructor(parent, w = 16, h = 16) {
+  constructor(parent) {
     super()
-    this._map = parent
-    this._status = parent._status
+    this._status = parent
 
     this.buffer = null
     this.view = null
 
     this.sprites = sprites.tiles
 
-    this.settings({w, h})
+    const w = this.chunkWidth = parent.chunkWidth || 16
+    const h = this.chunkHeight = parent.chunkHeight || 16
+
+    this.setSize(w * this.tileWidth, h * this.tileWidth)
+    this.graphic.background(255, 0, 255)
   }
 
-  settings(options = {}) {
-    const {w, h} = options
-
-    if (w || h) {
-      if (!w) w = this.chunkWidth
-      if (!h) h = this.chunkHeight
-
-      this.chunkWidth = w
-      this.chunkHeight = h
-
-      this.setSize(w * this.s, h * this.s)
-      this.graphic.background(255, 255, 0)
-    }
-  }
-
-  get s() { return this._map.s }
-  set s(s) { console.warn(`Cannot set s: ${s} of chunk!!`) }
+  get tileWidth() { return this._status.tileWidth }
 
   update() {
     const {tile, updater, x, y} = this
-
+    
     if (tile) {
       for (let xOff = 0; xOff < this.chunkWidth; xOff++) {
         tile.x = x + xOff
@@ -53,7 +40,7 @@ class Chunk extends Layer {
     if (!a) a = this.view.getUint8((y * this.chunkWidth + x) * 4)
     if (!b) b = this.view.getUint8((y * this.chunkWidth + x) * 4 + 1)
 
-    this.graphic.image(this.sprites[b], x * this.s, y * this.s)
+    this.graphic.image(this.sprites[b], x * this.tileWidth, y * this.tileWidth)
   }
 }
 
