@@ -19,7 +19,7 @@ class Chunk extends Layer {
 
   update() {
     const {tile, updater, x, y} = this
-    
+
     if (tile) {
       for (let xOff = 0; xOff < this.chunkWidth; xOff++) {
         tile.x = x + xOff

@@ -15,7 +15,7 @@ p5.prototype.registerMethod('init', () => {
     createCanvas(windowWidth, windowHeight).parent('screen');
 
     masterStatus = new MasterStatus()
-    
+
     window.cameraSettings = settings => {
       if (typeof settings.smooth == 'boolean') {
         if (settings.smooth) smooth()

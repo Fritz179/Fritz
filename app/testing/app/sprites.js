@@ -97,7 +97,23 @@ function parseSpriteSheet(img, json, options) {
 }
 
 function parseNormalTiles(img, json) {
-  console.log(img, json);
+  let {x, y, w, h, tiles} = json
+  const {width, height} = img
+  const sprite = []
+
+  tiles.forEach((tile, i) => {
+    sprite[i] = cut(img, x, y, w, h)
+
+    //go to next tile, move x and y
+    x += w
+    if (x >= width) {
+      x = 0
+      y += h
+      if (y >= height) throw new Error('outside image boundry!')
+    }
+  })
+
+  return sprite
 }
 
 function parsePacmanTiles(img) {

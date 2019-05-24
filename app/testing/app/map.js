@@ -1,17 +1,17 @@
 class MapGame extends Game {
-  constructor(parent) {
+  constructor(tileWidth = 16) {
     super()
 
     this.chunks = []
     this.chunkWidth = this.chunkHeight = 16
-    this.tileWidth = 16
+    this.tileWidth = tileWidth
 
     this.updater = []
 
     this.addUpdateFunction(() => { this.updateChunks() })
     this.camera.addTileLayer()
     this.camera.addSpriteLayer()
-    
+
   }
 
   get tileX() { return this.mapX / this.tileWidth | 0 }
@@ -19,7 +19,7 @@ class MapGame extends Game {
 
   get tile() { return this.tileAt(this.tileX, this.tileY)}
   get block() { return this.blockAt(this.tileX, this.tileY)}
-  set tile(tile) { this.setTileAt(this.tileX, this.tileY, tile)}
+  set tile(tile) { this.setTileAt(this.tileX, tFhis.tileY, tile)}
   set block(block) { this.setBlockAt(this.tileX, this.tileY, block)}
 
   tileAt(x, y, offset = 0, length = 2) {
@@ -60,14 +60,16 @@ class MapGame extends Game {
   }
 
   updateChunks() {
-    this.chunks.forEach(col => {
-      col.forEach(chunk => {
-        chunk.update()
-      })
-    })
+    for (let x in this.chunks) {
+      const col = this.chunks[x]
+
+      for (let y in col) {
+        col[y].update()
+      }
+    }
   }
 
-  loadChunkAt(chunkX, chunkY, map) {
+  setChunkAt(chunkX, chunkY, map) {
     //create new chunk
     const chunk = new Chunk(this)
 
@@ -75,7 +77,8 @@ class MapGame extends Game {
     const {w, h, graphicalMap} = map
 
     //check if chunk size is right
-    if (w != chunkWidth || h != chunkHeight) throw new Error(`Invalid chunkWidth!!`)
+    if (chunkWidth * chunkHeight != graphicalMap.length) throw new Error(`Invalid graphicalMap length!! ${graphicalMap.length}`)
+    if (w != chunkWidth || h != chunkHeight) throw new Error(`Invalid chunkWidth!!, ${w, h}`)
 
     //create view, add the updater
     chunk.buffer = new ArrayBuffer(w * h * 4)
@@ -105,8 +108,19 @@ class MapGame extends Game {
     }
   }
 
-  unloadChunk(chunk) {
+  unloadChunk(x, y) {
+    const {chunks} = this
+    delete chunks[x][y]
 
+    let flag = true
+    for (let yOff in chunks[x]) {
+      if (chunks[x][yOff]) {
+        flag = false
+        break;
+      }
+    }
+
+    if (flag) delete chunks[x]
   }
 
   deleteChunk(chunk) {
@@ -125,7 +139,7 @@ class MapGame extends Game {
     this.chunkHeight = map.h
 
     //load chunk
-    this.loadChunkAt(0, 0, map)
+    this.setChunkAt(0, 0, map)
 
     // TODO: change collision definition
     this.collisions = sprites.tiles.tilePieces.collision
@@ -133,59 +147,45 @@ class MapGame extends Game {
 }
 
 class ChunkGame extends MapGame {
-  constructor() {
-    super()
+  constructor(tileWidth) {
+    super(tileWidth)
 
     this.chunkX = this.chunkY = null
     this.preW = this.preH = 3
     this.postW = this.postH = 4
+
+    this.collision = [0, 15] // TODO: remove this garbage...
+    this.addUpdateFunction(this.updateChunkBoarder.bind(this))
   }
 
-  update() {
-    const {chunkWidth, chunkHeight, preW, preH, postW, postH, chunks, s} = this
-    let left = 0, right = 0, top = 0, bottom = 0
-    let changed = false
+  loadChunkAt() { throw new Error('Map does not have a loadChunkAt, if intentional use MapGame insted') }
+
+  updateChunkBoarder() {
+    const {chunkWidth, chunkHeight, preW, preH, postW, postH, chunks, tileWidth} = this
 
     let {x, y} = this.camera.center
-    x = x / s / chunkWidth | 0
-    y = y / s / chunkHeight | 0
+    x = floor(x / tileWidth / chunkWidth)
+    y = floor(y / tileWidth / chunkHeight)
 
-    if (this.chunkX != x) {
-      const dir = Math.sign(x - this.chunkX) //-1 => going left, 1 => going right
-
-      left = x - (dir > 0 ? postW : preW)
-      right = x + (dir < 0 ? postW : preW)
-
+    if (this.chunkX != x || this.chunkY != y) {
       this.chunkX = x
-      changed = true
-    }
-
-    if (this.chunkY != y) {
-      const dir = Math.sign(y - this.chunkY) //-1 => going up, 1 => going down
-
-      top = y - dir > 0 ? postH : preH
-      bottom = y + dir < 0 ? postH : preH
-
       this.chunkY = y
-      changed = true
-    }
 
-    if (changed) {
-      for (let x = left; x <= right; x++) {
-        if (!chunks[x]) chunks[x] = []
+      for (let xOff = -preW; xOff <= preW; xOff++) {
+        if (!chunks[x + xOff]) chunks[x + xOff] = []
 
-        for (let y = top; y <= bottom; y++) {
-          if (!chunks[x][y]) chunks[x][y] = this.loadChunk(x, y)
+        for (let yOff = -preH; yOff <= preH; yOff++) {
+          if (!chunks[x + xOff][y + yOff]) this.setChunkAt(x + xOff, y + yOff, this.loadChunkAt(x + xOff, y + yOff))
         }
       }
 
-      chunks.forEach((col, x) => {
-        col.forEach((chunk, y) => {
-          if (x < left || x > right || y < top || y > bottom) {
-            this.unloadChunk(x, y)
-          }
-        })
-      })
+      for (let xOff in chunks) {
+        const col = chunks[xOff]
+
+        for (let yOff in col) {
+          if (x - xOff < -postW || x - xOff > postW || y - yOff < -postH || y - yOff > postH) this.unloadChunk(xOff, yOff)
+        }
+      }
     }
 
     this.updateChunks()

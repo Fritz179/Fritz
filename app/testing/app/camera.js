@@ -70,7 +70,10 @@ class Camera extends Layer {
   centerFollower() {
     const {toFollow} = this
 
-    if (toFollow) this.center = toFollow.center
+    if (toFollow) {
+      const {x, y} = toFollow.center
+      this.center = {x: floor(x), y: floor(y)}
+    }
   }
 
   resize() {
@@ -101,7 +104,7 @@ class Camera extends Layer {
       multiplierX = w / cameraWidth
       multiplierY = h / cameraHeight
     } else {
-      console.error('// TODO: cameraMode not multiple or auto or original or strech?');
+      console.error('CameraMode not multiple or auto or original or strech?');
     }
 
     this.multiplierX = multiplierX
@@ -114,12 +117,12 @@ class Camera extends Layer {
       this._status.setDiff(marginX / 2, marginY / 2)
       this._status.setSpriteSize(w - marginX, h - marginY)
     } else if (overflow == 'display') {
-      console.error('// TODO: display?');
+      console.error('Display?');
       this.setSize(w, h)
       this._status.setDiff(0, 0)
       this.setSpriteSize(w, h)
     } else {
-      console.error('// TODO: overflow not hidder or display?');
+      console.error('Overflow not hidder or display?');
     }
 
     this.layers.forEach(layer => {

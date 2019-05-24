@@ -26,6 +26,8 @@ class Master {
   setDiff(w2, h2) { this.w2 = w2, this.h2 = h2; return this}
   setSpriteSize(w3, h3) { this.w3 = w3, this.h3 = h3; return this}
 
+  addVel(xv, yv) { this.xv += xv; this.yv += yv; return this  }
+
   update() { }
   fixedUpdate() { }
 
