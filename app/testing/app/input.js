@@ -11,6 +11,8 @@ const names = {
   Insert: 0,
 }
 
+p5.prototype.isDown = key => p5.prototype.keyIsDown(names[key])
+
 const validListeners = ['onMouse', 'onMouseDragged', 'onMouseReleased', 'onClick', 'onClickDragged', 'onClickReleased', 'onKey', 'onKeyReleased', 'onWheel']
 
 class Listener {
@@ -159,7 +161,7 @@ window.keyReleased = () => {
 
 window.mouseWheel = event => {
   //handle weel event
-  handleEvent('onWheel', masterStatus.listener, alwaysAllowed, Math.sign(event.delta))
+  handleEvent('onWheel', masterStatus.listener, alwaysAllowed, [Math.sign(event.delta)])
 
   //prevent default
   return false

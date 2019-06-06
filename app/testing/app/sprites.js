@@ -158,7 +158,7 @@ function parsePacmanTiles(img) {
 function parseAnimation(img, json) {
   const sprite = {}
   json.animations.forEach(animation => {
-    const {x, y, w, h, action, xOff = 0, yOff = 0, mirror = json.mirror || false, ultraMirror = json.ultraMirror || false} = animation
+    const {x, y, w, h, xd, yd, action, xOff = 0, yOff = 0, mirror = json.mirror, ultraMirror = json.ultraMirror} = animation
     sprite[action] = []
 
     if (animation.recursive) {
@@ -171,28 +171,28 @@ function parseAnimation(img, json) {
         let y1 = y + h * Math.floor((x + w * i) / wrap)
         if (!Number.isInteger(x1) || !Number.isInteger(y1) || !action) throw new Error(`invalid arguments for ${name} sprite`)
         if (ultraMirror) {
-          sprite[action][i][0] = cut(img, x1, y1, w, h)
-          sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h))
-          sprite[action][i][2] = rotate90(rotate90(cut(img, x1, y1, w, h)))
-          sprite[action][i][3] = unRotate(cut(img, x1, y1, w, h))
+          sprite[action][i][0] = cut(img, x1, y1, w, h, xd, yd)
+          sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h, xd, yd))
+          sprite[action][i][2] = rotate90(rotate90(cut(img, x1, y1, w, h, xd, yd)))
+          sprite[action][i][3] = unRotate(cut(img, x1, y1, w, h, xd, yd))
         } else if (mirror) {
-          sprite[action][i][0] = cut(img, x1, y1, w, h)
-          sprite[action][i][1] = flipH(cut(img, x1, y1, w, h))
+          sprite[action][i][0] = cut(img, x1, y1, w, h, xd, yd)
+          sprite[action][i][1] = flipH(cut(img, x1, y1, w, h, xd, yd))
         } else {
-          sprite[action][i] = cut(img, x1, y1, w, h)
+          sprite[action][i] = cut(img, x1, y1, w, h, xd, yd)
         }
       }
     } else {
       if (ultraMirror) {
-        sprite[action][0] = cut(img, x, y, w, h)
-        sprite[action][1] = rotate90(cut(img, x, y, w, h))
-        sprite[action][2] = rotate90(rotate90(cut(img, x, y, w, h)))
-        sprite[action][3] = unRotate(cut(img, x, y, w, h))
+        sprite[action][0] = cut(img, x, y, w, h, xd, yd)
+        sprite[action][1] = rotate90(cut(img, x, y, w, h, xd, yd))
+        sprite[action][2] = rotate90(rotate90(cut(img, x, y, w, h, xd, yd)))
+        sprite[action][3] = unRotate(cut(img, x, y, w, h, xd, yd))
       } else if (mirror) {
-        sprite[action][0] = cut(img, x, y, w, h)
+        sprite[action][0] = cut(img, x, y, w, h, xd, yd)
         sprite[action][1] = flipH(cut(img, x, y, w, h))
       } else {
-        sprite[action] = cut(img, x, y, w, h)
+        sprite[action] = cut(img, x, y, w, h, xd, yd)
       }
     }
   })
@@ -200,10 +200,12 @@ function parseAnimation(img, json) {
   return sprite
 }
 
-function cut(img, x, y, w, h) {
+function cut(img, x, y, w, h, xd, yd) {
   let g = createGraphics(w, h)
   g.noSmooth()
   g.image(img, 0, 0, w, h, x, y, w, h)
+  g.deltaX = xd
+  g.deltaY = yd
   return g
 }
 
@@ -213,6 +215,8 @@ function rotate90(img) {
   g.noSmooth()
   g.rotate(HALF_PI)
   g.image(img, 0, -h, w, h, 0, 0, w, h)
+  g.deltaX = img.deltaX
+  g.deltaY = img.deltaY
   return g
 }
 
@@ -222,6 +226,8 @@ function unRotate(img) {
   g.noSmooth()
   g.rotate(-HALF_PI)
   g.image(img, -w, 0, w, h, 0, 0, w, h)
+  g.deltaX = img.deltaX
+  g.deltaY = img.deltaY
   return g
 }
 
@@ -231,6 +237,8 @@ function flipH(img) {
   g.noSmooth()
   g.scale(-1, 1)
   g.image(img, -w, 0, w, h, 0, 0, w, h)
+  g.deltaX = img.deltaX
+  g.deltaY = img.deltaY
   return g
 }
 
@@ -240,5 +248,7 @@ function flipV(img) {
   g.noSmooth()
   g.scale(1, -1)
   g.image(img, 0, -h, w, h, 0, 0, w, h)
+  g.deltaX = img.deltaX
+  g.deltaY = img.deltaY
   return g
 }

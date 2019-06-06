@@ -14,12 +14,12 @@ class MapGame extends Game {
 
   }
 
-  get tileX() { return this.mapX / this.tileWidth | 0 }
-  get tileY() { return this.mapY / this.tileWidth | 0 }
+  get tileX() { return floor(this.mapX / this.tileWidth) }
+  get tileY() { return floor(this.mapY / this.tileWidth) }
 
   get tile() { return this.tileAt(this.tileX, this.tileY)}
   get block() { return this.blockAt(this.tileX, this.tileY)}
-  set tile(tile) { this.setTileAt(this.tileX, tFhis.tileY, tile)}
+  set tile(tile) { this.setTileAt(this.tileX, this.tileY, tile)}
   set block(block) { this.setBlockAt(this.tileX, this.tileY, block)}
 
   tileAt(x, y, offset = 0, length = 2) {
@@ -29,12 +29,8 @@ class MapGame extends Game {
 
     //get chunk, cordinate
     const {chunkWidth, chunkHeight} = this
-    let chunkX = x / chunkWidth
-    let chunkY = y / chunkHeight
-    if (chunkX < 0) chunkX--
-    if (chunkY < 0) chunkY--
-    chunkX |= 0
-    chunkY |= 0
+    const chunkX = floor(x / chunkWidth)
+    const chunkY = floor(y / chunkHeight)
 
     const i = (y - chunkY * chunkHeight) * chunkWidth + (x - chunkX * chunkWidth)
 
@@ -53,10 +49,35 @@ class MapGame extends Game {
     }
   }
 
+  tileAtPos(x, y) {
+    return this.tileAt(floor(x / this.tileWidth), floor(y / this.tileWidth))
+  }
+
   blockAt(x, y) {
     const id = this.tileAt(x, y, 0, 1)
 
     return id
+  }
+
+  setTileAt(x, y, a, b, c, d) {
+    //get chunk, cordinate
+    const {chunkWidth, chunkHeight} = this
+    const chunkX = floor(x / chunkWidth)
+    const chunkY = floor(y / chunkHeight)
+
+    const i = (y - chunkY * chunkHeight) * chunkWidth + (x - chunkX * chunkWidth)
+
+    //chenk if chunx exists and is loaded
+    if (!this.chunks[chunkX]) return -1
+    if (!this.chunks[chunkX][chunkY]) return -1
+    if (!this.chunks[chunkX][chunkY].view) return -1
+
+    this.chunks[chunkX][chunkY].view.setUint16(i * 4, a)
+    if (b) this.chunks[chunkX][chunkY].view.setUint8(i * 4 + 1, b)
+    if (c) this.chunks[chunkX][chunkY].view.setUint16(i * 4 + 2, c)
+    if (d) this.chunks[chunkX][chunkY].view.setUint8(i * 4 + 3, d)
+
+    this.chunks[chunkX][chunkY].drawTileI(i)
   }
 
   updateChunks() {
@@ -110,6 +131,7 @@ class MapGame extends Game {
 
   unloadChunk(x, y) {
     const {chunks} = this
+    chunks[x][y].graphic.remove()
     delete chunks[x][y]
 
     let flag = true
@@ -154,7 +176,6 @@ class ChunkGame extends MapGame {
     this.preW = this.preH = 3
     this.postW = this.postH = 4
 
-    this.collision = [0, 15] // TODO: remove this garbage...
     this.addUpdateFunction(this.updateChunkBoarder.bind(this))
   }
 

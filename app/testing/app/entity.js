@@ -99,10 +99,10 @@ class Entity extends Master {
   onCollision() { }
 
   _onMapCollision(side, x, y, s) {
-    if (debugEnabled) console.log(side, x, y, s, typeof this.onMapCollision == 'function');
+    // if (debugEnabled) console.log(side, x, y, s, typeof this.onMapCollision == 'function');
 
     if (typeof this.onMapCollision == 'function') {
-      this.onMapCollision({solveCollision: solveCollision.bind(this)})
+      this.onMapCollision({solveCollision: solveCollision.bind(this), side, x, y, s})
     } else {
       solveCollision.call(this)
     }
@@ -119,6 +119,11 @@ class Entity extends Master {
   }
 
   get isMoving() { return this.xv || this.yv }
+  get isOnGround() {
+    const tiles = [...getIntersectingTiles({x1: this.x1, x2: this.x2, y1: this.y2, y2: this.y2}, this._status)]
+    return tiles.some(t => [1, 2, 3].includes(t))
+  }
+  get isOn() { console.log('// TODO: isOn'); }
 }
 
 p5.prototype.Master = Master

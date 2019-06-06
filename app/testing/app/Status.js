@@ -34,6 +34,8 @@ class Status extends Layer {
 
   pre() { }
   post() { }
+  update() { }
+  fixedUpdate() { }
 
   addPreFunction(fun) { this.preFunctions.push(fun) }
   addPostFunction(fun) { this.postFunctions.push(fun) }
@@ -42,8 +44,8 @@ class Status extends Layer {
 
   _pre(...args) { this.preFunctions.forEach(fun => fun(...args)); this.pre(...args) }
   _post(...args) { this.postFunctions.forEach(fun => fun(...args)); this.post(...args) }
-  _update() { this.updateFunctions.forEach(fun => fun()); this.ecs.update();}
-  _fixedUpdate() { this.fixedUpdateFunctions.forEach(fun => fun()); this.ecs.fixedUpdate() }
+  _update() { this.updateFunctions.forEach(fun => fun()); this.ecs.update(); this.update();}
+  _fixedUpdate() { this.fixedUpdateFunctions.forEach(fun => fun()); this.ecs.fixedUpdate(); this.fixedUpdate(); }
 
   cameraSettings(settings) { this.camera.settings(settings) }
 
@@ -77,7 +79,7 @@ class Status extends Layer {
 
     } else {
       //draw and return it
-      this.graphic.image(sprite, 0, 0, this.w3, this.h3)
+      this.graphic.rImage(sprite, 0, 0, this.w3, this.h3)
     }
     return this.graphic
   }
@@ -88,16 +90,16 @@ class Status extends Layer {
 // status.x3 | .y3 => draw on screen
 // status.x4 | .y4 => draw on screen
 
-//status.w1 | .h1 => box on screen (widht, height)
-//status.w2 | .h2 => diff on screen (xDiff, yDiff)
-//status.w3 | .h3 => draw on screen (widht, height)
+// status.w1 | .h1 => box on screen (widht, height)
+// status.w2 | .h2 => diff on screen (xDiff, yDiff)
+// status.w3 | .h3 => draw on screen (widht, height)
 
 
-//camera.x1 | .y1 => pos in world
-//camera.x2 | .y2 => pos in world
-//camera.x3 | .y3 => pos in view (unused)
-//camera.x4 | .y4 => pos in view (unused)
+// camera.x1 | .y1 => pos in world
+// camera.x2 | .y2 => pos in world
+// camera.x3 | .y3 => pos in view (unused)
+// camera.x4 | .y4 => pos in view (unused)
 
-//camera.w1 | h1 => box in world
-//camera.w2 | h2 => diferenza nal draw (?)
-//camera.w3 | h3 => ? nal draw (?)
+// camera.w1 | h1 => box in world
+// camera.w2 | h2 => diferenza nal draw (?)
+// camera.w3 | h3 => ? nal draw (?)

@@ -40,7 +40,14 @@ class Chunk extends Layer {
     if (!a) a = this.view.getUint8((y * this.chunkWidth + x) * 4)
     if (!b) b = this.view.getUint8((y * this.chunkWidth + x) * 4 + 1)
 
-    this.graphic.image(this.sprites[b], x * this.tileWidth, y * this.tileWidth)
+    this.graphic.rImage(this.sprites[b], x * this.tileWidth, y * this.tileWidth)
+  }
+
+  drawTileI(i, a, b) {
+    const x = i % this.chunkWidth
+    const y = (i - x) / this.chunkWidth
+
+    this.drawTile(x, y, a, b)
   }
 }
 

@@ -67,10 +67,10 @@ class SpriteLayer extends Layer {
 
       if (p5.prototype.collideRectRect(this, e)) {
         //get the sprite and pos of the entity
-        let sprite = e.getSprite(getMouseX, getMouseY, getPmouseX, getPmouseY), x = round(e.x3 - x1), y = round(e.y3 - y1)
+        let sprite = e.getSprite(getMouseX, getMouseY, getPmouseX, getPmouseY), x = e.x3 - x1, y = e.y3 - y1
         //if a sprite is returned, draw it else if false is returned don't draw
         //but if nothing is retunred, throw an error
-        if (sprite) graphic.image(sprite, x, y)
+        if (sprite) graphic.rImage(sprite, x + (sprite.deltaX || 0), y + (sprite.deltaY || 0))
         else if (sprite !== false) {
           console.error('Illegal return of getSprite: ', e);
           throw new Error('If no sprite must be drawn, return false')
@@ -78,9 +78,9 @@ class SpriteLayer extends Layer {
 
         //if debugEnabled draw the hitbox
         if (debugEnabled) {
-          graphic.rect(round(e.x - x1), round(e.y - y1), round(e.w - 1), round(e.h - 1))
-          // graphic.line(round(e.x - x1), round(e.y - y1), round(e.x2 - 1 - x1), round(e.y2 - 1 - y1))
-          // graphic.line(round(e.x - x1), round(e.y2 - 1 - y1), round(e.x2 - 1 - x1), round(e.y - y1))
+          graphic.rRect(e.x1 - x1, e.y1 - y1, e.w1 - 1, e.h1 - 1)
+          // graphic.rLine(e.x - x1, e.y - y1, e.x2 - 1 - x1, e.y2 - 1 - y1)
+          // graphic.rLine(e.x - x1, e.y2 - 1 - y1, e.x2 - 1 - x1, e.y - y1)
         }
       }
     })
@@ -110,8 +110,8 @@ class TileLayer extends Layer {
       const col = this.maps.chunks[x]
 
       for (let y in col) {
-        this.graphic.image(col[y].graphic, x * w - camera.x, y * h - camera.y)
-        if (debugEnabled) this.graphic.rect(x * w - camera.x, y * h - camera.y, w, h)
+        this.graphic.rImage(col[y].graphic, x * w - camera.x, y * h - camera.y)
+        if (debugEnabled) this.graphic.rRect(x * w - camera.x, y * h - camera.y, w, h)
       }
     }
   }
@@ -135,7 +135,7 @@ class BackgroundLayer extends Layer {
   }
 
   redraw() {
-    this.graphic.image(this.img, 0, 0, this.graphic.width, this.graphic.height)
+    this.graphic.rImage(this.img, 0, 0, this.graphic.width, this.graphic.height)
   }
 
   setImg(img) {

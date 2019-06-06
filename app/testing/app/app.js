@@ -2,6 +2,27 @@ let _preFunction = () => { }, _postFunction = () => { }, preStatusUpdate = new S
 let debugEnabled = false, status, currentStatus, statuses = {}, resizingCamera = true
 let masterStatus
 
+//add new function for all canvases, grapchics and video
+p5.prototype.rImage = function (img, ...pos) {
+
+  //get array of positions, map them to round
+  //resume normal function call
+  this.image(img, ...pos.map(p => round(p)))
+}
+
+p5.prototype.rRect = function (...pos) {
+  this.rect(...pos.map(p => round(p)))
+}
+
+p5.prototype.rLine = function (...pos) {
+  this.line(...pos.map(p => round(p)))
+}
+
+p5.prototype.rPoint = function (...pos) {
+  this.point(...pos.map(p => round(p)))
+}
+
+
 //init => called after p5 constructor and before preload
 p5.prototype.registerMethod('init', () => {
   console.log('init');
@@ -32,15 +53,16 @@ p5.prototype.registerMethod('init', () => {
       if (resizingCamera) return resizingCamera = false
 
       preStatusUpdate.forEach(fun => fun())
-      status._fixedUpdate()
-      status._update()
+
+      masterStatus._fixedUpdate()
+      masterStatus._update()
 
       background(debugEnabled ? 51 : 0)
 
       const sprite = masterStatus.getSprite(() => mouseX, () => mouseY, () => pmouseX, () => pmouseY)
       const {x3, y3, x4, y4} = masterStatus
 
-      image(sprite, x3, y3)
+      rImage(sprite, x3, y3)
 
       postStatusUpdate.forEach(fun => fun())
     }

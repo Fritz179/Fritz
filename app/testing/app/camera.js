@@ -72,7 +72,8 @@ class Camera extends Layer {
 
     if (toFollow) {
       const {x, y} = toFollow.center
-      this.center = {x: floor(x), y: floor(y)}
+      // this.center = {x: floor(x), y: floor(y)}
+      this.center = {x: x, y: y}
     }
   }
 

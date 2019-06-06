@@ -55,7 +55,7 @@ class ECS {
     if (!(entity instanceof Entity)) throw new Error('Entity must extend Entity!')
 
     //check if classes set exist
-    if (!key) key = entity.constructor.name
+    if (!key) key = entity.constructor.name.toLowerCase()
     if (!this.classes[key]) this.classes[key] = new Set()
 
     this._addEntity(entity, key)
@@ -84,23 +84,31 @@ class ECS {
   }
 
   update() {
+    //update subStatuses
+    const {statuses} = this.classes
+    if (statuses) statuses.forEach(status => status._update())
+
+    //updaate all entites, including subStatuses
     this.entities.forEach(entity => entity.update())
 
     this.killEntitiesToKill()
   }
 
   fixedUpdate() {
+    //update subStatuses
+    const {statuses} = this.classes
+    if (statuses) statuses.forEach(status => status._fixedUpdate())
+
     const entities = [...this.entities]
 
     //fixedUpdate entities
     this.entities.forEach(e => {
       e.xv += e.xa; e.yv += e.ya
-      e.x += e.xv; e.y += e.yv
+      e.x += e.xv
+      if (e._collideWithMap) p5.prototype.collideRectMap(e, this._status, 1)
+      e.y += e.yv
+      if (e._collideWithMap) p5.prototype.collideRectMap(e, this._status, 2)
     })
-    this.killEntitiesToKill()
-
-    //collide entitiess with map
-    if (this._status.chunks) entities.forEach(e => { if (e._collideWithMap) p5.prototype.collideRectMap(e, this._status) })
     this.killEntitiesToKill()
 
     //call fixedUpdate
