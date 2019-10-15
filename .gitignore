@@ -3,7 +3,11 @@
 node_modules
 
 /app/testing/libraries
+/app/_Isaac_Latest
 /app/testing/app_
+/app/testing/_old
+/app/testing/v5a
+/app/testing/v5b
 /app/testing/terraria
 /app/testing/block_racer/blocks
 /app/testing/block_racer/img/old

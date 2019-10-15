@@ -25,6 +25,8 @@ function setup() {
   })
 }
 
+// app\testing\app3, app\testing\v5, !libraries, !app\testing\app3\old
+
 //zoom 110%?
 
 // TODO: 'update' README
