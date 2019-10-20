@@ -2,35 +2,29 @@ class Canvas extends Frame {
   constructor(...args) {
     super(0, 0, 0, 0)
 
-    if (args.length == 0) {
-      this.canvas = null
-      this.ctx = null
-    } else if (args.length == 1) {
+    if (args.length == 1) {
       if (typeof args[0] == 'string') {
-        this.canvas = document.getElementById(args[0])
-        this.ctx = new Context(this.canvas)
+        this.sprite = new Context(document.getElementById(args[0]))
       } else {
-        this.ctx = args[0]
-        this.canvas = args[0].canvas
+        this.sprite = args[0]
       }
     } else if (args.length == 2) {
       const canvas = document.createElement('canvas');
       canvas.width = args[0];
       canvas.height = args[1];
 
-      this.canvas = canvas
-      this.ctx = new Context(canvas);
-    } else {
+      this.sprite = new Context(canvas);
+    } else if (args.length != 0) {
       throw new Error('invalid arguments length!!' + args.length)
     }
 
-    if (this.canvas) {
+    if (this.sprite) {
       Object.defineProperty(this, 'w', {
-        get() { return this.canvas.width },
+        get() { return this.sprite.canvas.width },
         set(w) { debugger }
       })
       Object.defineProperty(this, 'h', {
-        get() { return this.canvas.height },
+        get() { return this.sprite.canvas.height },
         set(w) { debugger }
       })
 
@@ -48,18 +42,18 @@ class Canvas extends Frame {
   //
   // setOffset(x, y) { this.xo = x; this.yo = y; return this; }
 
-  set scaleX(y) { this.xm = x }
-  set scaleY(x) { this.ym = y }
+  // set scaleX(y) { this.xm = x }
+  // set scaleY(x) { this.ym = y }
   // set scale({x, y}) { this.xm = x; this.ym = y }
   set size({w, h}) { this.setSize(w, h); }
 
-  get scaleX() { return this.xm }
-  get scaleY() { return this.ym }
+  // get scaleX() { return this.xm }
+  // get scaleY() { return this.ym }
   // get scale() { return {x: this.xm, y: this.ym} }
 
   get size() { return {w: this.w, h: this.h} }
-  get topCtx() { return this.ctx.topCtx }
-  get isTopCtx() { return this.topCtx == this.ctx.ctx }
+  get topCtx() { return this.sprite.topCtx }
+  get isTopCtx() { return this.topCtx == this.sprite }
 
   setScale(x, y) { return this.setSize(this.w, this.h, x, y); }
   setCtx(ctx) { this.cxt = ctx; this.xm = 1; this.ym = 1; return this; }
@@ -72,27 +66,70 @@ class Canvas extends Frame {
     }
 
     if (this.buffer) {
-      if (this.ctx.ctx != this.topCtx) debugger
-      const state = getState(this.topCtx)
-      this.canvas.width = w / this.xm
-      this.canvas.height = h / this.ym
-      setState(this.topCtx, state)
+      if (this.sprite != this.topCtx) debugger
+      const state = getState(this.topCtx.ctx)
+      this.sprite.canvas.width = w / this.xm
+      this.sprite.canvas.height = h / this.ym
+      this.changed = true
+      setState(this.topCtx.ctx, state)
     } else {
       this.w = w / this.xm
       this.h = h / this.ym
     }
 
-    this._posChanged = true
+    this._spriteChanged = true
 
     return this
   }
 
-  multiply(args) {
-    args[0] = (args[0] - this.x) * this.xm
-    args[1] = (args[1] - this.y) * this.ym
-    if (args.length > 2) {
-      args[2] *= this.xm
-      args[3] *= this.ym
+  noSmooth() {
+    this.topCtx._noSmooth()
+  }
+
+  rotate(a) {
+    this.topCtx._rotate(a)
+  }
+
+  scale(x, y) {
+    this.topCtx._scale(x, y)
+  }
+
+  background(...args) {
+    this.topCtx._background(getColor(args))
+  }
+
+  fill(...args) {
+    this.topCtx._fill(getColor(args))
+  }
+
+  clear() {
+    this.topCtx._clear()
+  }
+
+  strokeWeight(w) {
+    this.topCtx._strokeWeight(w)
+  }
+
+  multiply(args, q = false) {
+    if (this instanceof Layer && !(this instanceof Camera)) {
+      const {align, overflow} = this.cameraMode
+      if (align == 'center') {
+        args[0] = (args[0] - this.center.x) * this.xm + this.sprite.w / 2
+        args[1] = (args[1] - this.center.y) * this.ym + this.sprite.h / 2
+        if (q) {
+          args[2] *= this.xm
+          args[3] *= this.ym
+        }
+      }
+    } else {
+      // console.log('asdf');
+      args[0] = (args[0] - this.x) * this.xm
+      args[1] = (args[1] - this.y) * this.ym
+      if (q) {
+        // console.log(this.xm);
+        args[2] *= this.xm
+        args[3] *= this.ym
+      }
     }
 
     return args
@@ -102,19 +139,19 @@ class Canvas extends Frame {
     if (args.length == 4) {
       this._rect(args)
     } else { // quadru
-      this._rect([...args.splice(0, 3), args[3]])
+      this._rect(args.push(args[2]))
     }
   }
 
   _rect(args) {
-    this.ctx._rect(this.multiply(args))
+    this.sprite._rect(this.multiply(args, true))
   }
-
-  noSmooth() { this.ctx.noSmooth() }
 
   image(canvas, ...val) {
     const {args, options} = separate(val, {trusted: false, hitbox: false})
 
+    if (canvas instanceof Canvas) canvas = canvas.sprite.canvas
+    else if (canvas instanceof Context) canvas = canvas.canvas
     this._image(
       canvas,
       args[0] || 0, args[1] || 0,
@@ -126,20 +163,14 @@ class Canvas extends Frame {
   }
 
   _image(canvas, ...args) {
-    this.ctx._image(canvas, ...this.multiply(args.slice(0, 9)))
+    this.sprite._image(canvas, ...this.multiply(args.slice(0, 9), true))
     if (args[9]) {
-      this._drawHitbox(...args.slice(0, 4), 'red')
+      this._drawHitbox(args.slice(0, 4).concat(['red']))
     }
   }
-  rotate(a) { this.ctx.rotate(a) }
-  scale(x, y) { this.ctx.scale(x, y) }
-  background(...args) { this.ctx.background(...args) }
-  drawHitbox(...args) { this._drawHitbox(...args) }
-  _drawHitbox(...args) { this.ctx._drawHitbox(...this.multiply(args)) }
-  fill(...args) { this.ctx.fill(...args) }
 
-  clear() { this.ctx.clear() }
-  strokeWeight() { this.ctx.strokeWeight() }
+  drawHitbox(...args) { this._drawHitbox(args) }
+  _drawHitbox(args) { this.sprite._drawHitbox(this.multiply(args, true)) }
 }
 
 const valuesToSave = ['strokeStyle', 'fillStyle', 'globalAlpha', 'lineWidth', 'lineCap', 'lineJoin', 'miterLimit', 'lineDashOffset', 'shadowOffsetX', 'shadowOffsetY', 'shadowBlur', 'shadowColor', 'globalCompositeOperation', 'font', 'textAlign', 'textBaseline', 'direction', 'imageSmoothingEnabled']

@@ -106,7 +106,7 @@ function _loadJSON(url, callback) {
   })
 }
 
-function getColor(...args) {
+function getColor(args) {
   if (args.length == 1 && typeof args[0] == 'string') return args[0]
   const {r, g, b, a} = getRGBA(...args)
   if (a == 1) return `rgb(${r}, ${g}, ${b})`

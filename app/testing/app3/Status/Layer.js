@@ -2,13 +2,18 @@ class Layer extends Canvas {
   constructor(...args) {
     super(...args)
     this.children = new Set()
+    this.cameraMode = {align: 'center', overflow: 'dispaly'}
 
-    this.getSprite.addPre((ctx) => {
+    this.getSprite.addPre((parentSprite) => {
       // always update ctx, to draw image on right place
       if (!this.buffer) {
-        this.ctx = ctx
+        this.sprite = parentSprite
       }
     })
+  }
+
+  setCameraMode(mode) {
+    this.cameraMode = mode
   }
 
   addChild(child, layer) {
@@ -16,16 +21,22 @@ class Layer extends Canvas {
       console.warn('Layer already has child: ', child)
     } else {
       this.children.add(child)
+      child.layer = this
     }
   }
 
   deleteChild(child) {
     if (!this.children.delete(child)) {
       console.warn('Cannot remove unexisting child: ', child);
+    } else {
+      child.layer = null
     }
   }
 
   clearChildren() {
+    this.children.forEach(child => {
+      child.layer = null
+    })
     this.children.clear()
   }
 
@@ -47,8 +58,8 @@ class SpriteLayer extends Layer {
     super(...args)
 
     // update
-    this.update.addPost(() => {
-      let changed = false
+    this.update.addPost((args, ret) => {
+      let changed = ret || this.changed || false
 
       this.children.forEach(child => {
         const updated = child.update(this)
@@ -97,7 +108,7 @@ class SpriteLayer extends Layer {
       // begin bubble process
       this.children.forEach(child => {
         if (debugEnabled) this.drawHitbox(...child.frame, 'green')
-        const sprite = child.getSprite(this.ctx)
+        const sprite = child.getSprite(this.sprite)
         if (sprite) {
           this.image(sprite, child.x + sprite.x, child.y + sprite.y)
         } else if (sprite !== false) {
@@ -109,7 +120,7 @@ class SpriteLayer extends Layer {
       if (!this.buffer) {
         return false
       } else {
-        return this.canvas
+        return this.sprite
       }
     })
   }
@@ -118,12 +129,12 @@ class SpriteLayer extends Layer {
 class BackgroundLayer {
   constructor(img) {
     this.img = img
-    this.cahnged = true
+    this.changed = true
   }
 
   setBackground(img) {
     this.img = img
-    this.cahnged = true
+    this.changed = true
   }
 
   update() {

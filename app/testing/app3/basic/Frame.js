@@ -3,27 +3,32 @@ const DEFAULT_TEXTURE = null
 class Frame extends Block {
   constructor(x, y, w, h) {
     super(x, y, w, h)
+    this.px = x
+    this.py = y
     this.xm = 1
     this.ym = 1
 
     this._wasOnClick = false
+    this.sprite = null
+    this.layer = null
     this._posChanged = true
+    this._spriteChanged = true
 
     createMiddlwere(this, 'update')
     createMiddlwere(this, 'fixedUpdate')
     createMiddlwere(this, 'getSprite')
+
+    this.fixedUpdate.addPost(() => {
+      if (this.x != this.px || this.y != this.py) {
+        this._posChanged = true
+        this.px = this.x
+        this.py = this.y
+      }
+    })
   }
 
-  set x(x) { this._x = x; this._posChanged = true }
-  set y(y) { this._y = y; this._posChanged = true }
-  set changed(bool = false) { this._posChanged = bool }
-
-  get x() { return this._x }
-  get y() { return this._y }
-  get changed() { return this._posChanged }
-
-  get changed() { return this._posChanged }
-  set changed(bool = false) { this._posChanged = bool }
+  get changed() { return this._posChanged || this._spriteChanged }
+  set changed(bool = false) { this._posChanged = this._spriteChanged = bool }
 
   onKey(key) { }
   onKeyUp(key) { }

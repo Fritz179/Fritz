@@ -27,7 +27,7 @@ function createCrawler(eventName, allowed = () => true) { // global
 
   function crawl(target, arg, parent) {
     if (allowed(target, arg, parent)) {
-      target[eventName](arg || parent)
+      target[eventName](arg || {})
     }
     if (typeof target.forEachChild == 'function') {
       target.forEachChild(child => {
@@ -38,6 +38,7 @@ function createCrawler(eventName, allowed = () => true) { // global
 
   crawlers[eventName] = (target, args) => {
     if (preloadCounter == 0) {
+      // crawl(target, args, {x: 0, y: 0, xm: 1, ym: 1}) // parent == target
       crawl(target, args, target) // parent == target
     }
   }
@@ -53,16 +54,26 @@ function crawl(...args) { // global
 }
 
 function mapMouse(drag, allow) {
-  return (target, arg, parent) => {
-    arg.x = round(arg.x / target.xm - target.x)
-    arg.y = round(arg.y / target.ym - target.y)
+  return (target, args, parent) => {
+    if (target instanceof Camera) {
 
-    if (drag) {
-      arg.xd = arg.xd / target.xm
-      arg.yd = arg.yd / target.ym
+    } else if (target instanceof Layer) {
+      const {align, overflow} = target.cameraMode
+      if (align == 'center') {
+        args.x = (args.x - parent.w / 2) / target.xm + target.center.x
+        args.y = (args.y - parent.h / 2) / target.ym + target.center.y
+      }
+    } else {
+      args.x = round(args.x / target.xm - target.x)
+      args.y = round(args.y / target.ym - target.y)
     }
 
-    return allow ? allow(target, arg, parent) : true
+    if (drag) {
+      args.xd = args.xd / target.xm
+      args.yd = args.yd / target.ym
+    }
+
+    return allow ? allow(target, args, parent) : true
   }
 }
 
@@ -72,6 +83,7 @@ createCrawler('onMouse', mapMouse(false))
 createCrawler('onClick', mapMouse(false, (t, a, p) => pointIsInRange(a, t.w, t.h) ? t._wasOnClick = true : false))
 window.addEventListener('mousedown', ({x, y}) => {
   mouseIsClicked = true
+  // debugger
   crawl('onMouse', {x, y})
   crawl('onClick', {x, y})
 });
@@ -80,14 +92,14 @@ window.addEventListener('mousedown', ({x, y}) => {
 createCrawler('onMouseDrag', mapMouse(true))
 createCrawler('onDrag', mapMouse(true))
 createCrawler('onClickDrag', mapMouse(true, (t, a, p) => t._wasOnClick))
-window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
-  const arg = {x, y, xd: movementX, yd: movementY}
-  crawl('onDrag', {...arg})
-  if (mouseIsClicked) {
-    crawl('onMouseDrag', {...arg})
-    crawl('onClickDrag', {...arg})
-  }
-});
+// window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
+//   const arg = {x, y, xd: movementX, yd: movementY}
+//   crawl('onDrag', {...arg})
+//   if (mouseIsClicked) {
+//     crawl('onMouseDrag', {...arg})
+//     crawl('onClickDrag', {...arg})
+//   }
+// });
 
 //onMouseUp and onClickUp crawlers
 createCrawler('onMouseUp', mapMouse(false))
@@ -116,7 +128,10 @@ window.addEventListener('keydown', event => {
 
     crawl('onKey', output)
 
-    if (key == '$') debugEnabled = !debugEnabled
+    if (key == '$') {
+      debugEnabled = !debugEnabled
+      masterLayer.changed = true
+    }
   }
 });
 
@@ -149,5 +164,5 @@ function getKey(event) {
 //wheel crawler
 createCrawler('onWheel')
 window.addEventListener('wheel', event => {
-  crawl('onWheel', Math.sign(event.delta))
+  crawl('onWheel', Math.sign(event.deltaY))
 });

@@ -31,8 +31,7 @@ class Body extends Frame {
       }
     })
 
-    // fixedUpdate
-    this.fixedUpdate.addPost(() => {
+    this.fixedUpdate.addPre(args => {
       if (sign(this.movingFor) == sign(this.xv)) {
         this.movingFor += this.xv
       } else {
@@ -64,5 +63,21 @@ class Body extends Frame {
 
   onBlockCollsion({solveCollision}) {
     solveCollision()
+  }
+
+  isOnGround() {
+    const x1 = floor(this.x / 16)
+    const x2 = ceil((this.x + this.w) / 16)
+    const y = floor((this.y + this.h) / 16)
+
+    let x = x1
+    do {
+      if (this.layer.collisionTable[this.layer.tileAt(x, y)] & 4) {
+        return true
+      }
+      x++
+    } while (x < x2)
+
+    return false
   }
 }

@@ -5,7 +5,7 @@ function createMiddlwere(target, name) {
   let counter = 0
 
   function runner(args) {
-    let ret = null
+    let ret
 
     preFun.forEach((value, key) => {
       if (counter % value == 0) {

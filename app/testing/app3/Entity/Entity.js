@@ -3,11 +3,11 @@ class Entity extends Body {
     super(x, y, w, h)
 
     this.sprite = DEFAULT_TEXTURE
-    this._spriteChanged = true
     this._spriteAction = ''
     this._spriteFrame = 0
     this._spriteDir = 0
     this.autoDir = false
+    this.autoWalk = 0
     this.collideBorder = true
 
     // update
@@ -23,7 +23,7 @@ class Entity extends Body {
 
     // getSprite
     this.getSprite.addPost((ctx, ret) => {
-      if (!ret) {
+      if (typeof ret == 'undefined') {
         if (Array.isArray(this.sprite)) {
           if (!this.spriteAction) console.error('No sprite action', this);
           if (Array.isArray(this.sprite[this.spriteAction])) {
@@ -47,7 +47,7 @@ class Entity extends Body {
           } else {
             return this.sprite[this.spriteDir]
           }
-        } else {
+        } else if (ret !== false) {
           return this.sprite
         }
       }
@@ -72,12 +72,11 @@ class Entity extends Body {
       this._spriteDir = dir
     }
   }
-  set changed(bool = false) { this._spriteChanged = this._posChanged = bool }
+
 
   get spriteAction() { return this._spriteAction }
   get spriteFrame() { return this._spriteFrame }
   get spriteDir() { return this._spriteDir }
-  get changed() { return this._spriteChanged || this._posChanged }
 
   setSprite(sprite) {
     this._spriteChanged = true

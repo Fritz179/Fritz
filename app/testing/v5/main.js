@@ -1,141 +1,117 @@
-// app\testing\app3, app\testing\v5, !libraries, !app\testing\app3\old
+loadSprite('player', './img/sprites')
+loadSprite('tiles', {path: './img/sprites', type: 'tiles'})
+let chunks = {}
 
-class Player extends Entity {
+function setup() {
+  addLayer(new Main())
+  addLayer(new Overlay())
+}
+
+class Overlay extends Layer {
   constructor() {
-    super()
-    this.setSize(15, 24)
-    this.setSprite('player')
-
-    this.spriteAction = 'run'
-    this.speed = 1
-    this.autoDir = true
-    this.autoWalk = 10
-    this.setDrag(0.8, 0.8)
+    super(1000, 100)
+    this.x = 100
+    // this.setScale(3, 3)
+    this.background(255, 0, 0)
   }
 
-  getSprite() {
-    this.spriteName = this.xv ? 'run' : 'idle'
-    // this.spriteFrame = round(this.x / 5) % 10
-  }
-
-  onKey({name}) {
-    switch (name) {
-      case 'up': this.ya -= this.speed; break;
-      case 'down': this.ya += this.speed; break;
-      case 'left': this.xa -= this.speed; break;
-      case 'right': this.xa += this.speed; break;
-    }
-  }
-
-  onKeyUp({name}) {
-    switch (name) {
-      case 'up': this.ya += this.speed; break;
-      case 'down': this.ya -= this.speed; break;
-      case 'left': this.xa += this.speed; break;
-      case 'right': this.xa -= this.speed; break;
-    }
+  getSprite(ctx) {
+    // ctx.fill('red')
+    // ctx.rect(0, 0, 100, 1000)
+    // return false
+    return this.sprite
   }
 }
 
-class Test extends TileGame {
+class Main extends TileGame {
   constructor() {
     super()
-    this.setSize(1920, 1080)
-    this.setScale(3, 3)
-    this.player = new Player()
+    this.setSize(100, 100)
+    this.setCameraMode({align: 'center', overflow: 'display'})
+    this.zoom = 3
+    this.setScale(this.zoom, this.zoom)
+
+    this.player = new Player(0, (ceil(-noise(0) * 50)) * 16 - 24)
     this.addChild(this.player)
 
-    this.collisionTable = [0, 15, 15]
-    // this.loadMap({
-    //   width: 16,
-    //   map: [
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    //   ]
-    // })
     this.setChunkLoader(1, 2)
 
-    this.fixedUpdate.addPre(() => {
-      logFPS()
-    }, 60)
+    this.loadMap({
+     width: 16,
+     map: [
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0,
+       0, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+     ]
+   })
+
+    this.fixedUpdate.addPre(() => { if (debugEnabled) logFPS() }, 60)
+  }
+
+  onMouse({x, y}) {
+    this.setTileAt.cord(x, y, 0)
+  }
+
+  onWheel(dir) {
+    this.zoom -= dir
+
+    if (this.zoom <= 0) this.zoom = debugEnabled ? 0.5 : 1
+    else if (this.zoom > 10) this.zoom = 10
+    else this.zoom |= 0
+
+    this.setSize(1920, 1080, this.zoom)
+    masterLayer.changed = true
+
+    const renderDistace = 4 / this.zoom
+    this.setChunkLoader(renderDistace, 4)
   }
 
   chunkLoader(x, y) {
+    const id = `${x}_${y}`
+    if (chunks[id]) {
+      return {map: chunks[id]}
+    }
+
     const chunk = {map: []}
 
-    for (let i = 0; i < 16 * 16; i++) {
-      chunk.map[i] = random() > 0.1 ? 0 : 1
+    for (let xb = 0; xb < 16; xb++) {
+      for (let yb = 0; yb < 16; yb++) {
+        chunk.map[xb + yb * 16] = tileAt(x * 16 + xb, y * 16 + yb)
+      }
+    }
+
+    function tileAt(x, y) {
+      let distToTop = noise(x / 20) * 50 + y
+
+      if (distToTop < 0) return 0
+      if (distToTop < 1) return 1
+      if (distToTop < 4) return 2
+      else return 3
     }
 
     return chunk
   }
 
+  chunkOffloader(data, x, y) {
+    const id = `${x}_${y}`
+    chunks[id] = data
+  }
+
   update() {
+    this.setPos(0, 0)
     this.center = this.player.center
   }
-
-  getSprite() {
-
-  }
 }
-
-
-// da sposta in app
-class Camera extends SpriteLayer {
-  constructor() {
-    super('screen')
-    this.setSize(1920, 1080)
-    this.addChild(this.game = new Test())
-    // this.setScale(1 / this.game.xm, 1 / this.game.ym)
-    // this.follow(this.game, {mode: ''})
-  }
-
-  resize() {
-    const w = window.innerWidth
-    const h = window.innerHeight
-    const rw = w / 1920
-    const rh = h / 1080
-
-    const r = rw < rh ? rw : rh
-
-    this.setSize(w, h)
-    this.center = {x: 1920 / 2, y: 1080 / 2}
-  }
-
-  getSprite() {
-    this.clear()
-
-    this.children.forEach(child => {
-      const sprite = child.getSprite(this)
-      if (sprite) {
-        console.log('asdf');
-        this.image(sprite, 0, 0)
-      } else if (sprite !== false) {
-        console.error(child, sprite)
-        throw new Error(`illegal getsprite return!!`)
-      }
-    })
-
-    return false
-  }
-}
-
-function setup() {
-  masterLayer = new Camera()
-}
-loadSprite('player', './img/sprites')
-loadSprite('tiles', {path: './img/sprites', type: 'tiles'})

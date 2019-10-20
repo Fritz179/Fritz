@@ -1,14 +1,52 @@
-class Context {
+class Context extends Block {
   constructor(canvas) {
+    super()
+
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     this.ctx.imageSmoothingEnabled = false
+
+    Object.defineProperty(this, 'w', {
+      get() { return this.canvas.width },
+      set(w) { debugger }
+    })
+    Object.defineProperty(this, 'h', {
+      get() { return this.canvas.height },
+      set(w) { debugger }
+    })
   }
 
-  get topCtx() { return this.ctx }
+  get topCtx() { return this }
 
-  image(...args) {
+  _noSmooth() {
+    this.canvas.imageSmoothingEnabled = false
+  }
 
+  _fill(color) {
+    this.ctx.fillStyle = color
+  }
+
+  _stroke(color) {
+    this.ctx.strokeStyle = color
+  }
+
+  _strokeWeight(weight = 1) {
+    this.ctx.lineWidth = weight
+  }
+
+  _rotate(a) {
+    this.ctx.rotate(a)
+  }
+
+  _scale(x, y) {
+    this.ctx.scale(x, y)
+  }
+
+  _clear() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  _image(...args) {
     let trusted = false
     if (args[args.length - 1] === true) {
       trusted = args.splice(args.length - 1, 1)[0]
@@ -19,25 +57,27 @@ class Context {
 
     // pars args
     const sprite = args[0]
-    const source = sprite.canvas || sprite
     const destination = this.canvas
     let dx = len > 2 ? args[1] : (sprite.x || 0)
     let dy = len > 2 ? args[2] : (sprite.y || 0)
-    let dw = len > 4 ? args[3] : (sprite.w || source.width)
-    let dh = len > 4 ? args[4] : (sprite.h || source.height)
+    let dw = len > 4 ? args[3] : (sprite.w || sprite.width)
+    let dh = len > 4 ? args[4] : (sprite.h || sprite.height)
     let sx = len > 6 ? args[5] : 0
     let sy = len > 6 ? args[6] : 0
-    let sw = len > 8 ? args[7] : (sprite.w || source.width)
-    let sh = len > 8 ? args[8] : (sprite.h || source.height)
+    let sw = len > 8 ? args[7] : (sprite.w || sprite.width)
+    let sh = len > 8 ? args[8] : (sprite.h || sprite.height)
     const xm = sw / dw
     const ym = sh / dh
 
-    if (!trusted) {
-      if (sx >= source.width || sy >= source.height) return
-      if (dx >= destination.width || dy >= destination.height) return
-      if (sx + sw < 0 || sy + sh < 0 || dx + dw < 0 || dy + dh < 0) return
+    const f = Math.floor
+    const c = Math.ceil
 
-      // optimise source position
+    if (!trusted) {
+      if (sx >= sprite.width || sy >= sprite.height) return
+      if (dx >= destination.width || dy >= destination.height) return
+      if (sx + sw < 0 || sy + sh < 0 || dx + dw <= 0 || dy + dh <= 0) return
+
+      // optimise sprite position
       if (sx < 0) {
         dx -= sx * xm
         sx = 0
@@ -49,48 +89,49 @@ class Context {
 
       // optimise destionation position
       if (dx < 0) {
-        sx -= dx * xm // sx += Math.abs(dx)
-        dx = 0
+        const diff = c(dx * xm)
+        sx -= diff // sx += Math.abs(dx)
+        dx -= diff / xm
       }
       if (dy < 0) {
-        sy -= dy * ym // sy += Math.abs(dy)
-        dy = 0
+        const diff = c(dy * ym)
+        sy -= diff // sy += Math.abs(dy)
+        dy -= diff / ym
       }
 
-      if (sx >= source.width || sy >= source.height) return
-      // optimise source size
-      if (sx + sw > source.width) {
-        sw = source.width - sx
+      // optimise sprite size
+      if (sx + sw > sprite.width) {
+        sw = sprite.width - sx
         dw = sw / xm
       }
-      if (sy + sh > source.height) {
-        sh = source.height - sy
+      if (sy + sh > sprite.height) {
+        sh = sprite.height - sy
         dh = sh / ym
       }
 
       // optimise destination size
       if (dx + dw > destination.width) {
-        dw = destination.width - dx
-        sw = dw * xm
+        const diff = c((destination.width - dx) * xm)
+        dw = diff / xm
+        sw = diff
       }
 
       if (dy + dh > destination.height) {
-        dh = destination.height - dy
-        sh = dh * ym
+        const diff = c((destination.height - dy) * ym)
+        dh = diff / ym
+        sh = diff
       }
+
+      if (sw != dw * xm || sh != dh * ym || !dw) debugger
+      if (dx >= destination.width || dy >= destination.height) debugger
+      if (sx + sw < 0 || sy + sh < 0 || dx + dw < 0 || dy + dw < 0) debugger
     }
 
-    const f = Math.floor
-    // if (sw != dw || sh != dh || !dw) debugger
-    if (dx >= destination.width || dy >= destination.height) debugger
-    if (sx + sw < 0 || sy + sh < 0 || dx + dw < 0 || dy + dw < 0) debugger
-
-    this.ctx.drawImage(source, f(sx), f(sy), f(sw), f(sh), f(dx), f(dy), f(dw), f(dh))
+    // console.log(sw, dw, sx, sy, dx, dy);
+    this.ctx.drawImage(sprite, f(sx), f(sy), f(sw), f(sh), f(dx), f(dy), f(dw), f(dh))
   }
 
-  _image(...args) { this.image(...args) }
-
-  _drawHitbox(...args) {
+  _drawHitbox(args) {
 
     let {x, y, w, h} = args[0]
     let color = '#515151', stroke = 1
@@ -113,8 +154,8 @@ class Context {
     const prevColor = this.ctx.strokeStyle
 
     this.ctx.translate(0.5, 0.5)
-    this.stroke(color)
-    this.strokeWeight(stroke)
+    this._stroke(color)
+    this._strokeWeight(stroke)
     const f = Math.floor
     this.ctx.strokeRect(f(x), f(y), f(w - 1), f(h - 1))
     this.ctx.translate(-0.5, -0.5)
@@ -123,23 +164,9 @@ class Context {
     this.ctx.strokeStyle = prevColor
   }
 
-  noSmooth() {
-    this.canvas.imageSmoothingEnabled = false
-  }
 
-  fill(...args) {
-    this.ctx.fillStyle = getColor(...args)
-  }
 
-  stroke(...args) {
-    this.ctx.strokeStyle = getColor(...args)
-  }
-
-  strokeWeight(num = 1) {
-    this.ctx.lineWidth = num
-  }
-
-  rect(x, y, w, h, color, stroke) {
+  _rect([x, y, w, h, color, stroke]) {
     const {ctx} = this
 
     if (ctx.lineWidth % 2 == 1) {
@@ -156,22 +183,10 @@ class Context {
     }
   }
 
-  rotate(a) {
-    this.ctx.rotate(a)
-  }
-
-  scale(x, y) {
-    this.ctx.scale(x, y)
-  }
-
-  clear() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  background(...args) {
+  _background(color) {
     const prev = this.ctx.fillStyle
 
-    this.ctx.fillStyle = getColor(...args)
+    this.ctx.fillStyle = color
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.ctx.fillStyle = prev

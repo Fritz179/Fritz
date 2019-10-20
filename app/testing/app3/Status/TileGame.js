@@ -1,3 +1,13 @@
+function addCord(target, name, q = 0) {
+  let value
+  if (q) {
+    value = (...args) => target[name](...args.splice(0, q).map(val => target.cord(val)), ...args)
+  } else {
+    value = (...args) => target[name](...args.map(val => target.cord(val)))
+  }
+  Object.defineProperty(target[name], 'cord', {value})
+}
+
 class TileGame extends SpriteLayer {
   constructor(...args) {
     super(...args)
@@ -6,23 +16,39 @@ class TileGame extends SpriteLayer {
     this.chunkHeight = 16
     this.tileSize = 16
     this.chunks = []
-    this.collisionTable = []
+
+    if (sprites.tiles.collisionTable) {
+      this.collisionTable = sprites.tiles.collisionTable
+    }
+
     this._isMap = true
     this._mapWasLoaded = false
     this._autoLoadChunks = false
     this.preW = this.preH = null
     this.postW = this.postH = null
 
-    this.update.addPre(() => this.forEachChunk(chunk => chunk.update()))
+    this.update.addPre(() => {
+      let changed = false
+      this.forEachChunk((chunk, x, y) => {
+        const updated = chunk.update()
+
+        if (updated || chunk.changed) {
+          chunk.changed = false
+          changed = true
+        }
+      })
+
+      return this.changed = changed
+    })
     this.fixedUpdate.addPre(() => this.forEachChunk(chunk => chunk.fixedUpdate()))
 
-    this.getSprite.addPre((ctx) => {
+    this.getSprite.addPre(() => {
       this.forEachChunk((chunk, x, y) => {
         const {chunkTotalWidth, chunkTotalHeight} = this
 
-        const sprite = chunk.getSprite(ctx)
+        const sprite = chunk.getSprite(this.sprite)
         if (sprite) {
-          this.image(sprite, x * chunkTotalWidth, y * chunkTotalHeight, {hitbox: debugEnabled})
+          this.image(sprite, x * chunkTotalWidth, y * chunkTotalHeight, {hitbox: debugEnabled, trusted: debugEnabled})
         } else if (sprite !== false) {
           console.error('Invalid chunk getSprite return?');
         }
@@ -45,12 +71,8 @@ class TileGame extends SpriteLayer {
           for (let y in col) {
             if (x < minX || x > maxX || y < minY || y > maxY) {
               deletedChunks++
-              delete col[y]
+              this.unloadChunkAt(x, y)
             }
-          }
-
-          if (!Object.keys(col).length) {
-            delete this.chunks[x]
           }
         }
 
@@ -60,16 +82,22 @@ class TileGame extends SpriteLayer {
           for (let y = yCenter - this.preH; y <= yCenter + this.preH; y++) {
             if (!this.chunks[x] || !this.chunks[x][y]) {
               newChunks++
-              this.setChunkAt(this.chunkLoader(x, y), x, y)
+              this.loadChunkAt(this.chunkLoader(x, y), x, y)
             }
           }
         }
 
-        if (debugEnabled && (newChunks || deletedChunks)) {
-          console.log(`Loaded ${newChunks} chunks and deleted ${deletedChunks} chunks!`);
-        }
+        // if (debugEnabled && (newChunks || deletedChunks)) {
+        //   console.log(`Loaded ${newChunks} chunks and deleted ${deletedChunks} chunks!`);
+        // }
       }
     })
+
+    addCord(this, 'tileAt')
+    addCord(this, 'allBlocksIn')
+
+    addCord(this, 'setTileAt', 2)
+    addCord(this, 'forAllBlocksIn', 4)
   }
 
   get chunkLength() { return this.chunkWidth * this.chunkHeight }
@@ -77,8 +105,17 @@ class TileGame extends SpriteLayer {
   get chunkTotalHeight() { return this.chunkHeight * this.tileSize }
   get chunkTotalLength() { return this.chunkTotalWidth * this.chunkTotalHeight }
 
+  cord(...args) {
+    args = args.map(val => floor(val / this.tileSize))
+    return args.length == 1 ? args[0] : args
+  }
+
   chunkLoader() {
     throw new Error('Please define a chunkLoader function or use loadMap!!')
+  }
+
+  chunkOffloader() {
+
   }
 
   isOnMap(entity) {
@@ -97,6 +134,7 @@ class TileGame extends SpriteLayer {
 
   setChunkLoader(...args) {
     this._autoLoadChunks = true
+    args = args.map(val => floor(val))
 
     switch (args.length) {
       case 1:
@@ -119,7 +157,7 @@ class TileGame extends SpriteLayer {
     }
   }
 
-  setChunkAt(data, chunkX, chunkY) {
+  loadChunkAt(data, chunkX, chunkY) {
     //create new chunk
     const chunk = new Chunk(this)
 
@@ -140,6 +178,21 @@ class TileGame extends SpriteLayer {
     }
   }
 
+  unloadChunkAt(chunkX, chunkY) {
+    if (!this.chunks[chunkX]) return -1
+    if (!this.chunks[chunkX][chunkY]) return -1
+
+    const data = this.chunks[chunkX][chunkY].unload()
+    if (data) {
+      this.chunkOffloader(data, chunkX, chunkY)
+    }
+    delete this.chunks[chunkX][chunkY]
+
+    if (!Object.keys(this.chunks[chunkX]).length) {
+      delete this.chunks[chunkX]
+    }
+  }
+
   tileAt(x, y) {
     //get chunk, cordinate
     const {chunkWidth, chunkHeight} = this
@@ -149,10 +202,25 @@ class TileGame extends SpriteLayer {
     const i = (y - chunkY * chunkHeight) * chunkWidth + (x - chunkX * chunkWidth)
 
     //chenk if chunx exists and is loaded
-    if (!this.chunks[chunkX]) return 0
-    if (!this.chunks[chunkX][chunkY]) return 0
+    if (!this.chunks[chunkX]) return -1
+    if (!this.chunks[chunkX][chunkY]) return -1
 
     return this.chunks[chunkX][chunkY].tiles[i]
+  }
+
+  setTileAt(x, y, tile) {
+    //get chunk, cordinate
+    const {chunkWidth, chunkHeight} = this
+    const chunkX = floor(x / chunkWidth)
+    const chunkY = floor(y / chunkHeight)
+    x -= chunkX * chunkWidth
+    y -= chunkY * chunkHeight
+
+    //chenk if chunx exists and is loaded
+    if (!this.chunks[chunkX]) return -1
+    if (!this.chunks[chunkX][chunkY]) return -1
+
+    return this.chunks[chunkX][chunkY].setTileAt(x, y, tile)
   }
 
   collideMap(entity, sides = 3) {
@@ -213,6 +281,35 @@ class TileGame extends SpriteLayer {
     }
   }
 
+  forAllBlocksIn(x1, y1, x2, y2, fun) {
+    let x = x1
+    let y = y1
+
+    do {
+      do {
+        fun(x, y, this.tileAt(x, y))
+        y++
+      } while (y <= y2);
+      x++
+    } while (x <= x2);
+  }
+
+  allBlocksIn(x1, y1, x2, y2) {
+    let x = x1
+    const arr = []
+
+    do {
+      let y = y1
+      do {
+        arr.push(this.tileAt(x, y))
+        y++
+      } while (y <= y2);
+      x++
+    } while (x <= x2);
+
+    return arr
+  }
+
   loadMap(map) {
     if (Array.isArray(map)) map = {map}
 
@@ -225,7 +322,7 @@ class TileGame extends SpriteLayer {
     this.setChunkSize(map.width, map.map.length / map.width)
 
     this.clearChunks()
-    this.setChunkAt(map, 0, 0)
+    this.loadChunkAt(map, 0, 0)
 
     this._mapWasLoaded = true
   }
@@ -241,48 +338,13 @@ class TileGame extends SpriteLayer {
     this.chunkHeight = h
   }
 
-  clearChunks() {
-    this.chuks = []
-  }
-}
-
-class Chunk extends Canvas {
-  constructor(map) {
-    super(map.chunkWidth * map.tileSize, map.chunkHeight * map.tileSize)
-
-    this.map = map
-    this.tiles = null
-    this._tileChanged = true
-  }
-
-  get changed() { return this._tileChanged || this._posChanged }
-  set changed(bool = false) { this._tileChanged = this._posChanged = bool }
-
-  fixedUpdate() {
-  }
-
-  update() {
-
-  }
-
-  getSprite() {
-    if (this._tileChanged) {
-      this._tileChanged = false
-      const w = this.map.tileSize
-
-      this.tiles.forEach((tile, i) => {
-        const x = i % this.map.chunkWidth
-        const y = (i - x) / this.map.chunkWidth
-        const sprite = sprites.tiles[tile]
-
-        this.image(sprite, x * w, y * w, w, w)
+  clearChunks(hard = false) {
+    if (!hard) {
+      this.forEachChunk((chunk, x, y) => {
+        this.unloadChunkAt(x, y)
       })
+    } else {
+      this.chuks = []
     }
-
-    return this.canvas
-  }
-
-  load(chunk) {
-    this.tiles = chunk
   }
 }

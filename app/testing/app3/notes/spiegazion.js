@@ -1,5 +1,6 @@
 // app\testing\app3, app\testing\v5, !libraries, !app\testing\app3\old
 // !app\testing\v5\old, app\testing\app3, app\testing\v5, !libraries, !app\testing\app3\old
+// app\testing\app3, app\testing\v5, !libraries
 
 // Block al ga [x, y, w, h] e funzion par al moa [setPos, setSize, setRight, left, bottom]
 
@@ -44,7 +45,7 @@
 
 // TileGame al ga chunkWidth/height, tileSize, chunks e collisionTable,
 // li sprie gline in dali sprites
-// al ga anca funzion cuma getTileAt, collideMap, setChunkAt
+// al ga anca funzion cuma getTileAt, collideMap, loadChunkAt
 
 // Chuk le an canvas ca al buffera tüc i diseign, al cambia noma i necesari
 // i blöc cun animazion le amo da decida sa i salva nal chunk o nal TileGame
@@ -58,4 +59,17 @@
 // ca i vegnian ciamai da default nal realFun o da quela dal utente
 
 // funzion par disegnà cun an oggetto? tipu an per default po an args?
-// image(img, x, y, w, h)
+// image(img, x, y, w, h, {} || '')
+
+// i layer sota la camera ien noma dai viewport!!
+// al volt di ca quili cuurdinadi glien al löc nala mappa, al punto da vista
+// par quest nal i al cuntrarti in input la da esa +/-
+// nal disegnà sarof sempri da cuntrulà sa le an viewport par al boundry?
+
+// creà tüc i _draw nurmai
+// estenda an canvas e al agiüngia cuma layer larof da già funziunà
+// scerna la pusizion sül schermo
+// child.x||y le la pos e sprite.x||y le al offset
+
+// fill, stroke, strokeWeight, rect, image, text, background
+// multiply

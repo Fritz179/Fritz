@@ -75,8 +75,10 @@ addParser('tiles', (img, json) => {
   let {x, y, w, h, tiles} = json
   const {width, height} = img
   const sprite = []
+  sprite.collisionTable = []
 
   tiles.forEach((tile, i) => {
+    sprite.collisionTable[i] = tile.collision || 0
     sprite[i] = cut(img, x, y, w, h)
 
     //go to next tile, move x and y
