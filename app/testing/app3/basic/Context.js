@@ -5,6 +5,9 @@ class Context extends Block {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
     this.ctx.imageSmoothingEnabled = false
+    this.textSize = 10
+    this.textFont = 'sans-serif'
+    this.textStyle = 'normal'
 
     Object.defineProperty(this, 'w', {
       get() { return this.canvas.width },
@@ -44,6 +47,38 @@ class Context extends Block {
 
   _clear() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  _textSize(s = 10) {
+    this.textSize = s
+    this._updateFont()
+  }
+
+  _textFont(f = 'sans-serif') {
+    this.textFont = f
+    this._updateFont()
+  }
+
+  _textStyle(s = 'normal') {
+    this.textStyle = s
+    this._updateFont()
+  }
+
+  _updateFont() {
+    this.ctx.font = `${this.textStyle} ${this.textSize}px ${this.textFont}`
+  }
+
+  _textAlign(w, h) {
+    if (w) {
+      this.ctx.textAlign = w
+      if (h) {
+        this.ctx.textBaseline = h
+      }
+    }
+  }
+
+  _text(txt, x, y) {
+    this.ctx.fillText(txt, x, y)
   }
 
   _image(...args) {
@@ -168,7 +203,7 @@ class Context extends Block {
 
   _rect([x, y, w, h, color, stroke]) {
     const {ctx} = this
-
+    
     if (ctx.lineWidth % 2 == 1) {
       ctx.translate(0.5, 0.5)
     }
@@ -177,6 +212,7 @@ class Context extends Block {
     ctx.rect(x, y, w, h);
     ctx.closePath()
     ctx.stroke();
+    ctx.fill();
 
     if (ctx.lineWidth % 2 == 1) {
       ctx.translate(-0.5, -0.5)

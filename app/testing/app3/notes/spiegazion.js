@@ -73,3 +73,22 @@
 
 // fill, stroke, strokeWeight, rect, image, text, background
 // multiply
+
+// MIDDLEWERESS
+// Frame
+//    fixedUpdate.post => check fot poschanged
+
+// Body
+//    fixedUpdate.post => movingFor
+
+// Layer
+//    fixedUpdate.post => check fot poschanged
+//    getSprite.pre => set this.sprite to parentSprite
+
+// SpriteLayer
+//    update.post => call changed to all children and get if updated
+//    fixedUpdate.post => update child phisics
+//    getSprite.post => if ret !== false => get sprite of children and set them to changed = false
+
+// TileGame
+//    pre par tüt par i chunk e _autoLoadChunks

@@ -27,7 +27,7 @@ function createCrawler(eventName, allowed = () => true) { // global
 
   function crawl(target, arg, parent) {
     if (allowed(target, arg, parent)) {
-      target[eventName](arg || {})
+      target[eventName](arg)
     }
     if (typeof target.forEachChild == 'function') {
       target.forEachChild(child => {
@@ -58,11 +58,10 @@ function mapMouse(drag, allow) {
     if (target instanceof Camera) {
 
     } else if (target instanceof Layer) {
-      const {align, overflow} = target.cameraMode
-      if (align == 'center') {
-        args.x = (args.x - parent.w / 2) / target.xm + target.center.x
-        args.y = (args.y - parent.h / 2) / target.ym + target.center.y
-      }
+      const {xAlign, yAlign, overflow} = target.cameraMode
+
+      args.x = (args.x - parent.w * xAlign) / target.xm + (target.x + target.w * xAlign)
+      args.y = (args.y - parent.h * yAlign) / target.ym + (target.y + target.h * yAlign)
     } else {
       args.x = round(args.x / target.xm - target.x)
       args.y = round(args.y / target.ym - target.y)

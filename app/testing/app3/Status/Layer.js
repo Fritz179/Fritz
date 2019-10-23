@@ -2,7 +2,7 @@ class Layer extends Canvas {
   constructor(...args) {
     super(...args)
     this.children = new Set()
-    this.cameraMode = {align: 'center', overflow: 'dispaly'}
+    this.cameraMode = {xAlign: 0.5, yAlign: 0.5, overflow: 'dispaly'}
 
     this.getSprite.addPre((parentSprite) => {
       // always update ctx, to draw image on right place
@@ -12,8 +12,18 @@ class Layer extends Canvas {
     })
   }
 
-  setCameraMode(mode) {
-    this.cameraMode = mode
+  setCameraMode({align, overflow}) {
+    const xTable = {left: 0, right: 1, center: 0.5}
+    const yTable = {top: 0, bottom: 1, center: 0.5}
+    if (align == 'center') align = 'center-center'
+    if (align == 'top') align = 'center-top'
+    if (align == 'right') align = 'right-center'
+    if (align == 'bottom') align = 'center-bottom'
+    if (align == 'left') align = 'left-center'
+
+    this.cameraMode.xAlign = xTable[align.split('-')[0]] || 0
+    this.cameraMode.yAlign = yTable[align.split('-')[1]] || 0
+    this.cameraMode.overflow = overflow
   }
 
   addChild(child, layer) {
@@ -71,34 +81,6 @@ class SpriteLayer extends Layer {
       })
 
       return this.changed = changed
-    })
-
-    this.fixedUpdate.addPost(() => {
-      this.forEachChild(child => {
-        if (child.autoMove) {
-          // add acceleration to velocity
-          child.xv += child.xa
-          child.yv += child.ya
-
-          //add drag to velocity
-          child.xv *= child.xd
-          child.yv *= child.yd
-          if (abs(child.xv) < child._minVel) child.xv = 0
-          if (abs(child.yv) < child._minVel) child.yv = 0
-
-          if (child.collideWithMap && this._isMap) {
-            //check collsison for each axis
-            child.x += child.xv
-            this.collideMap(child, 1)
-            child.y += child.yv
-            this.collideMap(child, 2)
-          } else {
-            // add only velocity to position
-            child.x += child.xv
-            child.y += child.yv
-          }
-        }
-      })
     })
 
     // getSprite

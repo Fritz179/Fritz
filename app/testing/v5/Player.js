@@ -4,7 +4,7 @@ class Player extends Entity {
     this.setSize(15, 24)
     this.setSprite('player')
 
-    this.spriteAction = 'run'
+    this.spriteAction = 'idle'
     this.speed = 1
     this.autoDir = true
     this.autoWalk = 10
@@ -14,10 +14,10 @@ class Player extends Entity {
     this.createNew = false
   }
 
-  fixedUpdate() {
-    // this.isOnGround()
-    // console.log(this.isOnGround());
+  fixedUpdate({updatePhisics}) {
+    updatePhisics()
 
+    this.spriteAction = abs(this.movingFor) > 1 ? 'run' : 'idle'
     if (this.createNew) {
       this.createNew = false
       this.layer.addChild(new Player(this.x + random() * 200 - 100, this.y + random() * 200 - 100))
@@ -26,10 +26,6 @@ class Player extends Entity {
 
   onClick({x, y}) {
     console.log(x, y);
-  }
-
-  getSprite() {
-    this.spriteName = this.xv ? 'run' : 'idle'
   }
 
   onBlockCollsion({x, y, solveCollision}) {

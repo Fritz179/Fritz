@@ -1,3 +1,9 @@
+function addMapping(target, name, q = Infinity, mapping) {
+  Object.defineProperty(target[name], 'cord', {
+    value: (...args) => target[name](...args.splice(0, q).map(mapping), ...args)
+  })
+}
+
 function addCord(target, name, q = 0) {
   let value
   if (q) {
@@ -6,6 +12,22 @@ function addCord(target, name, q = 0) {
     value = (...args) => target[name](...args.map(val => target.cord(val)))
   }
   Object.defineProperty(target[name], 'cord', {value})
+}
+
+function addChunks(target, name, q = 0) {
+  let value
+  if (q) {
+    value = (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtCord(val)), ...args)
+  } else {
+    value = (...args) => target[name](...args.map(val => target.ChunkAtCord(val)))
+  }
+  Object.defineProperty(target[name], 'cord', {value})
+  if (q) {
+    value = (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtTile(val)), ...args)
+  } else {
+    value = (...args) => target[name](...args.map(val => target.ChunkAtTile(val)))
+  }
+  Object.defineProperty(target[name], 'tile', {value})
 }
 
 class TileGame extends SpriteLayer {
@@ -93,11 +115,13 @@ class TileGame extends SpriteLayer {
       }
     })
 
-    addCord(this, 'tileAt')
-    addCord(this, 'allBlocksIn')
-
+    // addMapping(this, 'tileAt', 2, (val, i) => i < 2 ? floor(ceil) : ceil())
+    addCord(this, 'tileAt', 2)
     addCord(this, 'setTileAt', 2)
+    addCord(this, 'allBlocksIn', 4)
     addCord(this, 'forAllBlocksIn', 4)
+
+    addChunks(this, 'allChunksIn', 4)
   }
 
   get chunkLength() { return this.chunkWidth * this.chunkHeight }
@@ -110,6 +134,16 @@ class TileGame extends SpriteLayer {
     return args.length == 1 ? args[0] : args
   }
 
+  ChunkAtCord(...args) {
+    args = args.map(val => floor(val / this.chunkTotalWidth))
+    return args.length == 1 ? args[0] : args
+  }
+
+  ChunkAtTile(...args) {
+    args = args.map(val => floor(val / this.chunkWidth))
+    return args.length == 1 ? args[0] : args
+  }
+
   chunkLoader() {
     throw new Error('Please define a chunkLoader function or use loadMap!!')
   }
@@ -119,6 +153,24 @@ class TileGame extends SpriteLayer {
   }
 
   isOnMap(entity) {
+    const {chunkTotalWidth, chunks} = this
+    const x1 = floor(entity.left / chunkTotalWidth)
+    const y1 = floor(entity.top / chunkTotalWidth)
+    const x2 = ceil(entity.right / chunkTotalWidth)
+    const y2 = ceil(entity.bottom / chunkTotalWidth)
+
+    let x = x1
+    do {
+      let y = y1
+      do {
+        if (!chunks[x] || !chunks[x][y]) {
+          return false
+        }
+        y++
+      } while (y < y2);
+      x++
+    } while (x < x2);
+
     return true
   }
 
@@ -155,6 +207,8 @@ class TileGame extends SpriteLayer {
       default:
         throw new Error('Invalid setChunkLoader arguments...')
     }
+
+    this.update()
   }
 
   loadChunkAt(data, chunkX, chunkY) {
@@ -227,7 +281,7 @@ class TileGame extends SpriteLayer {
     const {collisionTable, w, h, tileSize} = this
 
     if (!this.isOnMap(entity)) {
-      return 0
+      return entity.onUnloadedChunk()
     }
 
     if (sides & 1) {
@@ -302,6 +356,24 @@ class TileGame extends SpriteLayer {
       let y = y1
       do {
         arr.push(this.tileAt(x, y))
+        y++
+      } while (y <= y2);
+      x++
+    } while (x <= x2);
+
+    return arr
+  }
+
+  allChunksIn(x1, y1, x2, y2) {
+    let x = x1
+    const arr = []
+
+    do {
+      let y = y1
+      do {
+        if (this.chunks[x] && this.chunks[x][y]) {
+          arr.push({x, y})
+        }
         y++
       } while (y <= y2);
       x++

@@ -3,38 +3,46 @@ loadSprite('tiles', {path: './img/sprites', type: 'tiles'})
 let chunks = {}
 
 function setup() {
-  addLayer(new Main())
-  addLayer(new Overlay())
+  const player = new Player(0, (ceil(-noise(0) * 50)) * 16 - 24)
+  addLayer(new Main(player))
+  addLayer(new Overlay(player))
 }
 
 class Overlay extends Layer {
-  constructor() {
-    super(1000, 100)
-    this.x = 100
-    // this.setScale(3, 3)
-    this.background(255, 0, 0)
+  constructor(player) {
+    super()
+
+    this.player = player
+    this.setCameraMode({align: 'right-top', overflow: 'display'})
   }
 
   getSprite(ctx) {
-    // ctx.fill('red')
-    // ctx.rect(0, 0, 100, 1000)
-    // return false
-    return this.sprite
+    this.textSize(50)
+    this.textFont('consolas')
+    this.textAlign('right', 'top')
+
+    const {x, y} = this.player
+    const f = Math.floor
+
+    this.text(`FPS: ${timer.fps}, UPS: ${timer.ups}`, -10, 10)
+    this.text(`X: ${f(x)}, ${f(x / 16)}, ${f(x / 256)}`, -10, 60)
+    this.text(`Y: ${f(y)}, ${f(y / 16)}, ${f(y / 256)}`, -10, 110)
+
+    return false
   }
 }
 
 class Main extends TileGame {
-  constructor() {
+  constructor(player) {
     super()
-    this.setSize(100, 100)
-    this.setCameraMode({align: 'center', overflow: 'display'})
+
     this.zoom = 3
     this.setScale(this.zoom, this.zoom)
+    this.setCameraMode({align: 'center', overflow: 'display'})
 
-    this.player = new Player(0, (ceil(-noise(0) * 50)) * 16 - 24)
-    this.addChild(this.player)
-
-    this.setChunkLoader(1, 2)
+    this.player = player
+    this.center = player.center
+    this.addChild(player)
 
     this.loadMap({
      width: 16,
@@ -58,7 +66,7 @@ class Main extends TileGame {
      ]
    })
 
-    this.fixedUpdate.addPre(() => { if (debugEnabled) logFPS() }, 60)
+   this.setChunkLoader(2, 5)
   }
 
   onMouse({x, y}) {
@@ -75,8 +83,8 @@ class Main extends TileGame {
     this.setSize(1920, 1080, this.zoom)
     masterLayer.changed = true
 
-    const renderDistace = 4 / this.zoom
-    this.setChunkLoader(renderDistace, 4)
+    const d  = 6 / this.zoom
+    this.setChunkLoader(d > 1 ? d : 1, 7)
   }
 
   chunkLoader(x, y) {
@@ -111,7 +119,6 @@ class Main extends TileGame {
   }
 
   update() {
-    this.setPos(0, 0)
     this.center = this.player.center
   }
 }

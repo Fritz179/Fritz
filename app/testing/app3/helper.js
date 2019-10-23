@@ -62,10 +62,6 @@ function deCapitalize(string) {
     return string.charAt(0).toLowerCase() + string.slice(1);
 }
 
-function logFPS() {
-  console.log(`fps: ${timer.fps}, ups: ${timer.ups}`);
-}
-
 function loadImage(url, callback) {
   if (typeof callback == 'function') {
     return _loadImage(url, callback)

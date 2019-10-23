@@ -1,11 +1,13 @@
-function createMiddlwere(target, name) {
+function createMiddlwere(target, name, defaultObject) {
   const realFun = (target[name] || (() => { })).bind(target)
   const preFun = new Map()
   const postFun = new Map()
   let counter = 0
 
-  function runner(args) {
+  function runner(args = {}) {
     let ret
+    
+    if (defaultObject) defaultObject(args)
 
     preFun.forEach((value, key) => {
       if (counter % value == 0) {

@@ -136,6 +136,7 @@ addParser('animation', (img, json) => {
   const sprite = {}
   json.animations.forEach(animation => {
     const {x, y, w, h, xd, yd, action, xOff = 0, yOff = 0, mirror = json.mirror, ultraMirror = json.ultraMirror} = animation
+    const off = i => [Array.isArray(xd) ? xd[i] : xd, Array.isArray(yd) ? yd[i] : yd]
     sprite[action] = []
 
     if (animation.recursive) {
@@ -148,28 +149,28 @@ addParser('animation', (img, json) => {
         let y1 = y + h * Math.floor((x + w * i) / wrap)
         if (!Number.isInteger(x1) || !Number.isInteger(y1) || !action) throw new Error(`invalid arguments for ${name} sprite`)
         if (ultraMirror) {
-          sprite[action][i][0] = cut(img, x1, y1, w, h, xd, yd)
-          sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h, xd, yd))
-          sprite[action][i][2] = rotate90(rotate90(cut(img, x1, y1, w, h, xd, yd)))
-          sprite[action][i][3] = unRotate(cut(img, x1, y1, w, h, xd, yd))
+          sprite[action][i][0] = cut(img, x1, y1, w, h, ...off(0))
+          sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h, ...off(1)))
+          sprite[action][i][2] = rotate90(rotate90(cut(img, x1, y1, w, h, ...off(2))))
+          sprite[action][i][3] = unRotate(cut(img, x1, y1, w, h, ...off(3)))
         } else if (mirror) {
-          sprite[action][i][0] = cut(img, x1, y1, w, h, xd, yd)
-          sprite[action][i][1] = flipH(cut(img, x1, y1, w, h, xd, yd))
+          sprite[action][i][0] = cut(img, x1, y1, w, h, ...off(0))
+          sprite[action][i][1] = flipH(cut(img, x1, y1, w, h, ...off(1)))
         } else {
-          sprite[action][i] = cut(img, x1, y1, w, h, xd, yd)
+          sprite[action][i] = cut(img, x1, y1, w, h, ...off(0))
         }
       }
     } else {
       if (ultraMirror) {
-        sprite[action][0] = cut(img, x, y, w, h, xd, yd)
-        sprite[action][1] = rotate90(cut(img, x, y, w, h, xd, yd))
-        sprite[action][2] = rotate90(rotate90(cut(img, x, y, w, h, xd, yd)))
-        sprite[action][3] = unRotate(cut(img, x, y, w, h, xd, yd))
+        sprite[action][0] = cut(img, x, y, w, h, ...off(0))
+        sprite[action][1] = rotate90(cut(img, x, y, w, h, ...off(1)))
+        sprite[action][2] = rotate90(rotate90(cut(img, x, y, w, h, ...off(2))))
+        sprite[action][3] = unRotate(cut(img, x, y, w, h, ...off(3)))
       } else if (mirror) {
-        sprite[action][0] = cut(img, x, y, w, h, xd, yd)
-        sprite[action][1] = flipH(cut(img, x, y, w, h, xd, yd))
+        sprite[action][0] = cut(img, x, y, w, h, ...off(0))
+        sprite[action][1] = flipH(cut(img, x, y, w, h, ...off(1)))
       } else {
-        sprite[action] = cut(img, x, y, w, h, xd, yd)
+        sprite[action] = cut(img, x, y, w, h, ...off(0))
       }
     }
   })

@@ -55,6 +55,10 @@ class Canvas extends Frame {
   get topCtx() { return this.sprite.topCtx }
   get isTopCtx() { return this.topCtx == this.sprite }
 
+  get textSize() { return this.sprite.textSize }
+  get textStyle() { return this.sprite.textStyle }
+  get textFont() { return this.sprite.textFont }
+
   setScale(x, y) { return this.setSize(this.w, this.h, x, y); }
   setCtx(ctx) { this.cxt = ctx; this.xm = 1; this.ym = 1; return this; }
 
@@ -110,16 +114,39 @@ class Canvas extends Frame {
     this.topCtx._strokeWeight(w)
   }
 
+  textFont(f) {
+    this.topCtx._textFont(f)
+  }
+
+  textSize(s) {
+    this.topCtx._textSize(s)
+  }
+
+  textS(s) {
+    this.topCtx._textSize(s)
+  }
+
+  textAlign(w, h) {
+    this.topCtx._textAlign(w, h)
+  }
+
+  text(txt, x, y) {
+    this._text(txt, x, y)
+  }
+
+  _text(txt, x, y) {
+    this.sprite._text(txt, ...this.multiply([x, y]))
+  }
+
   multiply(args, q = false) {
     if (this instanceof Layer && !(this instanceof Camera)) {
-      const {align, overflow} = this.cameraMode
-      if (align == 'center') {
-        args[0] = (args[0] - this.center.x) * this.xm + this.sprite.w / 2
-        args[1] = (args[1] - this.center.y) * this.ym + this.sprite.h / 2
-        if (q) {
-          args[2] *= this.xm
-          args[3] *= this.ym
-        }
+      const {xAlign, yAlign, overflow} = this.cameraMode
+
+      args[0] = (args[0] - (this.x + this.w * xAlign)) * this.xm + this.sprite.w * xAlign
+      args[1] = (args[1] - (this.y + this.h * yAlign)) * this.ym + this.sprite.h * yAlign
+      if (q) {
+        args[2] *= this.xm
+        args[3] *= this.ym
       }
     } else {
       // console.log('asdf');
