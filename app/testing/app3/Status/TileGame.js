@@ -1,33 +1,16 @@
-function addMapping(target, name, q = Infinity, mapping) {
+function addCord(target, name, q = Infinity) {
   Object.defineProperty(target[name], 'cord', {
-    value: (...args) => target[name](...args.splice(0, q).map(mapping), ...args)
+    value: value = (...args) => target[name](...args.splice(0, q).map(val => target.cord(val)), ...args)
   })
 }
 
-function addCord(target, name, q = 0) {
-  let value
-  if (q) {
-    value = (...args) => target[name](...args.splice(0, q).map(val => target.cord(val)), ...args)
-  } else {
-    value = (...args) => target[name](...args.map(val => target.cord(val)))
-  }
-  Object.defineProperty(target[name], 'cord', {value})
-}
-
-function addChunks(target, name, q = 0) {
-  let value
-  if (q) {
-    value = (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtCord(val)), ...args)
-  } else {
-    value = (...args) => target[name](...args.map(val => target.ChunkAtCord(val)))
-  }
-  Object.defineProperty(target[name], 'cord', {value})
-  if (q) {
-    value = (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtTile(val)), ...args)
-  } else {
-    value = (...args) => target[name](...args.map(val => target.ChunkAtTile(val)))
-  }
-  Object.defineProperty(target[name], 'tile', {value})
+function addChunks(target, name, q = Infinity) {
+  Object.defineProperty(target[name], 'cord', {
+    value: (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtCord(val)), ...args)
+  })
+  Object.defineProperty(target[name], 'tile', {
+    value: (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtTile(val)), ...args)
+  })
 }
 
 class TileGame extends SpriteLayer {
