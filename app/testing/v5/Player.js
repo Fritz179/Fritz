@@ -8,43 +8,74 @@ class Player extends Entity {
     this.speed = 0.7
     this.autoDir = true
     this.autoWalk = 10
-    this.setDrag(0.85, 0.99)
+
+    this.setDrag(0.85, 0.99).setAcc(0, 0.25)
+
     this.breakBlock = false
-    this.deathRadius = 5
     this.createNew = false
     this.jumpRequest = 0
-    this.ya = 0.25
+    this.creative = false
+
+    this.setGamemode(true)
   }
 
   fixedUpdate({updatePhisics}) {
-    this.spriteAction = abs(this.movingFor) > 1 ? 'run' : 'idle'
+    updatePhisics()
+
     if (this.createNew) {
       this.createNew = false
       this.layer.addChild(new Player(this.x + random() * 200 - 100, this.y + random() * 200 - 100))
     }
 
-    if (this.jumpRequest > 0) {
-      this.jumpRequest--
+    if (this.creative) {
+      if (this.jumpRequest) {
+        this.yv = -5
+      }
+    } else {
+      if (this.jumpRequest > 0) {
+        this.jumpRequest--
 
-      if (this.isOnGround()) {
-        this.jumpRemanining = 10
-        this.yv = -3.5
+        if (this.isOnGround()) {
+          this.jumpRemanining = 10
+          this.yv = -3.5
+        }
+      }
+
+      if (this.jumpRemanining) {
+        this.jumpRemanining--
+
+        if (this.jumpRemanining < 6) {
+          this.yv = -4 * (1 + this.jumpRemanining / 180)
+        }
       }
     }
+  }
 
-    if (this.jumpRemanining) {
-      this.jumpRemanining--
+  setGamemode(survival) {
+    if (survival) {
 
-      if (this.jumpRemanining < 6) {
-        this.yv = -4 * (1 + this.jumpRemanining / 180)
-      }
+    } else {
+
     }
 
-    updatePhisics()
+    this.creative = !survival
+  }
+
+  getSprite() {
+    if (this.yv || !this.isOnGround()) {
+      this.spriteAction = 'jump'
+      if (abs(this.yv) <= 7) {
+        this.spriteFrame = 1
+      } else {
+        this.spriteFrame = this.yv > 0 ? 0 : 2
+      }
+    } else {
+      this.spriteAction = abs(this.movingFor) > 1 ? 'run' : 'idle'
+    }
   }
 
   cancelJump() {
-    this.jumpRequest = 0
+    this.jumpRequest = this.creative ? 0 : 2
     this.jumpRemanining = 0
     this.ya = 0.25
   }
@@ -70,8 +101,10 @@ class Player extends Entity {
       case 'c': this.breakBlock = !this.breakBlock; break;
       case 'r': masterLayer.changed = true; break;
       case 'n': this.createNew = true; break;
-      case 'b': this.explode(); break;
+      case 'b': this.explode(5, 5); break;
+      case 'y': this.explode(50, 10); break;
       case ' ': this.jumpRequest = Infinity; break;
+      case 'g': this.setGamemode(this.creative); break;
     }
   }
 
@@ -83,9 +116,9 @@ class Player extends Entity {
     }
   }
 
-  explode() {
-    for (let x = -this.deathRadius; x <= this.deathRadius + 1; x++) {
-      for (let y = -this.deathRadius + 1; y <= this.deathRadius + 2; y++) {
+  explode(w, h) {
+    for (let x = -w + 1; x < w + 1; x++) {
+      for (let y = -h + 1; y < h + 1; y++) {
         this.layer.setTileAt.cord(this.x + x * 16, this.y + y * 16, 0)
       }
     }

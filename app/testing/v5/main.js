@@ -8,28 +8,8 @@ function setup() {
   addLayer(new Overlay(player))
 }
 
-class Overlay extends Layer {
-  constructor(player) {
-    super()
-
-    this.player = player
-    this.setCameraMode({align: 'right-top', overflow: 'display'})
-  }
-
-  getSprite(ctx) {
-    this.textSize(50)
-    this.textFont('consolas')
-    this.textAlign('right', 'top')
-
-    const {x, y} = this.player
-    const f = Math.floor
-
-    this.text(`FPS: ${timer.fps}, UPS: ${timer.ups}`, -10, 10)
-    this.text(`X: ${f(x)}, ${f(x / 16)}, ${f(x / 256)}`, -10, 60)
-    this.text(`Y: ${f(y)}, ${f(y / 16)}, ${f(y / 256)}`, -10, 110)
-
-    return false
-  }
+function tp(x, y = (ceil(-noise(0) * 50)) * 16 - 24) {
+  masterLayer.children.values().next().value.player.pos = {x, y}
 }
 
 class Main extends TileGame {
@@ -46,7 +26,7 @@ class Main extends TileGame {
 
     this.loadMap({
      width: 16,
-     map: [
+     data: [
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -90,14 +70,14 @@ class Main extends TileGame {
   chunkLoader(x, y) {
     const id = `${x}_${y}`
     if (chunks[id]) {
-      return {map: chunks[id]}
+      return {data: chunks[id]}
     }
 
-    const chunk = {map: []}
+    const chunk = {data: []}
 
     for (let xb = 0; xb < 16; xb++) {
       for (let yb = 0; yb < 16; yb++) {
-        chunk.map[xb + yb * 16] = tileAt(x * 16 + xb, y * 16 + yb)
+        chunk.data[xb + yb * 16] = tileAt(x * 16 + xb, y * 16 + yb)
       }
     }
 

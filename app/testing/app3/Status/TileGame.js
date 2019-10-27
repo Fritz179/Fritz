@@ -194,7 +194,7 @@ class TileGame extends SpriteLayer {
     this.update()
   }
 
-  loadChunkAt(data, chunkX, chunkY) {
+  loadChunkAt(json, chunkX, chunkY) {
     //create new chunk
     const chunk = new Chunk(this)
 
@@ -202,14 +202,14 @@ class TileGame extends SpriteLayer {
     if (!this.chunks[chunkX]) this.chunks[chunkX] = []
     this.chunks[chunkX][chunkY] = chunk
 
-    chunk.load(data.map)
+    chunk.load(json.data)
 
-    for (key in data.toSpawn) {
+    for (key in json.toSpawn) {
       key = key.toLowerCase()
       if (!this.spawners[key]) {
         throw new Error(`failed to load map ${name}, ${key} spawner not found`)
       }
-      data.toSpawn[key].forEach(args => {
+      json.toSpawn[key].forEach(args => {
         this.spawn(new this.map.spawners[key](...args))
       })
     }
@@ -366,15 +366,15 @@ class TileGame extends SpriteLayer {
   }
 
   loadMap(map) {
-    if (Array.isArray(map)) map = {map}
+    if (Array.isArray(map)) map = {data: map}
 
     if (!map.width) map.width = 16
-    if ((map.map.length / map.width) % 1 != 0) {
+    if ((map.data.length / map.width) % 1 != 0) {
       console.error(map);
       throw new Error('Cannot load map, invalid measures...')
     }
 
-    this.setChunkSize(map.width, map.map.length / map.width)
+    this.setChunkSize(map.width, map.data.length / map.width)
 
     this.clearChunks()
     this.loadChunkAt(map, 0, 0)
