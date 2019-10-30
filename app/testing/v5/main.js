@@ -1,15 +1,17 @@
 loadSprite('player', './img/sprites')
+loadSprite('pointer', './img/sprites')
 loadSprite('tiles', {path: './img/sprites', type: 'tiles'})
 let chunks = {}
+let player
 
 function setup() {
-  const player = new Player(0, (ceil(-noise(0) * 50)) * 16 - 24)
+  player = new Player(0, (ceil(-noise(0) * 50)) * 16 - 24)
   addLayer(new Main(player))
   addLayer(new Overlay(player))
 }
 
 function tp(x, y = (ceil(-noise(0) * 50)) * 16 - 24) {
-  masterLayer.children.values().next().value.player.pos = {x, y}
+  player.pos = {x, y}
 }
 
 class Main extends TileGame {
@@ -24,6 +26,8 @@ class Main extends TileGame {
     this.center = player.center
     this.addChild(player)
 
+    this.addChild(this.pointer = new Pointer(player))
+
     this.loadMap({
      width: 16,
      data: [
@@ -34,9 +38,9 @@ class Main extends TileGame {
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0,
-       0, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 0,
+       0, 1, 1, 1, 1, 1, 2, 0, 2, 1, 1, 1, 1, 1, 1, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -49,11 +53,11 @@ class Main extends TileGame {
    this.setChunkLoader(2, 5)
   }
 
-  onMouse({x, y}) {
-    this.setTileAt.cord(x, y, 0)
+  onDrag({x, y}) {
+    this.pointer.moveTo(x, y)
   }
 
-  onWheel(dir) {
+  onWheel({dir}) {
     this.zoom -= dir
 
     if (this.zoom <= 0) this.zoom = debugEnabled ? 0.5 : 1
@@ -64,6 +68,7 @@ class Main extends TileGame {
     masterLayer.changed = true
 
     const d  = 6 / this.zoom
+
     this.setChunkLoader(d > 1 ? d : 1, 7)
   }
 

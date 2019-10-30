@@ -31,7 +31,7 @@ function createCrawler(eventName, allowed = () => true) { // global
     }
     if (typeof target.forEachChild == 'function') {
       target.forEachChild(child => {
-        crawl(child, arg, target)
+        crawl(child, Object.assign({}, arg), target)
       })
     }
   }
@@ -91,14 +91,14 @@ window.addEventListener('mousedown', ({x, y}) => {
 createCrawler('onMouseDrag', mapMouse(true))
 createCrawler('onDrag', mapMouse(true))
 createCrawler('onClickDrag', mapMouse(true, (t, a, p) => t._wasOnClick))
-// window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
-//   const arg = {x, y, xd: movementX, yd: movementY}
-//   crawl('onDrag', {...arg})
-//   if (mouseIsClicked) {
-//     crawl('onMouseDrag', {...arg})
-//     crawl('onClickDrag', {...arg})
-//   }
-// });
+window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
+  const arg = {x, y, xd: movementX, yd: movementY}
+  crawl('onDrag', {...arg})
+  if (mouseIsClicked) {
+    crawl('onMouseDrag', {...arg})
+    crawl('onClickDrag', {...arg})
+  }
+});
 
 //onMouseUp and onClickUp crawlers
 createCrawler('onMouseUp', mapMouse(false))
@@ -163,5 +163,5 @@ function getKey(event) {
 //wheel crawler
 createCrawler('onWheel')
 window.addEventListener('wheel', event => {
-  crawl('onWheel', Math.sign(event.deltaY))
+  crawl('onWheel', {dir: Math.sign(event.deltaY)})
 });

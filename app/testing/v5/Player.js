@@ -105,6 +105,7 @@ class Player extends Entity {
       case 'y': this.explode(50, 10); break;
       case ' ': this.jumpRequest = Infinity; break;
       case 'g': this.setGamemode(this.creative); break;
+      case 'j': this.yv = -15; break;
     }
   }
 

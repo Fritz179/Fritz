@@ -141,6 +141,7 @@ addParser('animation', (img, json) => {
 
     if (animation.recursive) {
       const wrap = img.width
+      sprite[action].mirrored = false
 
       //once defaults are setted, loop through animation
       for (let i = 0; i < animation.recursive; i++) {
@@ -148,6 +149,7 @@ addParser('animation', (img, json) => {
         let x1 = (x + w * i) % wrap
         let y1 = y + h * Math.floor((x + w * i) / wrap)
         if (!Number.isInteger(x1) || !Number.isInteger(y1) || !action) throw new Error(`invalid arguments for ${name} sprite`)
+        
         if (ultraMirror) {
           sprite[action][i][0] = cut(img, x1, y1, w, h, ...off(0))
           sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h, ...off(1)))
@@ -161,6 +163,7 @@ addParser('animation', (img, json) => {
         }
       }
     } else {
+      sprite[action].mirrored = true
       if (ultraMirror) {
         sprite[action][0] = cut(img, x, y, w, h, ...off(0))
         sprite[action][1] = rotate90(cut(img, x, y, w, h, ...off(1)))

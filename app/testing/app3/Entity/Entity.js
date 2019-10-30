@@ -28,24 +28,26 @@ class Entity extends Body {
           if (!this.spriteAction) console.error('No sprite action', this);
           if (Array.isArray(this.sprite[this.spriteAction])) {
             const action = this.sprite[this.spriteAction]
-
             if (Array.isArray(action)) {
               if (Array.isArray(action[0])) {
                 const frame = action[floor(abs(this.spriteFrame % action.length))]
-
                 if (Array.isArray(frame)) {
                   return frame[this.spriteDir]
                 } else {
                   return frame
                 }
               } else {
-                return action[this.spriteDir]
+                if (action.mirrored) {
+                  return action[this.spriteDir]
+                } else {
+                  return action[this.spriteFrame]
+                }
               }
             } else {
               return action
             }
           } else {
-            return this.sprite[this.spriteDir]
+            return this.sprite[this.spriteAction]
           }
         } else if (ret !== false) {
           return this.sprite
