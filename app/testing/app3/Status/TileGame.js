@@ -33,17 +33,15 @@ class TileGame extends SpriteLayer {
     this.postW = this.postH = null
 
     this.update.addPre(() => {
-      let changed = false
       this.forEachChunk((chunk, x, y) => {
         const updated = chunk.update()
 
         if (updated || chunk.changed) {
-          chunk.changed = false
-          changed = true
+          this.changed = HARD
         }
       })
 
-      return this.changed = changed
+      return this.changed
     })
     this.fixedUpdate.addPre(() => this.forEachChunk(chunk => chunk.fixedUpdate()))
 
@@ -57,6 +55,8 @@ class TileGame extends SpriteLayer {
         } else if (sprite !== false) {
           console.error('Invalid chunk getSprite return?');
         }
+
+        chunk.changed = false
       })
     })
 

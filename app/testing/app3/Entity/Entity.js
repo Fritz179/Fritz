@@ -58,19 +58,19 @@ class Entity extends Body {
 
   set spriteAction(action) {
     if (this._spriteAction != action) {
-      this._spriteChanged = true
+      this.changed = HARD
       this._spriteAction = action
     }
   }
   set spriteFrame(frame) {
     if (this._spriteFrame != frame) {
-      this._spriteChanged = true
+      this.changed = HARD
       this._spriteFrame = frame
     }
   }
   set spriteDir(dir) {
     if (this._spriteDir != dir) {
-      this._spriteChanged = true
+      this.changed = HARD
       this._spriteDir = dir
     }
   }
@@ -81,7 +81,8 @@ class Entity extends Body {
   get spriteDir() { return this._spriteDir }
 
   setSprite(sprite) {
-    this._spriteChanged = true
+    this.changed = HARD
+
     if (typeof sprite == 'string') {
       if (!sprites[sprite]) console.error(`Invalid sprite: ${sprite}`);
       this.sprite = sprites[sprite]

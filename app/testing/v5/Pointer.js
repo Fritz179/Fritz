@@ -20,42 +20,44 @@ class Pointer extends Entity {
   update() {
     const old = {x: this.x / 16, y: this.y / 16}
     const [x, y] = this.layer.cord(this.layer.x - this.xOff, this.layer.y - this.yOff)
-    this.setPos(x * 16, y * 16)
+    const tile = this.layer.tileAt(x, y)
 
     if (x != old.x || y != old.y) {
-      this.updateDiggingTile(x, y)
+      if (tile) {
+        this.setPos(x * 16, y * 16)
+      }
+      this.diggingFor = 0
     }
 
-    if (!this.layer.tileAt(x, y)) {
+    if (!tile) {
       this.spriteAction = 'clear'
-      this.updateDiggingTile(x, y)
+      this.diggingFor = 0
     } else {
       if (this.digging) {
         this.diggingFor++
         this.spriteAction = 'digging'
 
-        if (this.diggingFor >= this.diggingTime) {
+        if (this.diggingFor >= this.diggingTime(tile)) {
+          this.layer.addChild(new Drop(this.x + this.w / 2, this.y + this.h / 2, tile))
           this.layer.setTileAt(x, y, 0)
         }
 
-        this.spriteFrame = ceil(6 * this.diggingFor / this.diggingTime) - 1
+        this.spriteFrame = ceil(6 * this.diggingFor / this.diggingTime(tile)) - 1
       } else {
         this.spriteAction = 'idle'
       }
     }
   }
 
-  updateDiggingTile(x, y) {
-    console.log();
-    this.diggingFor = 0
-    this.diggingTime = this.player.creative ? 1 : [0, 20, 20, 60][this.layer.tileAt(x, y)]
+  diggingTime(tile) {
+    return this.player.creative ? 1 : [0, 20, 20, 60][tile]
   }
 
-  onClick() {
+  onMouse() {
     this.digging = true
   }
 
-  onClickUp() {
+  onMouseUp() {
     this.digging = false
   }
 

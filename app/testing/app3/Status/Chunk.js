@@ -4,12 +4,8 @@ class Chunk extends Canvas {
 
     this.map = map
     this.tiles = null
-    this.tileChanged = true
     this.originalChunk = true
   }
-
-  get changed() { return this.tileChanged || this._posChanged }
-  set changed(bool = false) { this.tileChanged = this._posChanged = bool }
 
   getSprite() {
     return this.sprite
@@ -43,7 +39,7 @@ class Chunk extends Canvas {
     const sprite = sprites.tiles[tile]
 
     this.image(sprite, x * w, y * w, w, w)
-    this.tileChanged = true
+    this.changed = HARD
     this.originalChunk = false
   }
 }

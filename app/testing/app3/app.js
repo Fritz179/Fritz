@@ -1,8 +1,20 @@
 const timer = new Timer(60, fixedUpdate, update, false)
 let masterLayer = new Layer()
-let a = false
 
-const {round, floor, ceil, PI, abs, min, max, sign, random} = Math
+const {round, floor, ceil, PI, abs, min, max, sign} = Math
+const random = (...args) => {
+  if (args.length == 0) {
+    return Math.random()
+  } else if (args.length == 1) {
+    if (Array.isArray(args[0])) {
+      return args[0][Math.floor(Math.random() * min.length)]
+    } else {
+      return Math.random() * args[0]
+    }
+  } else {
+    return Math.random() * (args[1] - args[0]) + args[0]
+  }
+}
 
 function cap(value, max) {
   if (!(typeof max == 'number')) {
@@ -58,13 +70,7 @@ class Camera extends SpriteLayer {
     const r = rw < rh ? rw : rh
 
     this.setSize(w, h)
-    // this.center = {x: 1920 / 2, y: 1080 / 2}
-
   }
-
-  // multiply(args) {
-  //   return args
-  // }
 
   getSprite() {
     this.clear()
@@ -77,18 +83,9 @@ class Camera extends SpriteLayer {
         console.error(child, sprite)
         throw new Error(`illegal getsprite return!!`)
       }
-    })
 
-    // this.children.forEach(child => {
-    //   if (debugEnabled) this.drawHitbox(...child.frame, 'green')
-    //   const sprite = child.getSprite(this.sprite)
-    //   if (sprite) {
-    //     this.image(sprite, child.x + sprite.x, child.y + sprite.y)
-    //   } else if (sprite !== false) {
-    //     console.error(child, sprite)
-    //     throw new Error(`illegal getsprite return!!`)
-    //   }
-    // })
+      child.changed = false
+    })
 
     return false
   }

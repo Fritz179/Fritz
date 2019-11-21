@@ -74,14 +74,13 @@ class Canvas extends Frame {
       const state = getState(this.topCtx.ctx)
       this.sprite.canvas.width = w / this.xm
       this.sprite.canvas.height = h / this.ym
-      this.changed = true
       setState(this.topCtx.ctx, state)
     } else {
       this.w = w / this.xm
       this.h = h / this.ym
     }
 
-    this._spriteChanged = true
+    this.changed = HARD
 
     return this
   }

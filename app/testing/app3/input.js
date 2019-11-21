@@ -129,7 +129,7 @@ window.addEventListener('keydown', event => {
 
     if (key == '$') {
       debugEnabled = !debugEnabled
-      masterLayer.changed = true
+      masterLayer.changed = HARD
     }
   }
 });

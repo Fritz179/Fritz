@@ -24,7 +24,7 @@ class Player extends Entity {
 
     if (this.createNew) {
       this.createNew = false
-      this.layer.addChild(new Player(this.x + random() * 200 - 100, this.y + random() * 200 - 100))
+      this.layer.addChild(new Player(this.x + random(-100, 100), this.y + random(-100, 100)))
     }
 
     if (this.creative) {
@@ -52,12 +52,6 @@ class Player extends Entity {
   }
 
   setGamemode(survival) {
-    if (survival) {
-
-    } else {
-
-    }
-
     this.creative = !survival
   }
 
@@ -99,7 +93,7 @@ class Player extends Entity {
       case 'p': console.log(`x: ${round(this.x)}, y: ${round(this.y)}`); break;
       case 'x': this.collideWithMap = !this.collideWithMap; break;
       case 'c': this.breakBlock = !this.breakBlock; break;
-      case 'r': masterLayer.changed = true; break;
+      case 'r': masterLayer.changed = HARD; break;
       case 'n': this.createNew = true; break;
       case 'b': this.explode(5, 5); break;
       case 'y': this.explode(50, 10); break;

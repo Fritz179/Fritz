@@ -16,6 +16,8 @@ class Body extends Frame {
     this.movingFor = 0
     this._minVel = 0.1
 
+    this.lifeTime = Infinity
+
     createMiddlwere(this, 'onBlockCollsion', args => {
       args.solveCollision = () => {
         const {side, x, y, s} = args
@@ -56,6 +58,11 @@ class Body extends Frame {
         this.movingFor += this.xv
       } else {
         this.movingFor = this.xv
+      }
+
+      this.lifeTime--
+      if (this.lifeTime <= 0) {
+        this.despawn()
       }
 
       args.updatePhisics = () => {

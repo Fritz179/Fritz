@@ -1,6 +1,9 @@
-// app\testing\app3, app\testing\v5, !libraries, !app\testing\app3\old
-// !app\testing\v5\old, app\testing\app3, app\testing\v5, !libraries, !app\testing\app3\old
-// app\testing\app3, app\testing\v5, !libraries
+// al cahnged...
+// al ga la Frame, al cambia etweder par la pusizion o par la sprite
+// nal update al fa return changed
+// nal getSprite al controla i fiöi, sa i gan _posChanged e i gan an buffer, return buffer
+// altriment ciama getSprite
+// tö via al cahnged noma dopu al getSprite(al la fa al parent)
 
 // Block al ga [x, y, w, h] e funzion par al moa [setPos, setSize, setRight, left, bottom]
 

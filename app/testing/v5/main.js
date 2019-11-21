@@ -65,7 +65,7 @@ class Main extends TileGame {
     else this.zoom |= 0
 
     this.setSize(1920, 1080, this.zoom)
-    masterLayer.changed = true
+    masterLayer.changed = SOFT
 
     const d  = 6 / this.zoom
 
