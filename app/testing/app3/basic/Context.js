@@ -104,6 +104,7 @@ class Context extends Block {
     const xm = sw / dw
     const ym = sh / dh
 
+
     const f = Math.floor
     const c = Math.ceil
 
@@ -157,7 +158,13 @@ class Context extends Block {
         sh = diff
       }
 
-      if (sw != dw * xm || sh != dh * ym || !dw) debugger
+      if (sw != dw * xm || sh != dh * ym || !dw) {
+        if (abs(sw - dw * xm > 0.0001) || abs(sh - dh * ym) > 0.0001) {
+          debugger
+        } else {
+          console.warn('false positive');
+        }
+      }
       if (dx >= destination.width || dy >= destination.height) debugger
       if (sx + sw < 0 || sy + sh < 0 || dx + dw < 0 || dy + dw < 0) debugger
     }
@@ -203,7 +210,7 @@ class Context extends Block {
 
   _rect([x, y, w, h, color, stroke]) {
     const {ctx} = this
-    
+
     if (ctx.lineWidth % 2 == 1) {
       ctx.translate(0.5, 0.5)
     }

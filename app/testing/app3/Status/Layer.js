@@ -4,7 +4,7 @@ class Layer extends Canvas {
     this.children = new Set()
     this.cameraMode = {xAlign: 0.5, yAlign: 0.5, overflow: 'dispaly'}
 
-    this.getSprite.addPre((parentSprite) => {
+    this.update.addPre((parentSprite) => {
       // always update ctx, to draw image on right place
       if (!this.buffer) {
         this.sprite = parentSprite
@@ -32,6 +32,14 @@ class Layer extends Canvas {
     } else {
       this.children.add(child)
       child.layer = this
+
+      const {name} = child.constructor
+
+      if (!this.children[name]) {
+        this.children[name] = [child]
+      } else {
+        this.children[name].push(child)
+      }
     }
   }
 
@@ -41,15 +49,16 @@ class Layer extends Canvas {
     } else {
       child.layer = null
       this.changed = HARD
+
+      const map = this.children[child.constructor.name]
+      map.splice(map.indexOf(child), 1)
     }
   }
 
   clearChildren() {
     this.children.forEach(child => {
-      child.layer = null
+      this.deleteChild(child)
     })
-    this.children.clear()
-    this.changed = HARD
   }
 
   setChild(child) {
@@ -62,5 +71,11 @@ class Layer extends Canvas {
     this.children.forEach((value, key, set) => {
       fun(key, i++, set)
     })
+  }
+
+  onResize({w, h}) {
+    if (this.isTopCtx) {
+      this.setSize(w, h)
+    }
   }
 }

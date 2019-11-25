@@ -5,21 +5,22 @@ let chunks = {}
 let player
 
 function setup() {
-  player = new Player(0, (ceil(-noise(0) * 50)) * 16 - 24)
+  player = new Player(1600, (ceil(-noise(1600 / 320) * 50)) * 16 - 24)
   addLayer(new Main(player))
   addLayer(new Overlay(player))
 }
 
-function tp(x, y = (ceil(-noise(0) * 50)) * 16 - 24) {
+function tp(x, y = false) {
+  if (y === false) y = (ceil(-noise(x / 320) * 50)) * 16 - 24
   player.pos = {x, y}
 }
 
 class Main extends TileGame {
   constructor(player) {
-    super()
+    super('auto')
 
     this.zoom = 3
-    this.setScale(this.zoom, this.zoom)
+    this.setScale(this.zoom)
     this.setCameraMode({align: 'center', overflow: 'display'})
 
     this.player = player
@@ -64,8 +65,7 @@ class Main extends TileGame {
     else if (this.zoom > 10) this.zoom = 10
     else this.zoom |= 0
 
-    this.setSize(1920, 1080, this.zoom)
-    masterLayer.changed = SOFT
+    this.setScale(this.zoom)
 
     const d  = 6 / this.zoom
 
@@ -105,5 +105,8 @@ class Main extends TileGame {
 
   update() {
     this.center = this.player.center
+    // const floor = Math.round
+    // const {x, y} = this.player.center
+    // this.center = {x: floor(x), y: floor(y)}
   }
 }

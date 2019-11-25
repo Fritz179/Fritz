@@ -55,9 +55,7 @@ function crawl(...args) { // global
 
 function mapMouse(drag, allow) {
   return (target, args, parent) => {
-    if (target instanceof Camera) {
-
-    } else if (target instanceof Layer) {
+    if (target instanceof Layer) {
       const {xAlign, yAlign, overflow} = target.cameraMode
 
       args.x = (args.x - parent.w * xAlign) / target.xm + (target.x + target.w * xAlign)
@@ -164,4 +162,12 @@ function getKey(event) {
 createCrawler('onWheel')
 window.addEventListener('wheel', event => {
   crawl('onWheel', {dir: Math.sign(event.deltaY)})
+});
+
+createCrawler('onResize', t => t instanceof Layer)
+window.addEventListener('resize', () => {
+  const width = window.innerWidth
+  const height = window.innerHeight
+
+  crawl('onResize', {width, height, w: width, h: height})
 });

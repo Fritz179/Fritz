@@ -1,6 +1,6 @@
 class Drop extends Entity {
   constructor(x, y, type) {
-    super(x, y, 16 / 3, 16 / 3)
+    super(x, y, 16 / 2, 16 / 2)
 
     this.setSprite('tiles')
     this.setDrag(0.95, 0.99)
@@ -12,7 +12,7 @@ class Drop extends Entity {
   }
 
   getSprite(ctx) {
-    ctx.image(this.sprite[this.blockId], this.x, this.y, 16 / 3, 16 / 3)
+    ctx.image(this.sprite[this.blockId], this.x, this.y, 16 / 2, 16 / 2)
 
     return false
   }

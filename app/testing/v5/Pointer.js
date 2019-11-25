@@ -29,7 +29,7 @@ class Pointer extends Entity {
       this.diggingFor = 0
     }
 
-    if (!tile) {
+    if (tile < 1) {
       this.spriteAction = 'clear'
       this.diggingFor = 0
     } else {
@@ -43,6 +43,8 @@ class Pointer extends Entity {
         }
 
         this.spriteFrame = ceil(6 * this.diggingFor / this.diggingTime(tile)) - 1
+
+
       } else {
         this.spriteAction = 'idle'
       }

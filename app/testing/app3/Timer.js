@@ -12,6 +12,7 @@ class Timer {
     this.throttle = throttle
     this._fps = this.fps = 0
     this._ups = this.ups = 0
+    this._runTime = this.runTime = 0
 
     if (start) {
       this.start()
@@ -42,13 +43,16 @@ class Timer {
       this.updated = false
       this.update(timeStamp)
       this._fps++
+
+      this._runTime += window.performance.now() - timeStamp
     }
 
     if (this.lastTime >= 1000) {
       this.lastTime -= 1000
       this.fps = this._fps
       this.ups = this._ups
-      this._fps = this._ups = 0
+      this.runTime = this._runTime / this.fps
+      this._fps = this._ups = this._runTime = 0
     }
 
     this.request = window.requestAnimationFrame(timeStamp => this.run(timeStamp))

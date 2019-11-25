@@ -12,7 +12,7 @@ class Body extends Frame {
     this.speed = 5
     this.autoMove = true
     this.collideWithMap = true
-    this.collideWithEntities = true
+    this._collideWith = []
     this.movingFor = 0
     this._minVel = 0.1
 
@@ -50,6 +50,12 @@ class Body extends Frame {
         setRectInRect(this, {x: chunkX * w, y: chunkY * h, w, h})
 
         return true
+      }
+
+      args.forceChunkLoad = () => {
+        const {x, y} = this.pos
+
+        this.layer.loadChunkAt(this.layer.chunkLoader(x, y), x, y)
       }
     })
 
@@ -129,6 +135,14 @@ class Body extends Frame {
 
   despawn() {
     this.layer.deleteChild(this)
+  }
+
+  collideWithEntities(entities = []) {
+    if (!Array.isArray(entities)) {
+      entities = [entities]
+    }
+
+    this._collideWith = entities
   }
 
   isOnGround() {

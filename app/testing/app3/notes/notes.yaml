@@ -43,6 +43,9 @@ classes:
     - updates all children
     - getSprite all children
 
+  FrontLayer: [Layer, Canvas(Context, Block), Frame, Block]
+    - setText
+
   TileGame: [(Chunk, Canvas(Context, Block), Frame, Block), SpriteLayer, Layer, Canvas(Context, Block), Frame, Block]
     - chunks...
 

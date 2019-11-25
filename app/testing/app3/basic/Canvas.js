@@ -4,7 +4,22 @@ class Canvas extends Frame {
 
     if (args.length == 1) {
       if (typeof args[0] == 'string') {
-        this.sprite = new Context(document.getElementById(args[0]))
+        let canvas
+
+        if (args[0] == 'auto') {
+          canvas = document.createElement('canvas');
+        } else {
+          canvas = document.getElementById(args[0])
+        }
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        if (!canvas) {
+          throw new Error(`Invalid canvas: ${args[0]}`)
+        }
+
+        this.sprite = new Context(canvas);
       } else {
         this.sprite = args[0]
       }
@@ -59,29 +74,22 @@ class Canvas extends Frame {
   get textStyle() { return this.sprite.textStyle }
   get textFont() { return this.sprite.textFont }
 
-  setScale(x, y) { return this.setSize(this.w, this.h, x, y); }
+  setScale(x = 1, y) { this.xm = x; this.ym = y || x; this.changed = HARD; return this; }
   setCtx(ctx) { this.cxt = ctx; this.xm = 1; this.ym = 1; return this; }
 
-  setSize(w, h, rw, rh) {
-    if (rw) {
-      if (!rh) rh = rw
-      this.xm = rw
-      this.ym = rh
-    }
-
+  setSize(w, h) {
     if (this.buffer) {
       if (this.sprite != this.topCtx) debugger
       const state = getState(this.topCtx.ctx)
-      this.sprite.canvas.width = w / this.xm
-      this.sprite.canvas.height = h / this.ym
+      this.sprite.canvas.width = w
+      this.sprite.canvas.height = h
       setState(this.topCtx.ctx, state)
     } else {
-      this.w = w / this.xm
-      this.h = h / this.ym
+      this.w = w
+      this.h = h
     }
 
     this.changed = HARD
-
     return this
   }
 
@@ -121,10 +129,6 @@ class Canvas extends Frame {
     this.topCtx._textSize(s)
   }
 
-  textS(s) {
-    this.topCtx._textSize(s)
-  }
-
   textAlign(w, h) {
     this.topCtx._textAlign(w, h)
   }
@@ -138,7 +142,7 @@ class Canvas extends Frame {
   }
 
   multiply(args, q = false) {
-    if (this instanceof Layer && !(this instanceof Camera)) {
+    if (this instanceof Layer) {
       const {xAlign, yAlign, overflow} = this.cameraMode
 
       args[0] = (args[0] - (this.x + this.w * xAlign)) * this.xm + this.sprite.w * xAlign
@@ -148,11 +152,11 @@ class Canvas extends Frame {
         args[3] *= this.ym
       }
     } else {
-      // console.log('asdf');
+
       args[0] = (args[0] - this.x) * this.xm
       args[1] = (args[1] - this.y) * this.ym
+
       if (q) {
-        // console.log(this.xm);
         args[2] *= this.xm
         args[3] *= this.ym
       }
@@ -178,6 +182,7 @@ class Canvas extends Frame {
 
     if (canvas instanceof Canvas) canvas = canvas.sprite.canvas
     else if (canvas instanceof Context) canvas = canvas.canvas
+
     this._image(
       canvas,
       args[0] || 0, args[1] || 0,

@@ -7,7 +7,7 @@ class Player extends Entity {
     this.spriteAction = 'idle'
     this.speed = 0.7
     this.autoDir = true
-    this.autoWalk = 10
+    this.autoWalk = 12
 
     this.setDrag(0.85, 0.99).setAcc(0, 0.25)
 
@@ -53,6 +53,9 @@ class Player extends Entity {
 
   setGamemode(survival) {
     this.creative = !survival
+    this.speed = survival ? 0.7 : 1.4
+
+    if (this.xa) this.xa = this.speed * sign(this.xa)
   }
 
   getSprite() {
@@ -117,5 +120,9 @@ class Player extends Entity {
         this.layer.setTileAt.cord(this.x + x * 16, this.y + y * 16, 0)
       }
     }
+  }
+
+  onUnloadedChunk({forceChunkLoad}) {
+    forceChunkLoad()
   }
 }
