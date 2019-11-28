@@ -39,11 +39,20 @@ function update() {
   }
 }
 
+function testPreloadCounter() {
+  if (preloadCounter == 1) {
+    masterLayer = new SpriteLayer('screen')
+    setup()
+    decrementPreloadCounter()
+  } else {
+    requestAnimationFrame(testPreloadCounter)
+  }
+}
+
 window.addEventListener("load", () => {
-  masterLayer = new SpriteLayer('screen')
-  setup()
-  decrementPreloadCounter()
+  testPreloadCounter()
 })
+
 
 function addLayer(child) {
   masterLayer.addChild(child)

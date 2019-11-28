@@ -1,14 +1,20 @@
 loadSprite('player', './img/sprites')
 loadSprite('pointer', './img/sprites')
+loadSprite('slot', {path: './img/sprites', json: false})
 loadSprite('tiles', {path: './img/sprites', type: 'tiles'})
 let chunks = {}
 let player
 
 function setup() {
   player = new Player(1600, (ceil(-noise(1600 / 320) * 50)) * 16 - 24)
+  player.inventory = new Inventory()
+
   addLayer(new Main(player))
+  addLayer(player.inventory)
   addLayer(new Overlay(player))
 }
+
+addCollision(Player, Drop)
 
 function tp(x, y = false) {
   if (y === false) y = (ceil(-noise(x / 320) * 50)) * 16 - 24

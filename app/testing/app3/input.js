@@ -90,11 +90,11 @@ createCrawler('onMouseDrag', mapMouse(true))
 createCrawler('onDrag', mapMouse(true))
 createCrawler('onClickDrag', mapMouse(true, (t, a, p) => t._wasOnClick))
 window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
-  const arg = {x, y, xd: movementX, yd: movementY}
-  crawl('onDrag', {...arg})
+  const args = {x, y, xd: movementX, yd: movementY}
+  crawl('onDrag', Object.assign({}, args))
   if (mouseIsClicked) {
-    crawl('onMouseDrag', {...arg})
-    crawl('onClickDrag', {...arg})
+    crawl('onMouseDrag', Object.assign({}, args))
+    crawl('onClickDrag', Object.assign({}, args))
   }
 });
 

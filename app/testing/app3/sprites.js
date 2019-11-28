@@ -44,10 +44,15 @@ function loadSprite(name, options = {}, callback) {
 
   function parse(...args) {
     const output = parser(...args)
-    addDefaultOptions(sprite, output)
 
-    if (typeof callback == 'function') {
-      callback(output)
+    if (output instanceof Canvas) {
+      sprites[name] = output
+    } else {
+      addDefaultOptions(sprite, output)
+
+      if (typeof callback == 'function') {
+        callback(output)
+      }
     }
   }
 
@@ -133,6 +138,11 @@ function parsePacmanTiles(img) {
 }
 
 addParser('animation', (img, json) => {
+  if (!json) {
+    console.log(img);
+    return new Canvas(img)
+  }
+
   const sprite = {}
   json.animations.forEach(animation => {
     const {x, y, w, h, xd, yd, action, xOff = 0, yOff = 0, mirror = json.mirror, ultraMirror = json.ultraMirror} = animation
@@ -149,7 +159,7 @@ addParser('animation', (img, json) => {
         let x1 = (x + w * i) % wrap
         let y1 = y + h * Math.floor((x + w * i) / wrap)
         if (!Number.isInteger(x1) || !Number.isInteger(y1) || !action) throw new Error(`invalid arguments for ${name} sprite`)
-        
+
         if (ultraMirror) {
           sprite[action][i][0] = cut(img, x1, y1, w, h, ...off(0))
           sprite[action][i][1] = rotate90(cut(img, x1, y1, w, h, ...off(1)))

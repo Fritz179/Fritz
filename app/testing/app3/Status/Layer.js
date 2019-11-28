@@ -2,6 +2,8 @@ class Layer extends Canvas {
   constructor(...args) {
     super(...args)
     this.children = new Set()
+    this.children.types = []
+
     this.cameraMode = {xAlign: 0.5, yAlign: 0.5, overflow: 'dispaly'}
 
     this.update.addPre((parentSprite) => {
@@ -40,6 +42,12 @@ class Layer extends Canvas {
       } else {
         this.children[name].push(child)
       }
+
+      if (!this.children.types.includes(name)) {
+        this.children.types.push(name)
+      }
+
+      return child
     }
   }
 

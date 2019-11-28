@@ -15,6 +15,7 @@ class Player extends Entity {
     this.createNew = false
     this.jumpRequest = 0
     this.creative = false
+    this.inventory = null
 
     this.setGamemode(true)
   }
@@ -48,6 +49,16 @@ class Player extends Entity {
           this.yv = -4 * (1 + this.jumpRemanining / 180)
         }
       }
+    }
+  }
+
+  onEntityCollision({name, entity}) {
+    if (name == 'Drop') {
+      if (this.inventory) {
+        this.inventory.add(entity.blockId)
+      }
+
+      entity.despawn()
     }
   }
 

@@ -1,6 +1,10 @@
 class Canvas extends Frame {
   constructor(...args) {
     super(0, 0, 0, 0)
+    // if (args.length == 4) {
+    //   throw new Error('invalid arguments length!!' + args.length)
+    // }
+    let flag = false
 
     if (args.length == 1) {
       if (typeof args[0] == 'string') {
@@ -20,8 +24,21 @@ class Canvas extends Frame {
         }
 
         this.sprite = new Context(canvas);
+      } else if (args[0].nodeType) {
+        const canvas = document.createElement('canvas')
+        canvas.width = args[0].width
+        canvas.height = args[0].height
+        this.sprite = new Context(canvas);
+        this.sprite._image(args[0])
       } else {
-        this.sprite = args[0]
+        const [sprite] = args
+        const canvas = document.createElement('canvas');
+
+        this.w = canvas.width = sprite.width
+        this.h = canvas.height = sprite.height
+        this.sprite = new Context(canvas)
+        this.image(sprite, 0, 0)
+        flag = true
       }
     } else if (args.length == 2) {
       const canvas = document.createElement('canvas');
@@ -33,7 +50,7 @@ class Canvas extends Frame {
       throw new Error('invalid arguments length!!' + args.length)
     }
 
-    if (this.sprite) {
+    if (!flag && this.sprite) {
       Object.defineProperty(this, 'w', {
         get() { return this.sprite.canvas.width },
         set(w) { debugger }
@@ -78,7 +95,7 @@ class Canvas extends Frame {
   setCtx(ctx) { this.cxt = ctx; this.xm = 1; this.ym = 1; return this; }
 
   setSize(w, h) {
-    if (this.buffer) {
+    if (this.sprite) {
       if (this.sprite != this.topCtx) debugger
       const state = getState(this.topCtx.ctx)
       this.sprite.canvas.width = w

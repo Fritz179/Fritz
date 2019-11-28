@@ -137,12 +137,8 @@ class Body extends Frame {
     this.layer.deleteChild(this)
   }
 
-  collideWithEntities(entities = []) {
-    if (!Array.isArray(entities)) {
-      entities = [entities]
-    }
+  onEntityCollision({entity}) {
 
-    this._collideWith = entities
   }
 
   isOnGround() {
