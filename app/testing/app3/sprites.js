@@ -31,19 +31,25 @@ function loadSprite(name, options = {}, callback) {
     options = {path: options}
   }
 
-  addDefaultOptions(options, {json: true, type: 'animation', ext: 'png'})
-  const parser = options.parser || parsers[options.type]
-  if (!parser) {
-    let available = Object.keys(parsers).map(type => `\n\t${type}`)
-    console.error(`Invalid sprite type: ${options.type}, available: ${available}`);
-  }
+  addDefaultOptions(options, {recursive: false, json: true, ext: 'png'})
 
   const path = options.path ? `${options.path}/${name}` : name
   const imgPath = options.src || `${path}.${options.ext}`
   const jsonPah = options.jsonSrc || `${path}.json`
 
-  function parse(...args) {
-    const output = parser(...args)
+  function parse(img, json = false) {
+    let parser
+
+    if (options.parser) parser = options.parser
+    else if (options.recursive) parser = 'recursive'
+    else if (json.tiles) parser = 'tiles'
+    else if (json.animations) parser = 'animation'
+
+    if (!parser) {
+      let available = Object.keys(parsers).map(type => `\n\t${type}`)
+      console.error(`Invalid sprite type: ${options.type}, available: ${available}`);
+    }
+    const output = parsers[parser](img, json, options)
 
     if (output instanceof Canvas) {
       sprites[name] = output
@@ -56,7 +62,7 @@ function loadSprite(name, options = {}, callback) {
     }
   }
 
-  if (options.json) {
+  if (options.json && !options.recursive) {
     incrementPreloadCounter(2)
     Promise.all([
       loadImage(imgPath),
@@ -69,7 +75,7 @@ function loadSprite(name, options = {}, callback) {
     incrementPreloadCounter(1)
     loadImage(imgPath, img => {
       decrementPreloadCounter(1)
-      parse(img, false)
+      parse(img)
     })
   }
 
@@ -94,6 +100,26 @@ addParser('tiles', (img, json) => {
       if (y >= height) throw new Error('outside image boundry!')
     }
   })
+
+  return sprite
+})
+
+addParser('recursive', (img, json, data) => {
+  const sprite = []
+
+  let {recursive, w, h} = data
+  let x = 0, y = 0
+
+  if (!h) h = img.height
+  if (!w) w = h
+  if ((img.width / w) % 0) throw new Error(`Invalid format for recursive img: ${path}`)
+
+  for (let i = 0; i < recursive; i++) {
+    const x1 = (i * w) % img.width
+    const y1 = (i * w - x1) / img.width
+
+    sprite.push(cut(img, x1, y1, w, h))
+  }
 
   return sprite
 })
@@ -139,7 +165,6 @@ function parsePacmanTiles(img) {
 
 addParser('animation', (img, json) => {
   if (!json) {
-    console.log(img);
     return new Canvas(img)
   }
 

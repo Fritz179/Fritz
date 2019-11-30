@@ -39,12 +39,16 @@ class Frame extends Block {
 
   onKey(key) { }
   onKeyUp(key) { }
-  onMouse(x, y) { }
-  onMouseDrag(x, y, dx, dy) { }
-  onMouseUp(x, y, dx, dy) { }
+
   onDrag(x, y, dx, dy) { }
-  onClick(x, y) { }
-  onClickDrag(x, y, dx, dy) { }
-  onClickUp(x, y, dx, dy) { }
   onWheel(dir) { }
-}
+};
+
+['Mouse', 'Click'].forEach(name => {
+  ['', 'Drag', 'Up'].forEach(action => {
+    ['', 'Left', 'Middle', 'Right'].forEach(dir => {
+      Frame.prototype[`on${dir}${name}${action}`] = () => { }
+      Frame.prototype[`on${dir}${name}${action}Bubble`] = () => { }
+    })
+  })
+})

@@ -1,7 +1,7 @@
 loadSprite('player', './img/sprites')
 loadSprite('pointer', './img/sprites')
-loadSprite('slot', {path: './img/sprites', json: false})
-loadSprite('tiles', {path: './img/sprites', type: 'tiles'})
+loadSprite('slot', {path: './img/sprites', recursive: 2})
+loadSprite('tiles', {path: './img/sprites'})
 let chunks = {}
 let player
 
@@ -62,6 +62,25 @@ class Main extends TileGame {
 
   onDrag({x, y}) {
     this.pointer.moveTo(x, y)
+  }
+
+  onRightMouseBubble({x, y}) {
+    this.placeBlock(x, y)
+  }
+
+  onRightMouseDragBubble({x, y}) {
+    this.placeBlock(x, y)
+  }
+
+  placeBlock(x, y) {
+    if (this.tileAt.cord(x, y) == 0) {
+      const {selected, selectedSlot} = this.player.inventory
+
+      if (selectedSlot.id) {
+        this.setTileAt.cord(x, y, selectedSlot.id)
+        this.player.inventory.getFromSlot(selected, 1)
+      }
+    }
   }
 
   onWheel({dir}) {

@@ -13,6 +13,7 @@ class Timer {
     this._fps = this.fps = 0
     this._ups = this.ups = 0
     this._runTime = this.runTime = 0
+    this.totalUpdates = this.totalFixedUpdates = this.totalGetSprite = 0
 
     if (start) {
       this.start()
@@ -37,14 +38,21 @@ class Timer {
 
       this.fixedUpdate(timeStamp)
       this._ups++
+
+      this.totalFixedUpdates++
     }
 
     if (this.updated) {
       this.updated = false
-      this.update(timeStamp)
+
+      if (this.update(timeStamp)) {
+        this.totalGetSprite++
+      }
+
       this._fps++
 
       this._runTime += window.performance.now() - timeStamp
+      this.totalUpdates++
     }
 
     if (this.lastTime >= 1000) {

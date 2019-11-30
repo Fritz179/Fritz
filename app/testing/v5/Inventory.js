@@ -7,11 +7,26 @@ class Inventory extends SpriteLayer {
     this.cols = 9
     this.rows = 4
     this.slots = []
+    this.open = true
+
     for (let i = 0; i < this.cols * this.rows; i++) {
       this.slots[i] = this.addChild(new Slot(this, i))
     }
 
-    this.selected = 1
+    this.selected = 0
+  }
+
+  get selectedSlot() { return this.slots[this.selected] }
+
+  onKey({name}) {
+    switch (name) {
+      case 'e': this.open = !this.open; this.changed = HARD; break;
+    }
+
+    let int = parseInt(name)
+    if (int) {
+      this.selected = int - 1
+    }
   }
 
   add(id, quantity = 1) {
@@ -53,6 +68,23 @@ class Inventory extends SpriteLayer {
     return quantity
   }
 
+  getFromSlot(slotNum, quantity = 1) {
+    const slot = this.slots[slotNum]
+
+    if (slot.quantity >= quantity) {
+      slot.quantity -= quantity
+
+      if (!slot.quantity) {
+        slot.id = 0
+      }
+
+      return quantity
+    } else {
+      console.error(`Cannot remove from empty slot!!`);
+      return 0
+    }
+  }
+
   remove(id, count = 1) {
 
   }
@@ -64,7 +96,7 @@ class Inventory extends SpriteLayer {
 
 class Slot extends Canvas {
   constructor(inventory, num) {
-    super(sprites.slot)
+    super(sprites.slot[0])
 
     const x = num % inventory.cols
     const y = (num - x) / inventory.cols
@@ -79,19 +111,27 @@ class Slot extends Canvas {
     this.oldId = null
     this.quantity = 0
     this.oldQuantity = null
+    this.oldSelected = false
   }
 
-  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity }
+  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity || this.selected != this.oldSelected}
   get softChanged() { return this.changed }
   get hardChanged() { return this.changed }
+  get selected() { return this.inventory.selected == this.num }
   set changed(bool) { }
 
+  onClick({stopPropagation}) {
+    stopPropagation()
+    console.log(this.num);
+  }
+
   getSprite() {
-    if (this.id != this.oldId || this.quantity != this.oldQuantity) {
+    if (this.changed) {
       this.oldId = this.id
       this.oldQuantity = this.quantity
+      this.oldSelected = this.selected
 
-      this.image(sprites.slot, this.x, this.y, 64, 64)
+      this.image(sprites.slot[this.selected ? 1 : 0], this.x, this.y, 64, 64)
 
       this.textFont('consolas')
       this.textAlign('right', 'bottom')
@@ -108,6 +148,7 @@ class Slot extends Canvas {
       }
 
     }
-    return this.sprite
+
+    return this.inventory.open || this.num < this.inventory.cols ? this.sprite : false
   }
 }

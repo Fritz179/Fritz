@@ -101,7 +101,9 @@ class Canvas extends Frame {
       this.sprite.canvas.width = w
       this.sprite.canvas.height = h
       setState(this.topCtx.ctx, state)
-    } else {
+    }
+    
+    if (!this.buffer) {
       this.w = w
       this.h = h
     }

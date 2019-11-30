@@ -33,9 +33,9 @@ function fixedUpdate() {
 
 function update() {
   if (masterLayer.update() || masterLayer.changed || debugEnabled) {
-    // console.log('drawing all');
     masterLayer.getSprite()
     masterLayer.changed = false
+    return true
   }
 }
 

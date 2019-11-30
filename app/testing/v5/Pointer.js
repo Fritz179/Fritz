@@ -38,6 +38,7 @@ class Pointer extends Entity {
         this.spriteAction = 'digging'
 
         if (this.diggingFor >= this.diggingTime(tile)) {
+          this.diggingFor = this.diggingTime(tile)
           this.layer.addChild(new Drop(this.x + this.w / 2, this.y + this.h / 2, tile))
           this.layer.setTileAt(x, y, 0)
         }
@@ -55,11 +56,11 @@ class Pointer extends Entity {
     return this.player.creative ? 1 : [0, 20, 20, 60][tile]
   }
 
-  onMouse() {
+  onLeftMouse() {
     this.digging = true
   }
 
-  onMouseUp() {
+  onLeftMouseUp() {
     this.digging = false
   }
 
