@@ -19,6 +19,14 @@
     {
       "name": "stone",
       "collision": 15
+    },
+    {
+      "name": "wood",
+      "collision": 15
+    },
+    {
+      "name": "leaf",
+      "collision": 1
     }
   ]
 }

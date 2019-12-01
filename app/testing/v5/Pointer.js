@@ -53,7 +53,7 @@ class Pointer extends Entity {
   }
 
   diggingTime(tile) {
-    return this.player.creative ? 1 : [0, 20, 20, 60][tile]
+    return this.player.creative ? 1 : [0, 20, 20, 60, 20, 20][tile]
   }
 
   onLeftMouse() {

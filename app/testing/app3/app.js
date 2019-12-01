@@ -1,5 +1,6 @@
 const timer = new Timer(60, fixedUpdate, update, false)
 let masterLayer = new Layer()
+// noiseSeed(420)
 
 const {round, floor, ceil, PI, abs, min, max, sign} = Math
 const random = (...args) => {

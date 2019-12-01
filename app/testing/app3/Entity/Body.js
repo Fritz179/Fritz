@@ -11,7 +11,7 @@ class Body extends Frame {
 
     this.speed = 5
     this.autoMove = true
-    this.collideWithMap = true
+    this.collideWithMap = false
     this._collideWith = []
     this.movingFor = 0
     this._minVel = 0.1
@@ -153,7 +153,7 @@ class Body extends Frame {
 
     let x = x1
     do {
-      if (this.layer.collisionTable[this.layer.tileAt(x, y)] & 4) {
+      if (this.layer.collisionTable[this.layer.tileAt(x, y)] & 1) {
         return true
       }
       x++

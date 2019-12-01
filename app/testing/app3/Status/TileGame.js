@@ -101,6 +101,7 @@ class TileGame extends SpriteLayer {
     // addMapping(this, 'tileAt', 2, (val, i) => i < 2 ? floor(ceil) : ceil())
     addCord(this, 'tileAt', 2)
     addCord(this, 'setTileAt', 2)
+    addCord(this, 'noEntityAt', 2)
     addCord(this, 'allBlocksIn', 4)
     addCord(this, 'forAllBlocksIn', 4)
 
@@ -258,6 +259,21 @@ class TileGame extends SpriteLayer {
     if (!this.chunks[chunkX][chunkY]) return -1
 
     return this.chunks[chunkX][chunkY].setTileAt(x, y, tile)
+  }
+
+  noEntityAt(x, y, w = this.tileSize, h = this.tileSize) {
+    const it = this.children.entries()
+
+    let obj = it.next()
+    while (!obj.done) {
+      if (obj.value[0].collideWithMap && rectIsOnRect(obj.value[0], {x: x * w, y: y * h, w, h})) {
+        return false
+      }
+
+     obj = it.next()
+    }
+
+    return true
   }
 
   collideMap(entity, sides = 3) {

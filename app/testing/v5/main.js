@@ -2,11 +2,11 @@ loadSprite('player', './img/sprites')
 loadSprite('pointer', './img/sprites')
 loadSprite('slot', {path: './img/sprites', recursive: 2})
 loadSprite('tiles', {path: './img/sprites'})
-let chunks = {}
 let player
 
 function setup() {
-  player = new Player(1600, (ceil(-noise(1600 / 320) * 50)) * 16 - 24)
+  // player = new Player(0, 0)
+  player = new Player(1600, (ceil(noise(1600 / 320) * 50)) * 16 - 24)
   player.inventory = new Inventory()
 
   addLayer(new Main(player))
@@ -17,7 +17,7 @@ function setup() {
 addCollision(Player, Drop)
 
 function tp(x, y = false) {
-  if (y === false) y = (ceil(-noise(x / 320) * 50)) * 16 - 24
+  if (y === false) y = (ceil(noise(x / 320) * 50)) * 16 - 24
   player.pos = {x, y}
 }
 
@@ -34,6 +34,8 @@ class Main extends TileGame {
     this.addChild(player)
 
     this.addChild(this.pointer = new Pointer(player))
+    this.rightPressed = false
+    this.mouse = {x: 0, y: 0}
 
     this.loadMap({
      width: 16,
@@ -61,19 +63,21 @@ class Main extends TileGame {
   }
 
   onDrag({x, y}) {
+    this.mouse = {x, y}
+    this.lastPos = this.pos
     this.pointer.moveTo(x, y)
   }
 
   onRightMouseBubble({x, y}) {
-    this.placeBlock(x, y)
+    this.rightPressed = true
   }
 
-  onRightMouseDragBubble({x, y}) {
-    this.placeBlock(x, y)
+  onRightMouseUp({x, y}) {
+    this.rightPressed = false
   }
 
   placeBlock(x, y) {
-    if (this.tileAt.cord(x, y) == 0) {
+    if (this.tileAt.cord(x, y) == 0 && this.noEntityAt.cord(x, y)) {
       const {selected, selectedSlot} = this.player.inventory
 
       if (selectedSlot.id) {
@@ -83,7 +87,14 @@ class Main extends TileGame {
     }
   }
 
-  onWheel({dir}) {
+  onKey({name}) {
+    switch (name) {
+      case ',': this.changeZoom(-1); break;
+      case '.': this.changeZoom(1); break;
+    }
+  }
+
+  changeZoom(dir) {
     this.zoom -= dir
 
     if (this.zoom <= 0) this.zoom = debugEnabled ? 0.5 : 1
@@ -98,40 +109,20 @@ class Main extends TileGame {
   }
 
   chunkLoader(x, y) {
-    const id = `${x}_${y}`
-    if (chunks[id]) {
-      return {data: chunks[id]}
-    }
-
-    const chunk = {data: []}
-
-    for (let xb = 0; xb < 16; xb++) {
-      for (let yb = 0; yb < 16; yb++) {
-        chunk.data[xb + yb * 16] = tileAt(x * 16 + xb, y * 16 + yb)
-      }
-    }
-
-    function tileAt(x, y) {
-      let distToTop = noise(x / 20) * 50 + y
-
-      if (distToTop < 0) return 0
-      if (distToTop < 1) return 1
-      if (distToTop < 4) return 2
-      else return 3
-    }
-
-    return chunk
+    return getChunk(x, y)
   }
 
   chunkOffloader(data, x, y) {
     const id = `${x}_${y}`
-    chunks[id] = data
+    map.chunks[id] = data
   }
 
   update() {
     this.center = this.player.center
-    // const floor = Math.round
-    // const {x, y} = this.player.center
-    // this.center = {x: floor(x), y: floor(y)}
+
+    if (this.rightPressed) {
+      const {mouse, lastPos} = this
+      this.placeBlock(mouse.x - lastPos.x + this.x, mouse.y - lastPos.y + this.y)
+    }
   }
 }

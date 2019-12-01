@@ -8,6 +8,7 @@ class Player extends Entity {
     this.speed = 0.7
     this.autoDir = true
     this.autoWalk = 12
+    this.collideWithMap = true
 
     this.setDrag(0.85, 0.99).setAcc(0, 0.25)
 
@@ -35,7 +36,7 @@ class Player extends Entity {
     } else {
       if (this.jumpRequest > 0) {
         this.jumpRequest--
-
+        
         if (this.isOnGround()) {
           this.jumpRemanining = 10
           this.yv = -3.5

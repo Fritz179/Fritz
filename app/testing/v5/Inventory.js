@@ -8,6 +8,7 @@ class Inventory extends SpriteLayer {
     this.rows = 4
     this.slots = []
     this.open = true
+    this.hand = this.addChild(new Slot(this, null))
 
     for (let i = 0; i < this.cols * this.rows; i++) {
       this.slots[i] = this.addChild(new Slot(this, i))
@@ -24,9 +25,16 @@ class Inventory extends SpriteLayer {
     }
 
     let int = parseInt(name)
-    if (int) {
+    if (int && int <= this.cols) {
       this.selected = int - 1
     }
+  }
+
+  onWheel({dir}) {
+    this.selected += dir
+
+    if (this.selected < 0) this.selected = this.cols - 1
+    if (this.selected > this.cols - 1) this.selected = 0
   }
 
   add(id, quantity = 1) {
@@ -75,7 +83,25 @@ class Inventory extends SpriteLayer {
       slot.quantity -= quantity
 
       if (!slot.quantity) {
-        slot.id = 0
+        for (var i = 0; i < this.slots.length; i++) {
+          const candidate = this.slots[i]
+
+          if (candidate == slot) {
+            continue
+          }
+
+          if (candidate.id == slot.id) {
+            slot.quantity = candidate.quantity
+            candidate.quantity = 0
+            candidate.id = 0
+
+            break
+          }
+        }
+
+        if (!slot.quantity) {
+          slot.id = 0
+        }
       }
 
       return quantity
