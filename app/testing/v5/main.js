@@ -4,6 +4,7 @@ loadSprite('slot', {path: './img/sprites', recursive: 2})
 loadSprite('tiles', {path: './img/sprites'})
 let player
 
+noiseSeed(420)
 function setup() {
   // player = new Player(0, 0)
   player = new Player(1600, (ceil(noise(1600 / 320) * 50)) * 16 - 24)
@@ -21,7 +22,7 @@ function tp(x, y = false) {
   player.pos = {x, y}
 }
 
-class Main extends TileGame {
+class Main extends MapLoader {
   constructor(player) {
     super('auto')
 
@@ -37,29 +38,9 @@ class Main extends TileGame {
     this.rightPressed = false
     this.mouse = {x: 0, y: 0}
 
-    this.loadMap({
-     width: 16,
-     data: [
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0,
-       0, 1, 1, 1, 1, 1, 2, 0, 2, 1, 1, 1, 1, 1, 1, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-     ]
-   })
-
-   this.setChunkLoader(2, 5)
+    this.addMapModifier(generateTree, {chance: 4, min: 8, pre: 1, linear: true})
+    this.baseChunkLoader = getBaseChunk
+    this.setChunkLoader(2, 5)
   }
 
   onDrag({x, y}) {
@@ -97,24 +78,21 @@ class Main extends TileGame {
   changeZoom(dir) {
     this.zoom -= dir
 
-    if (this.zoom <= 0) this.zoom = debugEnabled ? 0.5 : 1
+    if (this.zoom <= 0 && !debugEnabled) this.zoom = 1
     else if (this.zoom > 10) this.zoom = 10
     else this.zoom |= 0
 
-    this.setScale(this.zoom)
+    if (this.zoom <= 0) {
+      this.zoom = 0
+      this.setScale(1)
+      this.setChunkLoader(1, 1)
 
-    const d  = 6 / this.zoom
+    } else {
+      const d  = 6 / this.zoom
 
-    this.setChunkLoader(d > 1 ? d : 1, 7)
-  }
-
-  chunkLoader(x, y) {
-    return getChunk(x, y)
-  }
-
-  chunkOffloader(data, x, y) {
-    const id = `${x}_${y}`
-    map.chunks[id] = data
+      this.setScale(this.zoom)
+      this.setChunkLoader(d > 1 ? d : 1, 7)
+    }
   }
 
   update() {

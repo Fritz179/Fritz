@@ -91,14 +91,9 @@ class TileGame extends SpriteLayer {
             }
           }
         }
-
-        // if (debugEnabled && (newChunks || deletedChunks)) {
-        //   console.log(`Loaded ${newChunks} chunks and deleted ${deletedChunks} chunks!`);
-        // }
       }
     })
 
-    // addMapping(this, 'tileAt', 2, (val, i) => i < 2 ? floor(ceil) : ceil())
     addCord(this, 'tileAt', 2)
     addCord(this, 'setTileAt', 2)
     addCord(this, 'noEntityAt', 2)

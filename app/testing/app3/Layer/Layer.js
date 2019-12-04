@@ -11,6 +11,10 @@ class Layer extends Canvas {
       if (!this.buffer) {
         this.sprite = parentSprite
       }
+
+      if (debugEnabled) {
+        this.clear()
+      }
     })
   }
 
@@ -69,9 +73,16 @@ class Layer extends Canvas {
     })
   }
 
-  setChild(child) {
+  setChildren(children) {
     this.clearChildren()
-    this.addChild(child)
+
+    if (Array.isArray(children)) {
+      children.forEach(child => {
+        this.addChild(child)
+      })
+    } else {
+      this.addChild(children)
+    }
   }
 
   forEachChild(fun) {

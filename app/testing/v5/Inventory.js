@@ -8,26 +8,59 @@ class Inventory extends SpriteLayer {
     this.rows = 4
     this.slots = []
     this.open = true
-    this.hand = this.addChild(new Slot(this, null))
+    this.hand = -1
 
     for (let i = 0; i < this.cols * this.rows; i++) {
       this.slots[i] = this.addChild(new Slot(this, i))
     }
 
     this.selected = 0
+
+    this.getSprite.addPost(() => {
+      if (this.hand != -1) {
+        console.log(this.hand);
+        const {x, y, mousePos, id, quantity} = this.handSlot
+
+        this.textFont('consolas')
+        this.textAlign('right', 'bottom')
+        this.textSize(32)
+
+        this.image(sprites.tiles[id], x + mousePos.x - 16, y + mousePos.y - 16, 32, 32)
+        this.text(quantity, x + mousePos.x + 22, y + mousePos.y + 32)
+      }
+    })
   }
 
   get selectedSlot() { return this.slots[this.selected] }
+  get handSlot() { return this.slots[this.hand] }
 
   onKey({name}) {
     switch (name) {
-      case 'e': this.open = !this.open; this.changed = HARD; break;
+      case 'e': this.toggleInventory(); this.changed = HARD; break;
     }
 
     let int = parseInt(name)
     if (int && int <= this.cols) {
       this.selected = int - 1
     }
+  }
+
+  slotClicked(num) {
+    console.log(num);
+  }
+
+  toggleInventory() {
+    this.open = !this.open
+
+    if (this.open) {
+      this.setChildren(this.slots)
+    } else {
+      this.setChildren(this.slots.slice(0, this.cols))
+    }
+  }
+
+  onMouseUpBubble() {
+    this.hand = -1
   }
 
   onWheel({dir}) {
@@ -138,17 +171,43 @@ class Slot extends Canvas {
     this.quantity = 0
     this.oldQuantity = null
     this.oldSelected = false
+    this.oldInHand = false
+    this.mousePos = {x: 0, y: 0}
   }
 
-  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity || this.selected != this.oldSelected}
+  get changed() {
+    return this.id != this.oldId || this.quantity != this.oldQuantity || this.selected != this.oldSelected || this.inHand != this.oldInHand || this.inHand
+  }
+
   get softChanged() { return this.changed }
   get hardChanged() { return this.changed }
   get selected() { return this.inventory.selected == this.num }
+  get inHand() { return this.inventory.hand == this.num }
   set changed(bool) { }
 
-  onClick({stopPropagation}) {
+  onLeftClick({stopPropagation, x, y}) {
+    if (this.id) {
+      this.mousePos = {x, y}
+      this.inventory.hand = this.num
+    }
+
     stopPropagation()
-    console.log(this.num);
+  }
+
+  onClickDrag({x, y}) {
+    this.mousePos = {x, y}
+  }
+
+  onClickUp() {
+    if (this.inventory.hand != -1 && !this.id) {
+      const slot = this.inventory.handSlot
+      this.id = slot.id
+      this.quantity = slot.quantity
+      slot.id = 0
+      slot.quantity = 0
+
+      this.inventory.hand = -1
+    }
   }
 
   getSprite() {
@@ -156,13 +215,14 @@ class Slot extends Canvas {
       this.oldId = this.id
       this.oldQuantity = this.quantity
       this.oldSelected = this.selected
+      this.oldInHand = this.inHand
 
       this.image(sprites.slot[this.selected ? 1 : 0], this.x, this.y, 64, 64)
 
       this.textFont('consolas')
       this.textAlign('right', 'bottom')
 
-      if (this.id) {
+      if (this.id && !this.inHand) {
         this.textSize(32)
         this.image(sprites.tiles[this.id], this.x + 16, this.y + 16, 32, 32)
         this.text(this.quantity, this.x + 54, this.y + 64)
@@ -172,9 +232,8 @@ class Slot extends Canvas {
         this.textSize(16)
         this.text(this.num + 1, this.x + 57, this.y + 22)
       }
-
     }
 
-    return this.inventory.open || this.num < this.inventory.cols ? this.sprite : false
+    return this.sprite
   }
 }

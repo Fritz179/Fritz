@@ -78,7 +78,7 @@ function createCrawler(eventName, allowed = () => true, bubble = false) { // glo
       }
       toBubble.splice(0)
 
-      return preventDefault
+      return {preventDefault, bubbleCancelled}
     }
   }
 }
@@ -89,7 +89,7 @@ function crawl(...args) { // global
   const eventName = args.splice(0, 1)
 
   if (!crawlers[eventName]) throw new Error(`Cannot crawl ${eventName}, us createCrawler() to define a crawler`)
-  crawlers[eventName](target, args[0])
+  return crawlers[eventName](target, args[0])
 }
 
 function mapMouse(drag, allow, alt) {
@@ -126,8 +126,11 @@ window.addEventListener('mousedown', event => {
   const {x, y, button} = event
 
   mouseIsClicked = button + 1
-  crawl('onMouse', {x, y, button})
-  crawl(`on${mouseDirs[button]}Mouse`, {x, y})
+  let {bubbleCancelled} = crawl(`on${mouseDirs[button]}Mouse`, {x, y})
+  console.log(bubbleCancelled);
+  if (!bubbleCancelled) {
+    crawl('onMouse', {x, y, button})
+  }
 
   event.preventDefault()
 });
@@ -143,13 +146,15 @@ window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
   const args = {x, y, xd: movementX, yd: movementY, button: mouseIsClicked - 1}
   crawl('onDrag', Object.assign({}, args))
   if (mouseIsClicked) {
+    crawl('onMouseDrag', Object.assign({}, args))
     crawl(`on${mouseDirs[mouseIsClicked - 1]}MouseDrag`, Object.assign({}, args))
   }
 });
 
 //onMouseUp and onClickUp crawlers
 mouseDirs.forEach(dir => {
-  const mapper = mapMouse(false, (t, a, p) => t._wasOnClick ? !(t._wasOnClick = false) : false, `on${dir}ClickUp`)
+  // const mapper = mapMouse(false, (t, a, p) => t._wasOnClick ? !(t._wasOnClick = false) : false, `on${dir}ClickUp`)
+  const mapper = mapMouse(false, (t, a, p) => pointIsInRange(a, t.w, t.h) ? !(t._wasOnClick = false) : t._wasOnClick = false, `on${dir}ClickUp`)
   createCrawler(`on${dir}MouseUp`, mapper, true)
 })
 
