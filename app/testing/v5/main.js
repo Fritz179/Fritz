@@ -2,16 +2,16 @@ loadSprite('player', './img/sprites')
 loadSprite('pointer', './img/sprites')
 loadSprite('slot', {path: './img/sprites', recursive: 2})
 loadSprite('tiles', {path: './img/sprites'})
-let player
+let main, player, hand
 
 noiseSeed(420)
 function setup() {
   // player = new Player(0, 0)
   player = new Player(1600, (ceil(noise(1600 / 320) * 50)) * 16 - 24)
-  player.inventory = new Inventory()
 
-  addLayer(new Main(player))
+  addLayer(main = new Main(player))
   addLayer(player.inventory)
+  addLayer(hand = new Hand(main.pointer))
   addLayer(new Overlay(player))
 }
 
@@ -34,38 +34,20 @@ class Main extends MapLoader {
     this.center = player.center
     this.addChild(player)
 
-    this.addChild(this.pointer = new Pointer(player))
     this.rightPressed = false
     this.mouse = {x: 0, y: 0}
 
     this.addMapModifier(generateTree, {chance: 4, min: 8, pre: 1, linear: true})
     this.baseChunkLoader = getBaseChunk
     this.setChunkLoader(2, 5)
+
+    this.pointer = this.addChild(new Pointer(this))
+    this.mouse = {x: 0, y: 0}
   }
 
   onDrag({x, y}) {
     this.mouse = {x, y}
-    this.lastPos = this.pos
-    this.pointer.moveTo(x, y)
-  }
-
-  onRightMouseBubble({x, y}) {
-    this.rightPressed = true
-  }
-
-  onRightMouseUp({x, y}) {
-    this.rightPressed = false
-  }
-
-  placeBlock(x, y) {
-    if (this.tileAt.cord(x, y) == 0 && this.noEntityAt.cord(x, y)) {
-      const {selected, selectedSlot} = this.player.inventory
-
-      if (selectedSlot.id) {
-        this.setTileAt.cord(x, y, selectedSlot.id)
-        this.player.inventory.getFromSlot(selected, 1)
-      }
-    }
+    this.pointer.offset = {x: x - this.x, y: y - this.y}
   }
 
   onKey({name}) {
@@ -97,10 +79,5 @@ class Main extends MapLoader {
 
   update() {
     this.center = this.player.center
-
-    if (this.rightPressed) {
-      const {mouse, lastPos} = this
-      this.placeBlock(mouse.x - lastPos.x + this.x, mouse.y - lastPos.y + this.y)
-    }
   }
 }

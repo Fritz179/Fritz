@@ -55,7 +55,7 @@ class Body extends Frame {
       args.forceChunkLoad = () => {
         const {x, y} = this.pos
 
-        this.layer.loadChunkAt(this.layer.chunkLoader(x, y), x, y)
+        this.layer.forceChunkLoad.cord(x, y)
       }
     })
 

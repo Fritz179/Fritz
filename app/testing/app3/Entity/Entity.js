@@ -62,12 +62,14 @@ class Entity extends Body {
       this._spriteAction = action
     }
   }
+
   set spriteFrame(frame) {
     if (this._spriteFrame != frame) {
       this.changed = HARD
       this._spriteFrame = frame
     }
   }
+  
   set spriteDir(dir) {
     if (this._spriteDir != dir) {
       this.changed = HARD

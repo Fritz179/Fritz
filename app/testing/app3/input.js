@@ -127,7 +127,7 @@ window.addEventListener('mousedown', event => {
 
   mouseIsClicked = button + 1
   let {bubbleCancelled} = crawl(`on${mouseDirs[button]}Mouse`, {x, y})
-  console.log(bubbleCancelled);
+  
   if (!bubbleCancelled) {
     crawl('onMouse', {x, y, button})
   }

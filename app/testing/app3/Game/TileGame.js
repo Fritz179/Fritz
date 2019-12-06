@@ -101,6 +101,7 @@ class TileGame extends SpriteLayer {
     addCord(this, 'forAllBlocksIn', 4)
 
     addChunks(this, 'allChunksIn', 4)
+    addChunks(this, 'forceChunkLoad', 2)
   }
 
   get chunkLength() { return this.chunkWidth * this.chunkHeight }
@@ -111,6 +112,10 @@ class TileGame extends SpriteLayer {
   cord(...args) {
     args = args.map(val => floor(val / this.tileSize))
     return args.length == 1 ? args[0] : args
+  }
+
+  forceChunkLoad(x, y) {
+    this.loadChunkAt(this.chunkLoader(x, y), x, y)
   }
 
   ChunkAtCord(...args) {
@@ -193,6 +198,9 @@ class TileGame extends SpriteLayer {
   loadChunkAt(json, chunkX, chunkY) {
     //create new chunk
     const chunk = new Chunk(this)
+    if (chunkY % 1 != 0) {
+      debugger
+    }
 
     //create col if not present
     if (!this.chunks[chunkX]) this.chunks[chunkX] = []

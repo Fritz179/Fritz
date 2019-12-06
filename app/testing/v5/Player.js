@@ -16,7 +16,7 @@ class Player extends Entity {
     this.createNew = false
     this.jumpRequest = 0
     this.creative = false
-    this.inventory = null
+    this.inventory = new Inventory(this)
 
     this.setGamemode(true)
   }
@@ -36,7 +36,7 @@ class Player extends Entity {
     } else {
       if (this.jumpRequest > 0) {
         this.jumpRequest--
-        
+
         if (this.isOnGround()) {
           this.jumpRemanining = 10
           this.yv = -3.5
