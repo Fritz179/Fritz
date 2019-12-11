@@ -1,7 +1,7 @@
 loadSprite('player', './img/sprites')
 loadSprite('pointer', './img/sprites')
+loadSprite('tiles', './img/sprites')
 loadSprite('slot', {path: './img/sprites', recursive: 2})
-loadSprite('tiles', {path: './img/sprites'})
 let main, player, hand
 
 noiseSeed()

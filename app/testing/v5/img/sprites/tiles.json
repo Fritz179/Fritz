@@ -10,31 +10,38 @@
     },
     {
       "name": "grass",
-      "collision": 15
+      "collision": 15,
+      "hardness": 20
     },
     {
       "name": "dirt",
-      "collision": 15
+      "collision": 15,
+      "hardness": 20
     },
     {
       "name": "stone",
-      "collision": 15
+      "collision": 15,
+      "hardness": 50
     },
     {
       "name": "wood",
-      "collision": 0
+      "collision": 0,
+      "hardness": 35
     },
     {
       "name": "leaf",
-      "collision": 0
+      "collision": 0,
+      "hardness": 5
     },
     {
       "name": "iron",
-      "collision": 15
+      "collision": 15,
+      "hardness": 70
     },
     {
       "name": "diamond",
-      "collision": 15
+      "collision": 15,
+      "hardness": 100
     }
   ]
 }

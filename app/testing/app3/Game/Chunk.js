@@ -19,7 +19,7 @@ class Chunk extends Canvas {
     this.tiles.forEach((tile, i) => {
       const x = i % this.map.chunkWidth
       const y = (i - x) / this.map.chunkWidth
-      const sprite = sprites.tiles[tile]
+      const sprite = tiles.spriteTable[tile]
 
       this.image(sprite, x * w, y * w, w, w)
     })
@@ -36,7 +36,7 @@ class Chunk extends Canvas {
     this.tiles[abs(i)] = tile
 
     const w = this.map.tileSize
-    const sprite = sprites.tiles[tile]
+    const sprite = tiles.spriteTable[tile]
 
     this.image(sprite, x * w, y * w, w, w)
     this.changed = HARD

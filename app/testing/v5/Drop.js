@@ -19,7 +19,7 @@ class Drop extends Entity {
   }
 
   getSprite(ctx) {
-    ctx.image(this.sprite[this.blockId], this.x, this.y, 16 / 2, 16 / 2)
+    ctx.image(tiles.spriteTable[this.blockId], this.x, this.y, 16 / 2, 16 / 2)
 
     return false
   }

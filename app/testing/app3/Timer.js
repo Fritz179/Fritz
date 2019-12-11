@@ -56,6 +56,8 @@ class Timer {
     }
 
     if (this.lastTime >= 1000) {
+      if (this.lastTime >= 2000) this.lastTime = 1000
+
       this.lastTime -= 1000
       this.fps = this._fps
       this.ups = this._ups

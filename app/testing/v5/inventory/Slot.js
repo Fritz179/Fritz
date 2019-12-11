@@ -65,7 +65,7 @@ class Slot extends ItemHolder {
 
       if (this.id) {
         this.textSize(32)
-        this.image(sprites.tiles[this.id], this.x + 16, this.y + 16, 32, 32)
+        this.image(tiles.spriteTable[this.id], this.x + 16, this.y + 16, 32, 32)
         this.text(this.quantity, this.x + 54, this.y + 64)
       }
 

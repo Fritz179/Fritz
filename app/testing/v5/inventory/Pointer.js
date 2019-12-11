@@ -66,7 +66,11 @@ class Pointer extends Canvas {
   }
 
   diggingTime(tile) {
-    return player.creative ? 1 : [0, 20, 20, 60, 20, 20, 80, 120][tile]
+    if (player.creative) return 1
+
+    if (tiles.hardnessTable[tile] !== null) return tiles.hardnessTable[tile]
+
+    throw new Error(`Invalid digging tile: ${tile}`)
   }
 
   onLeftMouseBubble() {

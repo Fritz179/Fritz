@@ -22,8 +22,10 @@ class TileGame extends SpriteLayer {
     this.tileSize = 16
     this.chunks = []
 
-    if (sprites.tiles.collisionTable) {
-      this.collisionTable = sprites.tiles.collisionTable
+    if (tiles.collisionTable) {
+      this.collisionTable = tiles.collisionTable
+    } else {
+      console.warn('No collsion Table');
     }
 
     this._isMap = true

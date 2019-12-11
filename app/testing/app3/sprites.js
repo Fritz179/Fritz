@@ -9,6 +9,7 @@
 //define global references
 const sprites = {}
 const parsers = {}
+const tiles = {collisionTable: [], nameTable: [], nameToId: {}, hardnessTable: [], spriteTable: []}
 
 function addParser(name, fun) {
   parsers[name] = fun
@@ -83,14 +84,12 @@ function loadSprite(name, options = {}, callback) {
 };
 
 addParser('tiles', (img, json) => {
-  let {x, y, w, h, tiles} = json
+  let {x, y, w, h} = json
   const {width, height} = img
-  const sprite = []
-  sprite.collisionTable = []
 
-  tiles.forEach((tile, i) => {
-    sprite.collisionTable[i] = tile.collision || 0
-    sprite[i] = cut(img, x, y, w, h)
+  json.tiles.forEach((tile, i) => {
+    tile.sprite = cut(img, x, y, w, h)
+    addTile(i, tile)
 
     //go to next tile, move x and y
     x += w
@@ -101,8 +100,22 @@ addParser('tiles', (img, json) => {
     }
   })
 
-  return sprite
+  console.log(tiles);
+
+  return false
 })
+
+// const tiles = {collisionTable: [], nameTable: [], nameToId: {}, hardnessTable: [], spriteTable: []}
+function addTile(id, {collision, hardness, name, sprite}) {
+  const {collisionTable, nameToId, nameTable, hardnessTable, spriteTable} = tiles
+
+  nameTable[id] = name
+  spriteTable[id] = sprite
+  hardnessTable[id] = hardness || null
+  collisionTable[id] = collision
+
+  nameToId[name] = id
+}
 
 addParser('recursive', (img, json, data) => {
   const sprite = []

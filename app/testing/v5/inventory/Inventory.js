@@ -51,6 +51,10 @@ class Inventory extends SpriteLayer {
   }
 
   add(id, quantity = 1) {
+    if (typeof id == 'string') {
+      id = tiles.nameToId[id]
+    }
+
     if (hand.id == id && quantity < 64) {
       const space = 64 - hand.quantity
 
