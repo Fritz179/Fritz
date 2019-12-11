@@ -34,6 +34,36 @@ function generateTree(x, add, rnd) {
   }
 }
 
+function generateIronOrePach(x, y, add, rnd) {
+  const top = floor(noise((x) / 20) * 50)
+
+  if (y > top + 10) {
+    let width = rnd(2)
+    let height = rnd(2)
+
+    for (let i = floor(-width); i <= width; i += floor(rnd(1, 2.5))) {
+      for (let j = floor(-height); j <= height; j += floor(rnd(1, 2.5))) {
+        add({x: x + i, y: y + j, to: 6, hard: true})
+      }
+    }
+  }
+}
+
+function generateDiamonOrePach(x, y, add, rnd) {
+  const top = floor(noise((x) / 20) * 50)
+
+  if (y > top + 30) {
+    let width = rnd(2)
+    let height = rnd(2)
+
+    for (let i = floor(-width); i <= width; i += floor(rnd(1, 2.5))) {
+      for (let j = floor(-height); j <= height; j += floor(rnd(1, 2.5))) {
+        add({x: x + i, y: y + j, to: 7, hard: true})
+      }
+    }
+  }
+}
+
 // function getTreeLocation(x, add, rnd) {
 //   let pos = []
 //

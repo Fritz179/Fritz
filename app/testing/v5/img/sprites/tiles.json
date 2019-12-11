@@ -22,11 +22,19 @@
     },
     {
       "name": "wood",
-      "collision": 15
+      "collision": 0
     },
     {
       "name": "leaf",
-      "collision": 1
+      "collision": 0
+    },
+    {
+      "name": "iron",
+      "collision": 15
+    },
+    {
+      "name": "diamond",
+      "collision": 15
     }
   ]
 }

@@ -66,7 +66,7 @@ class Pointer extends Canvas {
   }
 
   diggingTime(tile) {
-    return player.creative ? 1 : [0, 20, 20, 60, 20, 20][tile]
+    return player.creative ? 1 : [0, 20, 20, 60, 20, 20, 80, 120][tile]
   }
 
   onLeftMouseBubble() {

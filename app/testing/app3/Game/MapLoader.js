@@ -30,11 +30,21 @@ class MapLoader extends TileGame {
           if (done[x + i]) continue
           done[x + i] = true
 
-          this.runLinearModifier(x + i, modifier)
+          this.runLinearModifier(modifier, x + i)
         }
       } else {
+        const {preX, preY, done} = modifier
 
-        this.runCrossModifier(modifier)
+        for (let i = -preX; i <= preX; i++) {
+          for (let j = -preY; j <= preY; j++) {
+            const id = `${x + i}_${y + j}`
+            // if already modified, return
+            if (done[id]) continue
+            done[id] = true
+
+            this.runCrossModifier(modifier, x + i, y + j)
+          }
+        }
       }
     })
 
@@ -47,21 +57,21 @@ class MapLoader extends TileGame {
     return chunk
   }
 
-  runLinearModifier(x, {fun, pre, chance, min}) {
+  runLinearModifier({fun, chance, min}, x) {
     if (!chance) {
       fun(x, blockAdder, getNextPerlin)
     } else {
 
       // for every tile in chunk
       for (let xTile = x * 16; xTile < x * 16 + 16; xTile++) {
-        if (perlinAt(xTile) > chance) {
+        if (fnoise(xTile) > chance) {
           let flag = true
 
           // if it is a candidate, check for a min ditance between other candidates
           if (min) {
-            const curr = perlinAt(xTile)
+            const curr = fnoise(xTile)
             for (let i = -min; i <= min; i++) {
-              if (perlinAt(xTile + i) > curr) {
+              if (fnoise(xTile + i) > curr) {
                 // if there is a higher nuber nearby, deny this candidate
                 flag = false
                 break
@@ -71,15 +81,51 @@ class MapLoader extends TileGame {
 
           // if it can spawn
           if (flag) {
-            fun(xTile, this.blockAdder, generatePerlinNoiseGetter(x))
+            fun(xTile, this.blockAdder, generateFnoiseGetter(x * 16 + xTile))
           }
         }
       }
     }
   }
 
-  runCrossModifier() {
+  runCrossModifier({fun, chance, minX, minY}, x, y) {
+    if (!chance) {
+      fun(x, y, blockAdder, getNextPerlin)
+    } else {
+      const scl = 2
+      const fnoiseAt = (xOff, yOff) => fnoise(x * 16 + xOff, y * 16 + yOff)
 
+      // for every tile in chunk
+      for (let xTile = x * 16; xTile < x * 16 + 16; xTile++) {
+        for (let yTile = y * 16; yTile < y * 16 + 16; yTile++) {
+          if (fnoiseAt(xTile, yTile) > chance) {
+            let flag = true
+
+            // if it is a candidate, check for a min ditance between other candidates
+            if (minX || minY) {
+              const curr = fnoiseAt(xTile, yTile)
+
+              check_block: {
+                for (let i = -minX; i <= minX; i++) {
+                  for (let j = -minY; j <= minY; j++) {
+                    if (fnoiseAt(xTile + i, yTile + j) > curr) {
+                      // if there is a higher nuber nearby, deny this candidate
+                      flag = false
+                      break check_block
+                    }
+                  }
+                }
+              }
+            }
+
+            // if it can spawn
+            if (flag) {
+              fun(xTile, yTile, this.blockAdder, generateFnoiseGetter(xTile, yTile))
+            }
+          }
+        }
+      }
+    }
   }
 
   chunkOffloader(data, x, y) {
@@ -87,9 +133,19 @@ class MapLoader extends TileGame {
     this.bufferedChunks[id] = data
   }
 
-  addMapModifier(fun, {linear = false, chance = 0, pre = 0, min = 0}) {
+  addMapModifier(fun, {linear = false, chance = 0, pre = 0, min = 0, minX = 0, minY = 0, preX = 0, preY = 0}) {
     chance = 1 - 1 / (chance + 1)
-    this.mapModifiers.push({fun, done: {}, pre, chance, min, linear})
+
+    if (linear) {
+      this.mapModifiers.push({fun, done: {}, pre, chance, min, linear})
+    } else {
+      if (!preX && pre) preX = pre
+      if (!preY && pre) preY = pre
+      if (!minX && min) minX = min
+      if (!minY && min) minY = min
+
+      this.mapModifiers.push({fun, done: {}, preX, preY, minX, minY, chance, min, linear})
+    }
   }
 
   baseChunkLoader(x, y) {
@@ -111,18 +167,16 @@ function perlinAt(num) {
   return perlin[(num % perlin.length + perlin.length) % perlin.length]
 }
 
-let generetedNoiseCount = 10
-function generatePerlinNoiseGetter(x, y = 1) {
-  const i = x * y * generetedNoiseCount++
+function generateFnoiseGetter(x, y = 0) {
   let noiseCount = 0
 
   return (...args) => {
     if (args.length == 0) {
-      return perlinAt(i + noiseCount++)
+      return fnoise(x + noiseCount++, y)
     } else if (args.length == 1) {
-      return perlinAt(i + noiseCount++) * args[0]
+      return fnoise(x + noiseCount++, y) * args[0]
     } else {
-      return perlinAt(i + noiseCount++) * (args[1] - args[0]) + args[0]
+      return fnoise(x + noiseCount++, y) * (args[1] - args[0]) + args[0]
     }
   }
 }

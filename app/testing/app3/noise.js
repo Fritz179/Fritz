@@ -146,3 +146,44 @@ function noiseSeed(seed) {
     perlin[i] = lcg.rand();
   }
 };
+
+const RANDX = [], RANDY = []
+const MULTIPLIER = 0x6a09e667
+
+function fnoise(x = 0, y = 0) {
+  if (!RANDX.length) {
+    if (!perlin) {
+      noiseSeed()
+    }
+
+    for (let i = 0; i < 10; i++) {
+      RANDX[i] = (perlin[i] * MULTIPLIER) | 0
+      RANDY[i] = (perlin[i + 10] * MULTIPLIER) | 0
+    }
+  }
+
+  x <<= 0
+  y <<= 0
+
+  if (x < 0) {
+    x = -x
+  }
+  if (y < 0) {
+    y = -y
+  }
+
+  x += ''
+  y += ''
+
+  let out = 0
+  for (let i = 0; i < x.length; i++) {
+    out += RANDX[x[i]]
+  }
+
+  for (i = 0; i < y.length; i++) {
+    out += RANDY[y[i]]
+  }
+
+  const num = out / MULTIPLIER
+  return num - floor(num)
+}

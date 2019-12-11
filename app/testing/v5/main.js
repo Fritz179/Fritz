@@ -4,13 +4,13 @@ loadSprite('slot', {path: './img/sprites', recursive: 2})
 loadSprite('tiles', {path: './img/sprites'})
 let main, player, hand
 
-noiseSeed(420)
+noiseSeed()
 function setup() {
   // player = new Player(0, 0)
   player = new Player(1600, (ceil(noise(1600 / 320) * 50)) * 16 - 24)
 
   addLayer(main = new Main(player))
-  addLayer(player.inventory)
+  addLayer(player.inventory = new Inventory(player))
   addLayer(hand = new Hand(main.pointer))
   addLayer(new Overlay(player))
 }
@@ -38,6 +38,8 @@ class Main extends MapLoader {
     this.mouse = {x: 0, y: 0}
 
     this.addMapModifier(generateTree, {chance: 4, min: 8, pre: 1, linear: true})
+    this.addMapModifier(generateIronOrePach, {chance: 30, min: 10, pre: 1, linear: false})
+    this.addMapModifier(generateDiamonOrePach, {chance: 500, min: 30, pre: 1, linear: false})
     this.baseChunkLoader = getBaseChunk
     this.setChunkLoader(2, 5)
 

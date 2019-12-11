@@ -16,7 +16,7 @@ class Player extends Entity {
     this.createNew = false
     this.jumpRequest = 0
     this.creative = false
-    this.inventory = new Inventory(this)
+    this.inventory = null
 
     this.setGamemode(true)
   }
@@ -55,11 +55,10 @@ class Player extends Entity {
 
   onEntityCollision({name, entity}) {
     if (name == 'Drop') {
-      if (this.inventory) {
+      if (entity.pickupTime < 0 && this.inventory) {
         this.inventory.add(entity.blockId)
+        entity.despawn()
       }
-
-      entity.despawn()
     }
   }
 
