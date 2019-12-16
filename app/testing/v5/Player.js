@@ -92,7 +92,7 @@ class Player extends Entity {
     console.log(x, y);
   }
 
-  onBlockCollsion({x, y, solveCollision}) {
+  onBlockCollision({x, y, solveCollision}) {
     if (this.breakBlock) {
       this.layer.setTileAt(x, y, 0)
     } else {

@@ -22,12 +22,6 @@ class TileGame extends SpriteLayer {
     this.tileSize = 16
     this.chunks = []
 
-    if (tiles.collisionTable) {
-      this.collisionTable = tiles.collisionTable
-    } else {
-      console.warn('No collsion Table');
-    }
-
     this._isMap = true
     this._mapWasLoaded = false
     this._autoLoadChunks = false
@@ -282,7 +276,7 @@ class TileGame extends SpriteLayer {
   }
 
   collideMap(entity, sides = 3) {
-    const {collisionTable, w, h, tileSize} = this
+    const {w, h, tileSize} = this
 
     if (!this.isOnMap(entity)) {
       return entity.onUnloadedChunk()
@@ -296,8 +290,8 @@ class TileGame extends SpriteLayer {
       if (entity.xv > 0) { // entity is going right
         const xTile = floor(entity.right / tileSize)
         do {
-          if (collisionTable[this.tileAt(xTile, topTile)] & 8) {
-            entity.onBlockCollsion({side: 'right', x: xTile, y: topTile, s: tileSize})
+          if (tiles[this.tileAt(xTile, topTile)].collision & 8) {
+            entity.onBlockCollision({side: 'right', x: xTile, y: topTile, s: tileSize})
           }
           topTile++
         } while (topTile < bottomTile)
@@ -305,8 +299,8 @@ class TileGame extends SpriteLayer {
       } else if (entity.xv < 0) { // entity is going left
         const xTile = floor(entity.left / tileSize)
         do {
-          if (collisionTable[this.tileAt(xTile, topTile)] & 2) {
-            entity.onBlockCollsion({side: 'left', x: xTile, y: topTile, s: tileSize})
+          if (tiles[this.tileAt(xTile, topTile)].collision & 2) {
+            entity.onBlockCollision({side: 'left', x: xTile, y: topTile, s: tileSize})
           }
           topTile++
         } while (topTile < bottomTile)
@@ -321,8 +315,8 @@ class TileGame extends SpriteLayer {
       if (entity.yv > 0) { // entity is going down
         const yTile = floor(entity.bottom / tileSize)
         do {
-          if (collisionTable[this.tileAt(leftTile, yTile)] & 1) {
-            entity.onBlockCollsion({side: 'bottom', x: leftTile, y: yTile, s: tileSize})
+          if (tiles[this.tileAt(leftTile, yTile)].collision & 1) {
+            entity.onBlockCollision({side: 'bottom', x: leftTile, y: yTile, s: tileSize})
           }
           leftTile++
         } while (leftTile < rightTile)
@@ -330,8 +324,8 @@ class TileGame extends SpriteLayer {
       } else if (entity.yv < 0) { // entity is going up
         const yTile = floor(entity.top / tileSize)
         do {
-          if (collisionTable[this.tileAt(leftTile, yTile)] & 4) {
-            entity.onBlockCollsion({side: 'top', x: leftTile, y: yTile, s: tileSize})
+          if (tiles[this.tileAt(leftTile, yTile)].collision & 4) {
+            entity.onBlockCollision({side: 'top', x: leftTile, y: yTile, s: tileSize})
           }
           leftTile++
         } while (leftTile < rightTile)

@@ -1,6 +1,7 @@
 loadSprite('player', './img/sprites')
 loadSprite('pointer', './img/sprites')
 loadSprite('tiles', './img/sprites')
+loadSprite('items', './img/sprites')
 loadSprite('slot', {path: './img/sprites', recursive: 2})
 let main, player, hand
 
@@ -20,6 +21,16 @@ addCollision(Player, Drop)
 function tp(x, y = false) {
   if (y === false) y = (ceil(noise(x / 320) * 50)) * 16 - 24
   player.pos = {x, y}
+}
+
+class Tile {
+  get isPlacable() {
+    return this.collision !== null
+  }
+
+  get isBreakable() {
+    return this.collision !== null
+  }
 }
 
 class Main extends MapLoader {

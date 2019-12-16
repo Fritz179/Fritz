@@ -3,24 +3,32 @@
   "y": 0,
   "w": 16,
   "h": 16,
+  "index": 0,
+  "properties": {
+    "collision": 15,
+    "hardness": 1,
+    "wakness": "none",
+    "drop": "_name"
+  },
   "tiles": [
     {
       "name": "air",
-      "collision": 0
+      "collision": 0,
+      "hardness": null
     },
     {
       "name": "grass",
-      "collision": 15,
-      "hardness": 20
+      "hardness": 20,
+      "weakness": "shovel",
+      "drop": "dirt"
     },
     {
       "name": "dirt",
-      "collision": 15,
-      "hardness": 20
+      "hardness": 20,
+      "weakness": "shovel"
     },
     {
       "name": "stone",
-      "collision": 15,
       "hardness": 50
     },
     {
@@ -35,12 +43,10 @@
     },
     {
       "name": "iron",
-      "collision": 15,
       "hardness": 70
     },
     {
       "name": "diamond",
-      "collision": 15,
       "hardness": 100
     }
   ]

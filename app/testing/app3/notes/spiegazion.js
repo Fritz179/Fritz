@@ -46,7 +46,7 @@
 // Layers al ga tanct layer in cui al met i fiöi, al ga an map ca al ga dis a che livel ca le
 // al ga an forEach ca al fa pasa tüt
 
-// TileGame al ga chunkWidth/height, tileSize, chunks e collisionTable,
+// TileGame al ga chunkWidth/height, tileSize, chunks e miga collisionTable,
 // li sprie gline in dali sprites
 // al ga anca funzion cuma getTileAt, collideMap, loadChunkAt
 

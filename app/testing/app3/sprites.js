@@ -9,7 +9,6 @@
 //define global references
 const sprites = {}
 const parsers = {}
-const tiles = {collisionTable: [], nameTable: [], nameToId: {}, hardnessTable: [], spriteTable: []}
 
 function addParser(name, fun) {
   parsers[name] = fun
@@ -23,7 +22,6 @@ function loadSprites(...sprites) {
 }
 
 function loadSprite(name, options = {}, callback) {
-  const sprite = sprites[name] = []
 
   if (typeof options == 'function') {
     callback = options
@@ -54,8 +52,12 @@ function loadSprite(name, options = {}, callback) {
 
     if (output instanceof Canvas) {
       sprites[name] = output
-    } else {
-      addDefaultOptions(sprite, output)
+    } else if (output !== false) {
+
+      // make sure that sprite is an array
+      sprites[name] = []
+      addDefaultOptions(sprites[name], output)
+
 
       if (typeof callback == 'function') {
         callback(output)
@@ -79,43 +81,97 @@ function loadSprite(name, options = {}, callback) {
       parse(img)
     })
   }
-
-  return sprite
 };
 
+const tiles = []
+const tileNames = {}
+let lastTileId = 0
+
 addParser('tiles', (img, json) => {
-  let {x, y, w, h} = json
+  const properties = [], _properties = new Map(), defaultProp = {}
+
+  if (json.properties) {
+    Object.keys(json.properties).forEach(prop => {
+      if (typeof json.properties[prop] == 'string' && json.properties[prop][0] == '_') {
+        _properties.set(json.properties[prop].slice(1), prop)
+      } else {
+        properties.push(prop)
+        defaultProp[prop] = json.properties[prop]
+      }
+    })
+  }
+
   const {width, height} = img
+  const {x = 0, y = 0, w = 16, h = 16, index = 0} = json
 
-  json.tiles.forEach((tile, i) => {
-    tile.sprite = cut(img, x, y, w, h)
-    addTile(i, tile)
+  parseGroup(json.tiles, defaultProp, {x, y, w, h, index})
 
-    //go to next tile, move x and y
-    x += w
-    if (x >= width) {
-      x = 0
-      y += h
-      if (y >= height) throw new Error('outside image boundry!')
+  function parseGroup(group, defaultProp, metadata) {
+    group.forEach((tile, i) => {
+      properties.forEach(prop => {
+        if (typeof tile[prop] == 'undefined') {
+          tile[prop] = defaultProp[prop]
+        }
+      })
+
+      _properties.forEach((prop, of) => {
+        if (typeof tile[prop] == 'undefined') {
+          tile[prop] = tile[of]
+        }
+      })
+
+      let {x, y, w, h, index} = metadata
+
+      if (tile.x) x = tile.x
+      if (tile.y) y = tile.y
+      if (tile.index) index = tile.index
+
+      tile.sprite = cut(img, x, y, w, h)
+      addTile(tile, typeof index != 'undefined' ? index + i : null)
+
+      //go to next tile, move x and y
+      metadata.x += w
+      if (x >= width) {
+        x = 0
+        metadata.y += h
+        if (y >= height) throw new Error('outside image boundry!')
+      }
+    })
+  }
+
+  function addTile(newTile, id) {
+    if (typeof id != 'number') id = lastTileId
+
+    if (tiles[id]) {
+      throw new Error(`Id: ${id}, already in use by: ${tiles[id].name}, duplicate: ${name}`)
     }
-  })
 
-  console.log(tiles);
+    let tile
+    if (typeof Tile != 'undefined') {
+      tile = new Tile(newTile)
+    } else {
+      tile = {}
+    }
+
+    properties.forEach(prop => {
+      if (typeof tile[prop] == 'undefined') tile[prop] = newTile[prop]
+    })
+
+    _properties.forEach(prop => {
+      if (typeof tile[prop] == 'undefined') tile[prop] = newTile[prop]
+    })
+    if (typeof tile.sprite == 'undefined') tile.sprite = newTile.sprite
+
+    tiles[id] = tile
+    tileNames[name] = id
+
+    if (id >= lastTileId) {
+      lastTileId++
+    }
+  }
 
   return false
 })
-
-// const tiles = {collisionTable: [], nameTable: [], nameToId: {}, hardnessTable: [], spriteTable: []}
-function addTile(id, {collision, hardness, name, sprite}) {
-  const {collisionTable, nameToId, nameTable, hardnessTable, spriteTable} = tiles
-
-  nameTable[id] = name
-  spriteTable[id] = sprite
-  hardnessTable[id] = hardness || null
-  collisionTable[id] = collision
-
-  nameToId[name] = id
-}
 
 addParser('recursive', (img, json, data) => {
   const sprite = []

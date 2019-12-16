@@ -63,7 +63,7 @@ class Hand extends ItemHolder {
       ctx.textFont('consolas')
       ctx.textAlign('right', 'bottom')
       ctx.textSize(32)
-      ctx.image(tiles.spriteTable[this.id], x - 16, y - 16, 32, 32)
+      ctx.image(tiles[this.id].sprite, x - 16, y - 16, 32, 32)
       ctx.text(this.quantity, x + 37, y + 32)
     }
 

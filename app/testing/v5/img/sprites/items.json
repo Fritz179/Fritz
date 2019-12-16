@@ -1,0 +1,33 @@
+{
+  "x": 0,
+  "y": 0,
+  "w": 16,
+  "h": 16,
+  "index": 100,
+  "properties": {
+    "collision": null,
+    "hardness": null,
+    "swordStrength": 1,
+    "pickaxeStrength": 1,
+    "shovelStrength": 1,
+    "axeStrength": 1
+  },
+  "tiles": [
+    {
+      "name": "wooden_sword",
+      "swordStrength": 2
+    },
+    {
+      "name": "wooden_pickaxe",
+      "pickaxeStrength": 2
+    },
+    {
+      "name": "wooden_shovel",
+      "shovelStrength": 2
+    },
+    {
+      "name": "wooden_axe",
+      "axeStrength": 2
+    }
+  ]
+}

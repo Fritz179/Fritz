@@ -18,7 +18,7 @@ class Body extends Frame {
 
     this.lifeTime = Infinity
 
-    createMiddlwere(this, 'onBlockCollsion', args => {
+    createMiddlwere(this, 'onBlockCollision', args => {
       args.solveCollision = () => {
         const {side, x, y, s} = args
         switch (side) {
@@ -123,7 +123,7 @@ class Body extends Frame {
     updatePhisics()
   }
 
-  onBlockCollsion({solveCollision}) {
+  onBlockCollision({solveCollision}) {
     solveCollision()
   }
 
@@ -153,7 +153,7 @@ class Body extends Frame {
 
     let x = x1
     do {
-      if (this.layer.collisionTable[this.layer.tileAt(x, y)] & 1) {
+      if (tiles[this.layer.tileAt(x, y)].collision & 1) {
         return true
       }
       x++

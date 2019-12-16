@@ -52,7 +52,7 @@ class Inventory extends SpriteLayer {
 
   add(id, quantity = 1) {
     if (typeof id == 'string') {
-      id = tiles.nameToId[id]
+      id = tileNames[id]
     }
 
     if (hand.id == id && quantity < 64) {

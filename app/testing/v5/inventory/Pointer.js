@@ -68,7 +68,7 @@ class Pointer extends Canvas {
   diggingTime(tile) {
     if (player.creative) return 1
 
-    if (tiles.hardnessTable[tile] !== null) return tiles.hardnessTable[tile]
+    if (tiles[tile].hardness !== null) return tiles[tile].hardness
 
     throw new Error(`Invalid digging tile: ${tile}`)
   }

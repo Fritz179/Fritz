@@ -17,7 +17,7 @@ classes:
   Body: [Frame, Block]
     - xv, yv, xa, ya, xd, yd (physics)
     - collideWithMap, collideWithEntities
-    - onBlockCollsion, onUnloadedChunk, onEntityCollision
+    - onBlockCollision, onUnloadedChunk, onEntityCollision
     - lifeTime, movingFor
 
   Entity: [Body, Frame, Block]
