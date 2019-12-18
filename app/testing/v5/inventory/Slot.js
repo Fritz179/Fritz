@@ -36,7 +36,7 @@ class Slot extends ItemHolder {
     if (this.isEmpty && !hand.isEmpty && (this != hand.from || this.leftTime > 10)) {
       this.getFrom(hand)
     } else if (hand.id == this.id) {
-      const space = 64 - this.quantity
+      const space = tiles[this.id].maxStack - this.quantity
 
       if (hand.quantity > space) {
         this.quantity += space
@@ -66,7 +66,10 @@ class Slot extends ItemHolder {
       if (this.id) {
         this.textSize(32)
         this.image(tiles[this.id].sprite, this.x + 16, this.y + 16, 32, 32)
-        this.text(this.quantity, this.x + 54, this.y + 64)
+
+        if (tiles[this.id].maxStack > 1) {
+          this.text(this.quantity, this.x + 54, this.y + 64)
+        }
       }
 
       if (this.num < this.inventory.cols) {

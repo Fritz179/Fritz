@@ -20,10 +20,10 @@ class Hand extends ItemHolder {
     if (this.placing && !pointer.tile && !pointer.overEntity) {
       const {selected, selectedSlot} = player.inventory
 
-      if (this.id) {
+      if (this.id && tiles[this.id].isPlacable) {
         pointer.tile = this.id
         this.removeOne()
-      } else if (selectedSlot.id) {
+      } else if (selectedSlot.id && tiles[selectedSlot.id].isPlacable) {
         pointer.tile = selectedSlot.id
         player.inventory.getFromSlot(selected, 1)
       }
@@ -64,7 +64,10 @@ class Hand extends ItemHolder {
       ctx.textAlign('right', 'bottom')
       ctx.textSize(32)
       ctx.image(tiles[this.id].sprite, x - 16, y - 16, 32, 32)
-      ctx.text(this.quantity, x + 37, y + 32)
+
+      if (tiles[this.id].maxStack > 1) {
+        ctx.text(this.quantity, x + 37, y + 32)
+      }
     }
 
     return false

@@ -14,6 +14,11 @@ function setup() {
   addLayer(player.inventory = new Inventory(player))
   addLayer(hand = new Hand(main.pointer))
   addLayer(new Overlay(player))
+
+  player.inventory.add(100, 1)
+  player.inventory.add(101, 1)
+  player.inventory.add(102, 1)
+  player.inventory.add(103, 1)
 }
 
 addCollision(Player, Drop)
@@ -24,6 +29,10 @@ function tp(x, y = false) {
 }
 
 class Tile {
+  constructor({name}) {
+    tileNames[name] = this
+  }
+
   get isPlacable() {
     return this.collision !== null
   }
@@ -49,7 +58,8 @@ class Main extends MapLoader {
     this.mouse = {x: 0, y: 0}
 
     this.addMapModifier(generateTree, {chance: 4, min: 8, pre: 1, linear: true})
-    this.addMapModifier(generateIronOrePach, {chance: 30, min: 10, pre: 1, linear: false})
+    this.addMapModifier(generateCoalOrePach, {chance: 30, min: 10, pre: 1, linear: false})
+    this.addMapModifier(generateIronOrePach, {chance: 600, min: 10, pre: 1, linear: false})
     this.addMapModifier(generateDiamonOrePach, {chance: 500, min: 30, pre: 1, linear: false})
     this.baseChunkLoader = getBaseChunk
     this.setChunkLoader(2, 5)

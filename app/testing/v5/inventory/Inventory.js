@@ -54,9 +54,10 @@ class Inventory extends SpriteLayer {
     if (typeof id == 'string') {
       id = tileNames[id]
     }
+    const {maxStack} = tiles[id]
 
-    if (hand.id == id && quantity < 64) {
-      const space = 64 - hand.quantity
+    if (hand.id == id && quantity < maxStack) {
+      const space = maxStack - hand.quantity
 
       if (quantity > space) {
         hand.quantity += space
@@ -71,8 +72,8 @@ class Inventory extends SpriteLayer {
     for (let i = 0; i < this.slots.length; i++) {
       const slot = this.slots[i]
 
-      if (slot.id == id && slot.quantity < 64) {
-        const space = 64 - slot.quantity
+      if (slot.id == id && slot.quantity < maxStack) {
+        const space = maxStack - slot.quantity
 
         if (quantity > space) {
           slot.quantity += space
@@ -91,9 +92,9 @@ class Inventory extends SpriteLayer {
       if (slot.id == 0) {
         slot.id = id
 
-        if (quantity > 64) {
-          slot.quantity = 64
-          quantity -= 64
+        if (quantity > maxStack) {
+          slot.quantity = maxStack
+          quantity -= maxStack
         } else {
           slot.quantity = quantity
           return 0
@@ -147,3 +148,5 @@ class Inventory extends SpriteLayer {
 
   }
 }
+
+// main.addChild(new Drop(x + this.w / 2, y + this.h / 2, tileNames[tiles[tile].drop].id))

@@ -7,8 +7,13 @@
   "properties": {
     "collision": 15,
     "hardness": 1,
-    "wakness": "none",
-    "drop": "_name"
+    "weakness": "none",
+    "drop": "_name",
+    "swordStrength": 1,
+    "pickaxeStrength": 1,
+    "shovelStrength": 1,
+    "axeStrength": 1,
+    "maxStack": 64
   },
   "tiles": [
     {
@@ -29,25 +34,35 @@
     },
     {
       "name": "stone",
-      "hardness": 50
+      "hardness": 50,
+      "weakness": "pickaxe"
     },
     {
       "name": "wood",
       "collision": 0,
-      "hardness": 35
+      "hardness": 35,
+      "weakness": "axe"
     },
     {
       "name": "leaf",
       "collision": 0,
-      "hardness": 5
+      "hardness": 10,
+      "weakness": "sword"
+    },
+    {
+      "name": "coal",
+      "hardness": 55,
+      "weakness": "pickaxe"
     },
     {
       "name": "iron",
-      "hardness": 70
+      "hardness": 70,
+      "weakness": "pickaxe"
     },
     {
       "name": "diamond",
-      "hardness": 100
+      "hardness": 100,
+      "weakness": "pickaxe"
     }
   ]
 }

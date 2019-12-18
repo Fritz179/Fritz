@@ -162,8 +162,8 @@ addParser('tiles', (img, json) => {
     })
     if (typeof tile.sprite == 'undefined') tile.sprite = newTile.sprite
 
+    tile.id = id
     tiles[id] = tile
-    tileNames[name] = id
 
     if (id >= lastTileId) {
       lastTileId++

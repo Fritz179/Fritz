@@ -10,7 +10,8 @@
     "swordStrength": 1,
     "pickaxeStrength": 1,
     "shovelStrength": 1,
-    "axeStrength": 1
+    "axeStrength": 1,
+    "maxStack": 1
   },
   "tiles": [
     {
