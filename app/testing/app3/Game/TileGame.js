@@ -239,8 +239,8 @@ class TileGame extends SpriteLayer {
     const i = (y - chunkY * chunkHeight) * chunkWidth + (x - chunkX * chunkWidth)
 
     //chenk if chunx exists and is loaded
-    if (!this.chunks[chunkX]) return -1
-    if (!this.chunks[chunkX][chunkY]) return -1
+    if (!this.chunks[chunkX]) return 0
+    if (!this.chunks[chunkX][chunkY]) return 0
 
     return this.chunks[chunkX][chunkY].tiles[i]
   }

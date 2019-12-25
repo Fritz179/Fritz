@@ -7,11 +7,13 @@ class Inventory extends SpriteLayer {
     this.cols = 9
     this.rows = 4
     this.slots = []
-    this.open = true
 
     for (let i = 0; i < this.cols * this.rows; i++) {
       this.slots[i] = this.addChild(new Slot(this, i))
     }
+
+    this.open = true
+    this.toggleInventory()
 
     this.selected = 0
   }
@@ -50,11 +52,8 @@ class Inventory extends SpriteLayer {
     if (this.selected > this.cols - 1) this.selected = 0
   }
 
-  add(id, quantity = 1) {
-    if (typeof id == 'string') {
-      id = tileNames[id]
-    }
-    const {maxStack} = tiles[id]
+  add(_id, quantity = 1) {
+    const {maxStack, id} = typeof _id == 'string' ? tileNames[_id] : tiles[_id]
 
     if (hand.id == id && quantity < maxStack) {
       const space = maxStack - hand.quantity

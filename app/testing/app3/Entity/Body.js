@@ -2,17 +2,13 @@ class Body extends Frame {
   constructor(x, y, w, h) {
     super(x, y, w, h)
 
-    this.xv = 0
-    this.yv = 0
-    this.xa = 0
-    this.ya = 0
-    this.xd = 1
-    this.yd = 1
+    this.vel = new velVec(0, 0)
+    this.acc = new accVec(0, 0)
+    this.drag = new dragVec(0, 0)
 
     this.speed = 5
     this.autoMove = true
     this.collideWithMap = false
-    this._collideWith = []
     this.movingFor = 0
     this._minVel = 0.1
 
@@ -73,8 +69,7 @@ class Body extends Frame {
 
       args.updatePhisics = () => {
         // add acceleration to velocity
-        this.xv += this.xa
-        this.yv += this.ya
+        this.addVel(this.acc)
 
         //add drag to velocity
         this.xv *= this.xd
@@ -90,34 +85,12 @@ class Body extends Frame {
           this.layer.collideMap(this, 2)
         } else {
           // add only velocity to position
-          this.x += this.xv
-          this.y += this.yv
+          this.addPos(this.vel)
         }
 
       }
     })
   }
-
-  set vel({x, y}) { this.xv = x; this.yv = y }
-  set acc({x, y}) { this.xa = x; this.ya = y }
-  set drag({x, y}) { this.xd = x, this.yd = y }
-
-  get vel() { return {x: this.xv, y: this.yv} }
-  get acc() { return {x: this.xa, y: this.ya} }
-  get drag() { return {x: this.xd, y: this.yd} }
-
-  setVel(x, y) { this.xv = x; this.yv = y; return this }
-  setAcc(x, y) { this.xa = x; this.ya = y; return this }
-  setDrag(x, y) { this.xd = x, this.yd = y; return this }
-
-  addVel(x, y) { this.xv += x; this.yv += y; return this }
-  addAcc(x, y) { this.xa += x; this.ya += y; return this }
-  addDrag(x, y) { this.xd += x; this.yd += y; return this }
-  resetVel() { this.xv = 0; this.yv = 0; return this }
-  resetAcc() { this.xa = 0; this.ya = 0; return this }
-  resetDrag() { this.xd = 1; this.yd = 1; return this }
-  resetMovement() { this.resetVel(); return this.resetAcc() }
-  resetAll() { this.resetMovement(); return this.resetDrag() }
 
   fixedUpdate({updatePhisics}) {
     updatePhisics()
@@ -162,3 +135,7 @@ class Body extends Frame {
     return false
   }
 }
+
+const velVec = addVec2(Body, 'vel', 'xv', 'yv')
+const accVec = addVec2(Body, 'acc', 'xa', 'ya')
+const dragVec = addVec2(Body, 'drag', 'xd', 'yd')

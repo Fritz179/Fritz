@@ -5,10 +5,8 @@ const HARD = 2
 class Frame extends Block {
   constructor(x, y, w, h) {
     super(x, y, w, h)
-    this.px = x
-    this.py = y
-    this.xm = 1
-    this.ym = 1
+    this.prev = new prevVec(x, y)
+    this.mult = new multVec(1, 1)
 
     this._wasOnClick = false
     this.sprite = null
@@ -52,3 +50,6 @@ class Frame extends Block {
     })
   })
 })
+
+const prevVec = addVec2(Frame, 'prev', 'px', 'py')
+const multVec = addVec2(Frame, 'mult', 'xm', 'ym')

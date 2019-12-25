@@ -29,6 +29,10 @@
     {
       "name": "wooden_axe",
       "axeStrength": 2
+    },
+    {
+      "name": "coal",
+      "maxStack": 64
     }
   ]
 }

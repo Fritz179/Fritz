@@ -1,7 +1,6 @@
 class Block {
   constructor(x = 0, y = 0, w = 100, h = 100) {
-    this.x = x
-    this.y = y
+    this.pos = new posVec(x, y)
     this.w = w
     this.h = h
   }
@@ -26,7 +25,6 @@ class Block {
   get right() { return this.x + this.w }
   get bottom() { return this.y + this.h }
 
-  get pos() { return {x: this.x, y: this.y} }
   get center() { return {x: this.x + this.w / 2, y: this.y + this.h / 2} }
   get cord() { return {x1: this.x, y1: this.y, x2: this.x2, y2: this.y2} }
   get frame() { return [this.x, this.y, this.w, this.h] }
@@ -40,15 +38,15 @@ class Block {
   set absRight(x2) { this.w = x2 - this.x }
   set absBottom(y2) { this.h = y2 - this.y }
 
-  set pos({x, y}) { this.x = x; this.y = y }
   set center({x, y}) { this.x = x - this.w / 2; this.y = y - this.h / 2 }
   set cord({x1, y1, x2, y2}) { this.x = x1; this.y = y1; this.w = x2 - x1; this.h = y2 - y1 }
   set frame([x, y, w, h]) { this.x = x; this.y = y; this.h = h; this.w = w; }
 
-  //function
-  setPos(x, y) { this.x = x; this.y = y; return this; }
   setSize(w, h) { this.w = w; this.h = h; return this; }
   setAbsPos(x, y) { this.absLeft = x; this.absTop = y; return this; }
   setAbsSize(x2, y2) { this.w = x2 - this.x; this.h = y2 - this.y; return this; }
   setCenter(x, y) { this.x = x - this.w / 2; this.y = y - this.h / 2; return this; }
 }
+
+const posVec = addVec2(Block, 'pos', 'x', 'y')
+// const sizeVec = addVec2(Block, 'size', 'w', 'h')

@@ -29,9 +29,11 @@ class SpriteLayer extends Layer {
 
             this.children[to].forEach(target => {
               this.children[type].forEach(collider => {
-                if (rectIsOnRect(target, collider)) {
+                if (target !== collider) {
+                  if (rectIsOnRect(target, collider)) {
 
-                  collider.onEntityCollision({name: to, entity: target})
+                    collider.onEntityCollision({name: to, entity: target})
+                  }
                 }
               })
             })

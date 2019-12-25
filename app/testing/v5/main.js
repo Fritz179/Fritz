@@ -22,6 +22,7 @@ function setup() {
 }
 
 addCollision(Player, Drop)
+addCollision(Drop, Drop)
 
 function tp(x, y = false) {
   if (y === false) y = (ceil(noise(x / 320) * 50)) * 16 - 24

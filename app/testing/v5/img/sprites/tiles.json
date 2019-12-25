@@ -50,19 +50,31 @@
       "weakness": "sword"
     },
     {
-      "name": "coal",
+      "name": "coal_ore",
       "hardness": 55,
-      "weakness": "pickaxe"
+      "weakness": "pickaxe",
+      "drop": "coal"
     },
     {
-      "name": "iron",
+      "name": "iron_ore",
       "hardness": 70,
       "weakness": "pickaxe"
     },
     {
-      "name": "diamond",
+      "name": "diamond_ore",
       "hardness": 100,
       "weakness": "pickaxe"
+    },
+    {
+      "name": "furnace",
+      "hardness": 50,
+      "weakness": "pickaxe"
+    },
+    {
+      "name": "furnace_lit",
+      "hardness": 50,
+      "weakness": "pickaxe",
+      "drop": "furnace"
     }
   ]
 }
