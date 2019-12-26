@@ -28,68 +28,6 @@ class TileGame extends SpriteLayer {
     this.preW = this.preH = null
     this.postW = this.postH = null
 
-    this.update.addPre(() => {
-      this.forEachChunk((chunk, x, y) => {
-        const updated = chunk.update()
-
-        if (updated || chunk.changed) {
-          this.changed = HARD
-        }
-      })
-
-      return this.changed
-    })
-    this.fixedUpdate.addPre(() => this.forEachChunk(chunk => chunk.fixedUpdate()))
-
-    this.getSprite.addPre(() => {
-      this.forEachChunk((chunk, x, y) => {
-        const {chunkTotalWidth, chunkTotalHeight} = this
-
-        const sprite = chunk.getSprite(this.sprite)
-        if (sprite) {
-          this.image(sprite, x * chunkTotalWidth, y * chunkTotalHeight, {hitbox: debugEnabled, trusted: debugEnabled})
-        } else if (sprite !== false) {
-          console.error('Invalid chunk getSprite return?');
-        }
-
-        chunk.changed = false
-      })
-    })
-
-    this.update.addPre(() => {
-      if (this._autoLoadChunks) {
-        const {chunkTotalWidth, chunkTotalHeight, preW, preH, postW, postH} = this
-        const xCenter = floor(this.center.x / chunkTotalWidth)
-        const yCenter = floor(this.center.y / chunkTotalHeight)
-
-        // delete all outside chunk
-        let deletedChunks = 0
-        const minX = xCenter - postW, maxX = xCenter + postW
-        const minY = yCenter - postH, maxY = yCenter + postH
-        for (let x in this.chunks) {
-          const col = this.chunks[x]
-
-          for (let y in col) {
-            if (x < minX || x > maxX || y < minY || y > maxY) {
-              deletedChunks++
-              this.unloadChunkAt(x, y)
-            }
-          }
-        }
-
-        // add new chunks
-        let newChunks = 0
-        for (let x = xCenter - this.preW; x <= xCenter + this.preW; x++) {
-          for (let y = yCenter - this.preH; y <= yCenter + this.preH; y++) {
-            if (!this.chunks[x] || !this.chunks[x][y]) {
-              newChunks++
-              this.loadChunkAt(this.chunkLoader(x, y), x, y)
-            }
-          }
-        }
-      }
-    })
-
     addCord(this, 'tileAt', 2)
     addCord(this, 'setTileAt', 2)
     addCord(this, 'noEntityAt', 2)
@@ -104,6 +42,69 @@ class TileGame extends SpriteLayer {
   get chunkTotalWidth() { return this.chunkWidth * this.tileSize }
   get chunkTotalHeight() { return this.chunkHeight * this.tileSize }
   get chunkTotalLength() { return this.chunkTotalWidth * this.chunkTotalHeight }
+
+  fixedUpdateCapture() {
+    this.forEachChunk(chunk => chunk.fixedUpdate())
+  }
+
+  updateCapture() {
+    if (this._autoLoadChunks) {
+      const {chunkTotalWidth, chunkTotalHeight, preW, preH, postW, postH} = this
+      const xCenter = floor(this.center.x / chunkTotalWidth)
+      const yCenter = floor(this.center.y / chunkTotalHeight)
+
+      // delete all outside chunk
+      let deletedChunks = 0
+      const minX = xCenter - postW, maxX = xCenter + postW
+      const minY = yCenter - postH, maxY = yCenter + postH
+      for (let x in this.chunks) {
+        const col = this.chunks[x]
+
+        for (let y in col) {
+          if (x < minX || x > maxX || y < minY || y > maxY) {
+            deletedChunks++
+            this.unloadChunkAt(x, y)
+          }
+        }
+      }
+
+      // add new chunks
+      let newChunks = 0
+      for (let x = xCenter - this.preW; x <= xCenter + this.preW; x++) {
+        for (let y = yCenter - this.preH; y <= yCenter + this.preH; y++) {
+          if (!this.chunks[x] || !this.chunks[x][y]) {
+            newChunks++
+            this.loadChunkAt(this.chunkLoader(x, y), x, y)
+          }
+        }
+      }
+    }
+
+    this.forEachChunk((chunk, x, y) => {
+      const updated = chunk.update()
+
+      if (updated || chunk.changed) {
+        this.changed = true
+      }
+    })
+
+    return this.changed
+  }
+
+  getSpriteCapture() {
+    this.forEachChunk((chunk, x, y) => {
+      const {chunkTotalWidth, chunkTotalHeight} = this
+
+      const sprite = chunk.getSprite(this.sprite)
+      if (sprite) {
+        this.image(sprite, x * chunkTotalWidth, y * chunkTotalHeight, {hitbox: debugEnabled, trusted: debugEnabled})
+      } else if (sprite !== false) {
+        console.error('Invalid chunk getSprite return?');
+      }
+
+      chunk.changed = false
+    })
+  }
 
   cord(...args) {
     args = args.map(val => floor(val / this.tileSize))

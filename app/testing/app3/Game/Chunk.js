@@ -39,7 +39,7 @@ class Chunk extends Canvas {
     const sprite = tiles[tile].sprite
 
     this.image(sprite, x * w, y * w, w, w)
-    this.changed = HARD
+    this.changed = true
     this.originalChunk = false
   }
 }

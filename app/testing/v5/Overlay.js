@@ -1,9 +1,8 @@
 class Overlay extends FrontLayer {
-  constructor(player) {
+  constructor() {
     super()
     this.updateTimes = 0
 
-    this.player = player
     this.setCameraMode({align: 'right-top', overflow: 'display'})
   }
 
@@ -11,7 +10,7 @@ class Overlay extends FrontLayer {
     this.updateTimes++
 
     const {ups, fps, runTime} = timer
-    const {x, y} = this.player
+    const {x, y} = main.player
     const f = Math.floor
 
     this.textSize(35)

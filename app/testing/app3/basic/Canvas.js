@@ -91,7 +91,7 @@ class Canvas extends Frame {
   get textStyle() { return this.sprite.textStyle }
   get textFont() { return this.sprite.textFont }
 
-  setScale(x = 1, y) { this.xm = x; this.ym = y || x; this.changed = HARD; return this; }
+  setScale(x = 1, y) { this.xm = x; this.ym = y || x; this.changed = true; return this; }
   setCtx(ctx) { this.cxt = ctx; this.xm = 1; this.ym = 1; return this; }
 
   setSize(w, h) {
@@ -108,7 +108,7 @@ class Canvas extends Frame {
       this.h = h
     }
 
-    this.changed = HARD
+    this.changed = true
     return this
   }
 

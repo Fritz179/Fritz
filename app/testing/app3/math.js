@@ -85,6 +85,11 @@ class Vec2 extends Array {
   setMag(mag) {
     return this.normalize.mult(mag)
   }
+
+  copy() {
+    const copy = new this.constructor(this)
+    return copy
+  }
 }
 
 function createVec2(dim1, dim2) {
@@ -141,4 +146,47 @@ function addVec2(target, name, dim1, dim2) {
   })
 
   return createVec2(dim1, dim2)
+}
+
+class ChangeVec extends Vec2 {
+  constructor(x, y) {
+    super(x, y)
+
+    this.oldVec = new Vec2(this[0], this[1])
+    this.changedAccesed = false
+  }
+
+  get changed() {
+    if (this.changedAccesed) {
+      return false
+    }
+
+    const ret = !this.equals(this.oldVec)
+    // console.log(this, this.oldVec);
+    this.oldVec.set(this)
+    this.changedAccesed = true
+
+    return ret
+  }
+
+  get isDifferent() {
+    return this.equals(this.oldVec)
+  }
+
+  set(x, y) {
+    this.oldVec.set(this)
+    this.changedAccesed = false;
+
+    // this.__proto__.__proto__.set(x, y) NOPE, this points to __proto__.__proto__
+    [x, y] = getXY(x, y)
+    this[0] = x
+    this[1] = y
+
+    return this
+  }
+
+  equalize() {
+    this.oldVec.set(this)
+    return this
+  }
 }

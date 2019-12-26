@@ -4,21 +4,21 @@ class FrontLayer extends Layer {
 
     this.texts = []
     this.textCount = 0
+  }
 
-    this.update.addPre(() => {
-      this.textCount = 0
-    })
+  updateCapture() {
+    this.textCount = 0
+  }
 
-    this.getSprite.addPost(() => {
-      this.texts.forEach(({text, x, y}) => {
-        this.text(text, x, y)
-      })
+  getSpriteBubble() {
+    this.texts.forEach(({text, x, y}) => {
+      this.text(text, x, y)
     })
   }
 
   setText(text, x, y) {
     if (!this.texts[this.textCount] || this.texts[this.textCount].text != text) {
-      this.changed = HARD
+      this.changed = true
       this.texts[this.textCount] = {text, x, y}
     }
 

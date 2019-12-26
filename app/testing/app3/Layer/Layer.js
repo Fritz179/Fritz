@@ -5,17 +5,16 @@ class Layer extends Canvas {
     this.children.types = []
 
     this.cameraMode = {xAlign: 0.5, yAlign: 0.5, overflow: 'dispaly'}
+  }
 
-    this.update.addPre((parentSprite) => {
-      // always update ctx, to draw image on right place
-      if (!this.buffer) {
-        this.sprite = parentSprite
-      }
+  updateCapture(parentSprite) {
+    if (!this.buffer) {
+      this.sprite = parentSprite
+    }
 
-      if (debugEnabled) {
-        this.clear()
+    if (debugEnabled) {
+        this.background(255, 255 - timer.time % 255, timer.time % 255)
       }
-    })
   }
 
   setCameraMode({align, overflow}) {
@@ -59,8 +58,7 @@ class Layer extends Canvas {
     if (!this.children.delete(child)) {
       console.warn('Cannot remove unexisting child: ', child);
     } else {
-      child.layer = null
-      this.changed = HARD
+      this.changed = true
 
       const map = this.children[child.constructor.name]
       map.splice(map.indexOf(child), 1)

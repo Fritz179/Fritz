@@ -1,44 +1,39 @@
-function createMiddlwere(target, name, defaultObject) {
-  const realFun = (target[name] || (() => { })).bind(target)
-  const preFun = new Map()
-  const postFun = new Map()
-  let counter = 0
+function createMiddleware(to, name) {
+  const capName = capitalize(name)
 
-  function runner(args = {}) {
-    let ret
-    
-    if (defaultObject) defaultObject(args)
+  const {prototype} = to.constructor
+  if (!prototype.hasOwnProperty(`${name}MiddlewareAdded`)) {
+    Object.defineProperty(prototype, `${name}MiddlewareAdded`, {value: true})
+    // console.log(Object.hasOwnProperty(prototype, `${name}MiddlewareAdded`), to);
 
-    preFun.forEach((value, key) => {
-      if (counter % value == 0) {
-        const out = key(args)
-        if (typeof out != 'undefined') ret = out
+    function crawl(obj) {
+      if (obj.hasOwnProperty(`${name}Capture`)) {
+        funs.unshift(obj[`${name}Capture`])
+      }
+
+      if (obj.hasOwnProperty(`${name}Bubble`)) {
+        funs.push(obj[`${name}Bubble`])
+      }
+
+      // recursive until to the SuperClass is passed
+      if (obj.__proto__ != Object.prototype) {
+        crawl(obj.__proto__)
+      }
+    }
+
+    const funs = prototype[name] ? [prototype[name]] : []
+    crawl(prototype)
+
+    Object.defineProperty(prototype, name, {
+      value: function(args = {}) {
+        let ret
+        funs.forEach(fun => {
+          const out = fun.call(this, args, ret)
+          if (typeof out != 'undefined') ret = out
+        })
+
+        return ret
       }
     })
-
-    const out = realFun(args)
-    if (typeof out != 'undefined') ret = out
-
-    postFun.forEach((value, key) => {
-      if (counter % value == 0) {
-        const out = key(args, ret)
-        if (typeof out != 'undefined') ret = out
-      }
-    })
-
-    counter++
-    return ret
   }
-
-  Object.defineProperty(runner, 'addPre', {
-    value: (fun, repeat = 1) => preFun.set(fun.bind(target), repeat)
-  })
-  Object.defineProperty(runner, 'addPost', {
-    value: (fun, repeat = 1) => postFun.set(fun.bind(target), repeat)
-  })
-
-  Object.defineProperty(target, name, {
-    get() { return runner },
-    set(newFun) { realFun = newFun }
-  })
 }

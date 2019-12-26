@@ -107,7 +107,6 @@ class Player extends Entity {
       case 'p': console.log(`x: ${round(this.x)}, y: ${round(this.y)}`); break;
       case 'x': this.collideWithMap = !this.collideWithMap; break;
       case 'c': this.breakBlock = !this.breakBlock; break;
-      case 'r': masterLayer.changed = HARD; break;
       case 'n': this.createNew = true; break;
       case 'b': this.explode(5, 5); break;
       case 'y': this.explode(50, 10); break;
@@ -134,6 +133,10 @@ class Player extends Entity {
   }
 
   onUnloadedChunk({forceChunkLoad}) {
-    forceChunkLoad()
+    if (this == main.player) {
+      forceChunkLoad()
+    } else {
+      this.despawn()
+    }
   }
 }

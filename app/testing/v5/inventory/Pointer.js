@@ -66,16 +66,16 @@ class Pointer extends Canvas {
   }
 
   diggingTime(tile) {
-    if (player.creative) return 1
+    if (main.player.creative) return 1
 
     const {hardness, weakness} = tiles[tile]
 
     if (weakness == 'none') return hardness
 
-    const {selectedSlot} = player.inventory
+    const {selectedSlot} = main.player.inventory
 
-    if (hand.id) {
-      return hardness / tiles[hand.id][`${weakness}Strength`]
+    if (main.hand.id) {
+      return hardness / tiles[main.hand.id][`${weakness}Strength`]
     } else if (selectedSlot.id) {
       return hardness / tiles[selectedSlot.id][`${weakness}Strength`]
     } else {
@@ -98,7 +98,7 @@ class Pointer extends Canvas {
     if (this.spriteAction != 'clear' && this.tile) {
 
       let tool = 'wrong'
-      const {id} = player.inventory.selectedSlot
+      const {id} = main.player.inventory.selectedSlot
 
       if (id && tiles[id][`${tiles[this.tile].weakness}Strength`] > 1) {
         tool = 'right'

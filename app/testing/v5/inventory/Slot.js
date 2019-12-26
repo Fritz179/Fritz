@@ -22,10 +22,10 @@ class Slot extends ItemHolder {
   get selected() { return this.inventory.selected == this.num }
 
   onLeftClick({stopPropagation, x, y}) {
-    if (hand.isEmpty && !this.isEmpty) {
-      this.dump(hand)
+    if (main.hand.isEmpty && !this.isEmpty) {
+      this.dump(main.hand)
 
-      hand.from = this
+      main.hand.from = this
       this.leftTime = 0
     }
 
@@ -33,6 +33,8 @@ class Slot extends ItemHolder {
   }
 
   onClickUp() {
+    const {hand} = main
+
     if (this.isEmpty && !hand.isEmpty && (this != hand.from || this.leftTime > 10)) {
       this.getFrom(hand)
     } else if (hand.id == this.id) {

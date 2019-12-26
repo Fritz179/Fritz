@@ -8,11 +8,10 @@ class ItemHolder extends Canvas {
     this.oldQuantity = null
   }
 
-  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity }
 
-  get softChanged() { return this.changed }
-  get hardChanged() { return this.changed }
+  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity }
   get isEmpty() { return !this.id }
+  
   set changed(bool) { }
 
   getFrom(other) {

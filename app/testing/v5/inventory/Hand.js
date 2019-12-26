@@ -1,21 +1,17 @@
 class Hand extends ItemHolder {
   constructor(pointer) {
     super()
-
-    this.pointer = pointer
-
-    this.mouse = {x: 0, y:0}
-    this.mouseMoved = false
+    this.mouse = new ChangeVec(0, 0)
     this.placing = false
 
     this.from = null
   }
 
-  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity || this.mouseMoved }
+  get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity || this.mouse.changed }
   set changed(bool) { }
 
   fixedUpdate() {
-    const {pointer} = this
+    const {pointer, player} = main
 
     if (this.placing && !pointer.tile && !pointer.overEntity) {
       const {selected, selectedSlot} = player.inventory
@@ -43,21 +39,19 @@ class Hand extends ItemHolder {
       const {id, quantity} = this
 
       this.empty()
-      player.inventory.add(id, quantity)
+      main.player.inventory.add(id, quantity)
     }
   }
 
   onDrag({x, y}) {
-    this.mouse = {x, y}
-    this.mouseMoved = true
+    this.mouse.set(x, y)
   }
 
   getSprite(ctx) {
     this.oldId = this.id
     this.oldQuantity = this.quantity
-    this.mouseMoved = false
 
-    const {x, y} = this.mouse
+    const [x, y] = this.mouse
 
     if (this.id) {
       ctx.textFont('consolas')

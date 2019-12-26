@@ -22,13 +22,18 @@ class Inventory extends SpriteLayer {
 
   onKey({name}) {
     switch (name) {
-      case 'e': this.toggleInventory(); this.changed = HARD; break;
+      case 'e': this.toggleInventory(); break;
     }
 
     let int = parseInt(name)
     if (int && int <= this.cols) {
-      this.selected = int - 1
+      this.setSelected(int - 1)
     }
+  }
+
+  setSelected(num) {
+    this.selected = num
+    main.pointer.changed = true
   }
 
   slotClicked(num) {
@@ -43,17 +48,22 @@ class Inventory extends SpriteLayer {
     } else {
       this.setChildren(this.slots.slice(0, this.cols))
     }
+
+    this.changed = true
   }
 
   onWheel({dir}) {
-    this.selected += dir
+    let newSel = this.selected + dir
 
-    if (this.selected < 0) this.selected = this.cols - 1
-    if (this.selected > this.cols - 1) this.selected = 0
+    if (newSel < 0) newSel = this.cols - 1
+    if (newSel > this.cols - 1) newSel = 0
+
+    this.setSelected(newSel)
   }
 
   add(_id, quantity = 1) {
     const {maxStack, id} = typeof _id == 'string' ? tileNames[_id] : tiles[_id]
+    const {hand} = main
 
     if (hand.id == id && quantity < maxStack) {
       const space = maxStack - hand.quantity

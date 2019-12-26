@@ -16,25 +16,17 @@ const random = (...args) => {
   }
 }
 
-function cap(value, max) {
-  if (!(typeof max == 'number')) {
-    throw new Error(`no cap value provided for ${value}`);
-  } else if (abs(max) >= abs(value)) {
-    return value
-  } else {
-    return max * sign(value)
-  }
-}
-
 createCrawler('fixedUpdate')
 function fixedUpdate() {
   crawl('fixedUpdate')
 }
 
 function update() {
-  if (masterLayer.update() || masterLayer.changed || debugEnabled) {
+  redrawAll = redrawAll || debugEnabled
+  if (masterLayer.update() || masterLayer.changed || redrawAll) {
     masterLayer.getSprite()
     masterLayer.changed = false
+    redrawAll = false
     return true
   }
 }
@@ -52,7 +44,6 @@ function testPreloadCounter() {
 window.addEventListener("load", () => {
   testPreloadCounter()
 })
-
 
 function addLayer(child) {
   masterLayer.addChild(child)

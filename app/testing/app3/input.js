@@ -1,4 +1,4 @@
-let debugEnabled = 0
+let debugEnabled = false
 let allowRepeatedKeyPressed = false
 let mouseIsClicked = 0
 const mouseDirs = ['Left', 'Middle', 'Right', '']
@@ -127,7 +127,7 @@ window.addEventListener('mousedown', event => {
 
   mouseIsClicked = button + 1
   let {bubbleCancelled} = crawl(`on${mouseDirs[button]}Mouse`, {x, y})
-  
+
   if (!bubbleCancelled) {
     crawl('onMouse', {x, y, button})
   }
@@ -184,7 +184,8 @@ window.addEventListener('keydown', event => {
 
     if (key == '$') {
       debugEnabled = !debugEnabled
-      masterLayer.changed = HARD
+      redrawAll = true
+      masterLayer.changed = true
     }
   }
 });
