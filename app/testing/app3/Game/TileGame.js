@@ -1,18 +1,3 @@
-function addCord(target, name, q = Infinity) {
-  Object.defineProperty(target[name], 'cord', {
-    value: value = (...args) => target[name](...args.splice(0, q).map(val => target.cord(val)), ...args)
-  })
-}
-
-function addChunks(target, name, q = Infinity) {
-  Object.defineProperty(target[name], 'cord', {
-    value: (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtCord(val)), ...args)
-  })
-  Object.defineProperty(target[name], 'tile', {
-    value: (...args) => target[name](...args.splice(0, q).map(val => target.ChunkAtTile(val)), ...args)
-  })
-}
-
 class TileGame extends SpriteLayer {
   constructor(...args) {
     super(...args)
@@ -27,15 +12,6 @@ class TileGame extends SpriteLayer {
     this._autoLoadChunks = false
     this.preW = this.preH = null
     this.postW = this.postH = null
-
-    addCord(this, 'tileAt', 2)
-    addCord(this, 'setTileAt', 2)
-    addCord(this, 'noEntityAt', 2)
-    addCord(this, 'allBlocksIn', 4)
-    addCord(this, 'forAllBlocksIn', 4)
-
-    addChunks(this, 'allChunksIn', 4)
-    addChunks(this, 'forceChunkLoad', 2)
   }
 
   get chunkLength() { return this.chunkWidth * this.chunkHeight }
@@ -194,7 +170,7 @@ class TileGame extends SpriteLayer {
 
   loadChunkAt(json, chunkX, chunkY) {
     //create new chunk
-    const chunk = new Chunk(this)
+    const chunk = new Chunk(this, chunkX, chunkY)
     if (chunkY % 1 != 0) {
       debugger
     }
@@ -220,14 +196,27 @@ class TileGame extends SpriteLayer {
     if (!this.chunks[chunkX]) return -1
     if (!this.chunks[chunkX][chunkY]) return -1
 
-    const data = this.chunks[chunkX][chunkY].unload()
-    if (data) {
-      this.chunkOffloader(data, chunkX, chunkY)
-    }
+    const json = {}
+    json.data = this.chunks[chunkX][chunkY].unload()
+
     delete this.chunks[chunkX][chunkY]
 
     if (!Object.keys(this.chunks[chunkX]).length) {
       delete this.chunks[chunkX]
+    }
+
+    json.entities = []
+    this.allEntitesInChunk(chunkX, chunkY).forEach(entity => {
+      const serialized = entity.onUnloadedChunk()
+
+      if (serialized) {
+        console.log(serialized);
+        json.entities.push(serialized)
+      }
+    })
+
+    if (json.data || json.entities.length) {
+      this.chunkOffloader(json, chunkX, chunkY)
     }
   }
 
@@ -274,6 +263,23 @@ class TileGame extends SpriteLayer {
     }
 
     return true
+  }
+
+  allEntitesInChunk(x, y) {
+    const w = this.chunkTotalWidth
+    const it = this.children.entries()
+    const ret = []
+
+    let obj = it.next()
+    while (!obj.done) {
+      if (rectIsOnRect(obj.value[0], {x: x * w, y: y * w, w, h: w})) {
+        ret.push(obj.value[0])
+      }
+
+     obj = it.next()
+    }
+
+    return ret
   }
 
   collideMap(entity, sides = 3) {
@@ -419,3 +425,11 @@ class TileGame extends SpriteLayer {
     }
   }
 }
+
+addCordMiddleware(TileGame, 'tileAt', 2)
+addCordMiddleware(TileGame, 'noEntityAt', 2)
+addCordMiddleware(TileGame, 'allBlocksIn', 4)
+addCordMiddleware(TileGame, 'forAllBlocksIn', 4)
+
+addChunkMiddleware(TileGame, 'allChunksIn', 4)
+addChunkMiddleware(TileGame, 'forceChunkLoad', 2)

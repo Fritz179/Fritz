@@ -1,9 +1,7 @@
 class Canvas extends Frame {
   constructor(...args) {
     super(0, 0, 0, 0)
-    // if (args.length == 4) {
-    //   throw new Error('invalid arguments length!!' + args.length)
-    // }
+
     let flag = false
 
     if (args.length == 1) {

@@ -13,8 +13,8 @@ class MapLoader extends TileGame {
     const id = `${x}_${y}`
 
     // if chunk was previously offloaded
-    if (this.bufferedChunks[id]) {
-      return {data: this.bufferedChunks[id]}
+    if (this.bufferedChunks[id] && this.bufferedChunks[id].data) {
+      return this.bufferedChunks[id]
     }
 
     // generate new chunk

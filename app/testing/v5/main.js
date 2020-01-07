@@ -18,9 +18,11 @@ function setup() {
   player.inventory.add(101, 1)
   player.inventory.add(102, 1)
   player.inventory.add(103, 1)
+  player.inventory.add(9, 1000)
 }
 
 addCollision(Player, Drop)
+addCollision(Furnace, Player)
 addCollision(Drop, Drop)
 
 function tp(x, y = false) {
@@ -68,7 +70,7 @@ class Main extends MapLoader {
   }
 
   onDrag({x, y}) {
-    this.pointer.offset = {x: x - this.x, y: y - this.y}
+    this.pointer.offset.set(x - this.x, y - this.y)
   }
 
   onKey({name}) {
@@ -101,4 +103,19 @@ class Main extends MapLoader {
   update() {
     this.center = this.player.center
   }
+
+  placeBlockAt(x, y, id) {
+    if (id == 9) {
+      // furnace
+      this.addChild(new Furnace(x, y))
+    }
+
+    this.setTileAt(x, y, id)
+  }
+
+  // onBlockPlaced(id, x, y) {
+  //
+  // }
 }
+
+addCordMiddleware(Main, 'placeBlockAt', 2)

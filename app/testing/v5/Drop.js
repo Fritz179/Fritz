@@ -12,6 +12,8 @@ class Drop extends Entity {
     this.blockId = type
     this.quantity = quantity
     this.ya = 0.25
+
+    this.triggerBox.set(-5, -5, 18, 18)
   }
 
   onEntityCollision({name, entity}) {

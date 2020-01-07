@@ -1,6 +1,7 @@
 class Hand extends ItemHolder {
-  constructor(pointer) {
+  constructor() {
     super()
+
     this.mouse = new ChangeVec(0, 0)
     this.placing = false
 

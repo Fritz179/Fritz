@@ -37,3 +37,40 @@ function createMiddleware(to, name) {
     })
   }
 }
+
+function addCordMiddleware({prototype}, name, q = Infinity, chunks = false) {
+  const fun = prototype[name]
+
+  Object.defineProperty(prototype, name, {
+    get: function() {
+      Object.defineProperty(this, name, {
+        value: Object.defineProperty(fun.bind(this), 'cord', {
+          value: (...args) => this[name](...args.splice(0, q).map(val => this.cord(val)), ...args)
+        })
+      })
+
+      return this[name]
+    }
+  })
+}
+
+function addChunkMiddleware({prototype}, name, q = Infinity, chunks = false) {
+  const fun = prototype[name]
+
+  Object.defineProperty(prototype, name, {
+    get: function() {
+      Object.defineProperty(this, name, {
+        value: Object.defineProperties(fun.bind(this), {
+          cord: {
+            value: (...args) => this[name](...args.splice(0, q).map(val => this.ChunkAtCord(val)), ...args)
+          },
+          tile: {
+            value: (...args) => this[name](...args.splice(0, q).map(val => this.ChunkAtTile(val)), ...args)
+          }
+        })
+      })
+
+      return this[name]
+    }
+  })
+}

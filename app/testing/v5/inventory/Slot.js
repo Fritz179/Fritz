@@ -12,7 +12,6 @@ class Slot extends ItemHolder {
     this.num = num
 
     this.oldSelected = false
-    this.mousePos = {x: 0, y: 0}
     this.leftTime = 0
   }
 
@@ -35,7 +34,7 @@ class Slot extends ItemHolder {
   onClickUp() {
     const {hand} = main
 
-    if (this.isEmpty && !hand.isEmpty && (this != hand.from || this.leftTime > 10)) {
+    if (this.isEmpty && !hand.isEmpty && (this != hand.from || this.leftTime > 20)) {
       this.getFrom(hand)
     } else if (hand.id == this.id) {
       const space = tiles[this.id].maxStack - this.quantity

@@ -13,6 +13,8 @@ class Frame extends Block {
     this.layer = null
     this.changed = true
 
+    this.triggerBox = new TriggerBox(this)
+
     createMiddleware(this, 'update')
     createMiddleware(this, 'fixedUpdate')
     createMiddleware(this, 'getSprite')
@@ -24,6 +26,10 @@ class Frame extends Block {
       this.px = this.x
       this.py = this.y
     }
+  }
+
+  setTrigger(...args) {
+    this.triggerBox.set(...args)
   }
 
   onKey(key) { }

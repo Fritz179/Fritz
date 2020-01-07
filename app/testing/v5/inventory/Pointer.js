@@ -8,7 +8,7 @@ class Pointer extends Canvas {
     this.oldDiggingFor = 0
     this.diggingFor = 0
     this.digging = false
-    this.offset = {x: 0, y: 0}
+    this.offset = new Vec2(0, 0)
 
     this.pTileX = 0
     this.pTileY = 0
@@ -17,13 +17,12 @@ class Pointer extends Canvas {
   get tile() { return this.layer.tileAt.cord(this.x, this.y) }
   get tilePos() { return this.layer.cord(this.x, this.y) }
   get tileCord() { return this.tilePos.map(pos => pos * 16) }
-  set tile(id) { this.layer.setTileAt.cord(this.x, this.y, id) }
   get overEntity() { return !this.layer.noEntityAt.cord(this.x, this.y) }
 
   get x() { return main.x + this.offset.x }
   get y() { return main.y + this.offset.y }
-  set x(x) { }
-  set y(y) { }
+
+  set tile(id) { this.layer.placeBlockAt.cord(this.x, this.y, id) }
 
   fixedUpdate() {
     const [x, y] = this.tilePos

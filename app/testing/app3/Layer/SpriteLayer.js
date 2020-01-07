@@ -16,7 +16,7 @@ class SpriteLayer extends Layer {
           this.children[to].forEach(target => {
             this.children[type].forEach(collider => {
               if (target !== collider) {
-                if (rectIsOnRect(target, collider)) {
+                if (rectIsOnRect(target.triggerBox, collider.triggerBox)) {
 
                   collider.onEntityCollision({name: to, entity: target})
                 }
@@ -41,7 +41,7 @@ class SpriteLayer extends Layer {
 
     return this.changed
   }
-  
+
   getSpriteBubble(ctx, ret) {
     if (ret === false) return false
 
@@ -64,7 +64,10 @@ class SpriteLayer extends Layer {
         }
       }
 
-      if (debugEnabled && !(child instanceof Layer)) this.drawHitbox(...child.frame, 'green')
+      if (debugEnabled && !(child instanceof Layer)) {
+        this.drawHitbox(...child.frame, 'green', 3)
+        this.drawHitbox(...child.triggerBox.frame, 'orange', 1)
+      }
 
       child.changed = false
     })

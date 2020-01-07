@@ -15,6 +15,12 @@ class Vec2 extends Array {
     super(x, y)
   }
 
+  get x() { return this[0] }
+  get y() { return this[1] }
+
+  set x(x) { this[0] = x }
+  set y(y) { this[1] = y }
+
   set(x, y) {
     [x, y] = getXY(x, y)
 
@@ -98,13 +104,9 @@ function createVec2(dim1, dim2) {
       super(x, y)
     }
 
-    get x() { return this[0] }
-    get y() { return this[1] }
     get [dim1]() { return this[0] }
     get [dim2]() { return this[1] }
 
-    set x(x) { this[0] = x }
-    set y(y) { this[1] = y }
     set [dim1](x) { this[0] = x }
     set [dim2](y) { this[1] = y }
   }

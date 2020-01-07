@@ -1,10 +1,11 @@
 class Chunk extends Canvas {
-  constructor(map) {
+  constructor(map, x, y) {
     super(map.chunkWidth * map.tileSize, map.chunkHeight * map.tileSize)
 
     this.map = map
     this.tiles = null
     this.originalChunk = true
+    this.chunkPos = new Vec2(x, y)
   }
 
   getSprite() {
@@ -22,6 +23,9 @@ class Chunk extends Canvas {
       const sprite = tiles[tile].sprite
 
       this.image(sprite, x * w, y * w, w, w)
+
+      // const [chunkX, chunkY] = this.chunkPos
+      // this.map.onBlockPlaced(tile, chunkX * 16 + x, chunkY * 16 + y)
     })
   }
 
