@@ -49,11 +49,17 @@ classes:
   TileGame: [(Chunk, Canvas(Context, Block), Frame, Block), SpriteLayer, Layer, Canvas(Context, Block), Frame, Block]
     - chunks...
 
-  MapLoader: [TileGame(Chunk, Canvas(Context, Block), Frame, Block), SpriteLayer, Layer, Canvas(Context, Block), Frame, Block]
-    - linearMapModifiers
+  # MapLoader: [TileGame(Chunk, Canvas(Context, Block), Frame, Block), SpriteLayer, Layer, Canvas(Context, Block), Frame, Block]
+  #   - linearMapModifiers
+
+  ChunkLoader:
+    - chunkLoader
+    - MapModifiers
+    - offLoadChunks
 
   Chunk: [Canvas(Context, Block), Frame, Block]
     - load, unload, draw...
+    - forEachChunk()
 
 Middlewers:
   - update

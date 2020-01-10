@@ -1,22 +1,30 @@
+/*
+  chunkWidth = tiles in a chunk
+  tileWidth = width of a tile in px
+  chunkTotalWidth width of a chunk in px
+  chunkLength = numbers of tiles
+  chunkTotalLength = total numbers of pixels in chunk
+*/
+
 class TileGame extends SpriteLayer {
   constructor(...args) {
     super(...args)
 
     this.chunkWidth = 16
     this.chunkHeight = 16
-    this.tileSize = 16
+    this.tileWidth = 16
     this.chunks = []
 
-    this._isMap = true
-    this._mapWasLoaded = false
-    this._autoLoadChunks = false
     this.preW = this.preH = null
     this.postW = this.postH = null
+
+    this.chunkLoader = this
   }
 
+  get tileHeight() { return this.tileWidth }
   get chunkLength() { return this.chunkWidth * this.chunkHeight }
-  get chunkTotalWidth() { return this.chunkWidth * this.tileSize }
-  get chunkTotalHeight() { return this.chunkHeight * this.tileSize }
+  get chunkTotalWidth() { return this.chunkWidth * this.tileWidth }
+  get chunkTotalHeight() { return this.chunkHeight * this.tileWidth }
   get chunkTotalLength() { return this.chunkTotalWidth * this.chunkTotalHeight }
 
   fixedUpdateCapture() {
@@ -24,7 +32,7 @@ class TileGame extends SpriteLayer {
   }
 
   updateCapture() {
-    if (this._autoLoadChunks) {
+    if (this.preW !== null) {
       const {chunkTotalWidth, chunkTotalHeight, preW, preH, postW, postH} = this
       const xCenter = floor(this.center.x / chunkTotalWidth)
       const yCenter = floor(this.center.y / chunkTotalHeight)
@@ -50,7 +58,7 @@ class TileGame extends SpriteLayer {
         for (let y = yCenter - this.preH; y <= yCenter + this.preH; y++) {
           if (!this.chunks[x] || !this.chunks[x][y]) {
             newChunks++
-            this.loadChunkAt(this.chunkLoader(x, y), x, y)
+            this.loadChunkAt(this.chunkLoader.chunkLoader(x, y), x, y)
           }
         }
       }
@@ -83,12 +91,12 @@ class TileGame extends SpriteLayer {
   }
 
   cord(...args) {
-    args = args.map(val => floor(val / this.tileSize))
+    args = args.map(val => floor(val / this.tileWidth))
     return args.length == 1 ? args[0] : args
   }
 
   forceChunkLoad(x, y) {
-    this.loadChunkAt(this.chunkLoader(x, y), x, y)
+    this.loadChunkAt(this.chunkLoader.chunkLoader(x, y), x, y)
   }
 
   ChunkAtCord(...args) {
@@ -113,20 +121,19 @@ class TileGame extends SpriteLayer {
     const {chunkTotalWidth, chunks} = this
     const x1 = floor(entity.left / chunkTotalWidth)
     const y1 = floor(entity.top / chunkTotalWidth)
-    const x2 = ceil(entity.right / chunkTotalWidth)
-    const y2 = ceil(entity.bottom / chunkTotalWidth)
+    const x2 = ceil(entity.right / chunkTotalWidth) - 1
+    const y2 = ceil(entity.bottom / chunkTotalWidth) - 1
 
-    let x = x1
-    do {
-      let y = y1
-      do {
-        if (!chunks[x] || !chunks[x][y]) {
-          return false
-        }
-        y++
-      } while (y < y2);
-      x++
-    } while (x < x2);
+    const it = this.chunkGen(x1, y1, x2, y2)
+    let result = it.next()
+
+    while (!result.done) {
+      if (!result.value.chunk) {
+        return false
+      }
+
+      result = it.next()
+    }
 
     return true
   }
@@ -142,7 +149,6 @@ class TileGame extends SpriteLayer {
   }
 
   setChunkLoader(...args) {
-    this._autoLoadChunks = true
     args = args.map(val => floor(val))
 
     switch (args.length) {
@@ -170,7 +176,7 @@ class TileGame extends SpriteLayer {
 
   loadChunkAt(json, chunkX, chunkY) {
     //create new chunk
-    const chunk = new Chunk(this, chunkX, chunkY)
+    const chunk = new Chunk(this)
     if (chunkY % 1 != 0) {
       debugger
     }
@@ -180,32 +186,26 @@ class TileGame extends SpriteLayer {
     this.chunks[chunkX][chunkY] = chunk
 
     chunk.load(json.data)
+    json.entities.forEach(({name, args}) => {
+      this.addChild(new Furnace(chunk, args))
 
-    for (key in json.toSpawn) {
-      key = key.toLowerCase()
-      if (!this.spawners[key]) {
-        throw new Error(`failed to load map ${name}, ${key} spawner not found`)
-      }
-      json.toSpawn[key].forEach(args => {
-        this.spawn(new this.map.spawners[key](...args))
-      })
-    }
+      // const key = name.toLowerCase()
+      // if (!this.spawners[key]) {
+      //   throw new Error(`failed to load map ${name}, ${key} spawner not found`)
+      // }
+      //
+      // const entity = new this.spawners[key](chunk, data)
+      // this.spawn(entity)
+    })
   }
 
   unloadChunkAt(chunkX, chunkY) {
     if (!this.chunks[chunkX]) return -1
     if (!this.chunks[chunkX][chunkY]) return -1
+    const chunk = this.chunks[chunkX][chunkY]
 
-    const json = {}
-    json.data = this.chunks[chunkX][chunkY].unload()
+    const json = chunk.serialize()
 
-    delete this.chunks[chunkX][chunkY]
-
-    if (!Object.keys(this.chunks[chunkX]).length) {
-      delete this.chunks[chunkX]
-    }
-
-    json.entities = []
     this.allEntitesInChunk(chunkX, chunkY).forEach(entity => {
       const serialized = entity.onUnloadedChunk()
 
@@ -215,8 +215,14 @@ class TileGame extends SpriteLayer {
       }
     })
 
-    if (json.data || json.entities.length) {
-      this.chunkOffloader(json, chunkX, chunkY)
+    // delete chunk
+    delete this.chunks[chunkX][chunkY]
+    if (!Object.keys(this.chunks[chunkX]).length) {
+      delete this.chunks[chunkX]
+    }
+
+    if (json) {
+      this.chunkLoader.chunkOffloader(json, chunkX, chunkY)
     }
   }
 
@@ -235,31 +241,39 @@ class TileGame extends SpriteLayer {
     return this.chunks[chunkX][chunkY].tiles[i]
   }
 
-  setTileAt(x, y, tile) {
+  setTileAt(x, y, id) {
     //get chunk, cordinate
     const {chunkWidth, chunkHeight} = this
     const chunkX = floor(x / chunkWidth)
     const chunkY = floor(y / chunkHeight)
-    x -= chunkX * chunkWidth
-    y -= chunkY * chunkHeight
+    const xc = x - chunkX * chunkWidth
+    const yc = y - chunkY * chunkHeight
 
     //chenk if chunx exists and is loaded
     if (!this.chunks[chunkX]) return -1
     if (!this.chunks[chunkX][chunkY]) return -1
 
-    return this.chunks[chunkX][chunkY].setTileAt(x, y, tile)
+    const chunk = this.chunks[chunkX][chunkY]
+
+    this.onBlockPlaced({id, x, y, chunk, xc, yc})
+
+    return chunk.setTileAt(xc, yc, id)
   }
 
-  noEntityAt(x, y, w = this.tileSize, h = this.tileSize) {
+  onBlockPlaced() {
+
+  }
+
+  noEntityAt(x, y, w = this.tileWidth, h = this.tileWidth) {
     const it = this.children.entries()
 
-    let obj = it.next()
-    while (!obj.done) {
-      if (obj.value[0].collideWithMap && rectIsOnRect(obj.value[0], {x: x * w, y: y * h, w, h})) {
+    let result = it.next()
+    while (!result.done) {
+      if (result.value[0].collideWithMap && rectIsOnRect(result.value[0], {x: x * w, y: y * h, w, h})) {
         return false
       }
 
-     obj = it.next()
+      result = it.next()
     }
 
     return true
@@ -283,7 +297,7 @@ class TileGame extends SpriteLayer {
   }
 
   collideMap(entity, sides = 3) {
-    const {w, h, tileSize} = this
+    const {w, h, tileWidth} = this
 
     if (!this.isOnMap(entity)) {
       return entity.onUnloadedChunk()
@@ -291,23 +305,23 @@ class TileGame extends SpriteLayer {
 
     if (sides & 1) {
       // chex x-axis
-      let topTile = floor(entity.top / tileSize)
-      const bottomTile = ceil(entity.bottom / tileSize)
+      let topTile = floor(entity.top / tileWidth)
+      const bottomTile = ceil(entity.bottom / tileWidth)
 
       if (entity.xv > 0) { // entity is going right
-        const xTile = floor(entity.right / tileSize)
+        const xTile = floor(entity.right / tileWidth)
         do {
           if (tiles[this.tileAt(xTile, topTile)].collision & 8) {
-            entity.onBlockCollision({side: 'right', x: xTile, y: topTile, s: tileSize})
+            entity.onBlockCollision({side: 'right', x: xTile, y: topTile, s: tileWidth})
           }
           topTile++
         } while (topTile < bottomTile)
 
       } else if (entity.xv < 0) { // entity is going left
-        const xTile = floor(entity.left / tileSize)
+        const xTile = floor(entity.left / tileWidth)
         do {
           if (tiles[this.tileAt(xTile, topTile)].collision & 2) {
-            entity.onBlockCollision({side: 'left', x: xTile, y: topTile, s: tileSize})
+            entity.onBlockCollision({side: 'left', x: xTile, y: topTile, s: tileWidth})
           }
           topTile++
         } while (topTile < bottomTile)
@@ -316,75 +330,28 @@ class TileGame extends SpriteLayer {
 
     if (sides & 2) {
       // chex y-axis
-      let leftTile = floor(entity.left / tileSize)
-      const rightTile = ceil(entity.right / tileSize)
+      let leftTile = floor(entity.left / tileWidth)
+      const rightTile = ceil(entity.right / tileWidth)
 
       if (entity.yv > 0) { // entity is going down
-        const yTile = floor(entity.bottom / tileSize)
+        const yTile = floor(entity.bottom / tileWidth)
         do {
           if (tiles[this.tileAt(leftTile, yTile)].collision & 1) {
-            entity.onBlockCollision({side: 'bottom', x: leftTile, y: yTile, s: tileSize})
+            entity.onBlockCollision({side: 'bottom', x: leftTile, y: yTile, s: tileWidth})
           }
           leftTile++
         } while (leftTile < rightTile)
 
       } else if (entity.yv < 0) { // entity is going up
-        const yTile = floor(entity.top / tileSize)
+        const yTile = floor(entity.top / tileWidth)
         do {
           if (tiles[this.tileAt(leftTile, yTile)].collision & 4) {
-            entity.onBlockCollision({side: 'top', x: leftTile, y: yTile, s: tileSize})
+            entity.onBlockCollision({side: 'top', x: leftTile, y: yTile, s: tileWidth})
           }
           leftTile++
         } while (leftTile < rightTile)
       }
     }
-  }
-
-  forAllBlocksIn(x1, y1, x2, y2, fun) {
-    let x = x1
-    let y = y1
-
-    do {
-      do {
-        fun(x, y, this.tileAt(x, y))
-        y++
-      } while (y <= y2);
-      x++
-    } while (x <= x2);
-  }
-
-  allBlocksIn(x1, y1, x2, y2) {
-    let x = x1
-    const arr = []
-
-    do {
-      let y = y1
-      do {
-        arr.push(this.tileAt(x, y))
-        y++
-      } while (y <= y2);
-      x++
-    } while (x <= x2);
-
-    return arr
-  }
-
-  allChunksIn(x1, y1, x2, y2) {
-    let x = x1
-    const arr = []
-
-    do {
-      let y = y1
-      do {
-        if (this.chunks[x] && this.chunks[x][y]) {
-          arr.push({x, y})
-        }
-        y++
-      } while (y <= y2);
-      x++
-    } while (x <= x2);
-
-    return arr
   }
 
   loadMap(map) {
@@ -400,8 +367,6 @@ class TileGame extends SpriteLayer {
 
     this.clearChunks()
     this.loadChunkAt(map, 0, 0)
-
-    this._mapWasLoaded = true
   }
 
   setChunkSize(w, h) {
@@ -424,12 +389,52 @@ class TileGame extends SpriteLayer {
       this.chuks = []
     }
   }
+
+  *tileGen(x1, y1, x2, y2) {
+    const it = itGen(x1, y1, x2, y2)
+    let result = it.next()
+
+    while (!result.done) {
+      const {x, y} = result.value
+      yield {tile: this.tileAt(x, y), x, y}
+
+      result = it.next()
+    }
+  }
+
+  *chunkGen(x1, y1, x2, y2) {
+    const it = itGen(x1, y1, x2, y2)
+    let result = it.next()
+
+    while (!result.done) {
+      const {x, y} = result.value
+      let chunk = null
+
+      if (this.chunks[x] && this.chunks[x][y]) {
+        chunk = this.chunks[x][y]
+      }
+
+      yield {chunk, x, y}
+
+      result = it.next()
+    }
+  }
 }
 
 addCordMiddleware(TileGame, 'tileAt', 2)
+addCordMiddleware(TileGame, 'setTileAt', 2)
 addCordMiddleware(TileGame, 'noEntityAt', 2)
-addCordMiddleware(TileGame, 'allBlocksIn', 4)
-addCordMiddleware(TileGame, 'forAllBlocksIn', 4)
 
-addChunkMiddleware(TileGame, 'allChunksIn', 4)
 addChunkMiddleware(TileGame, 'forceChunkLoad', 2)
+
+function* itGen(x1, y1, x2, y2) {
+  let x = x1
+  do {
+    let y = y1
+    do {
+      yield {x, y}
+      y++
+    } while (y <= y2);
+    x++
+  } while (x <= x2);
+}

@@ -13,6 +13,8 @@ class Body extends Frame {
     this._minVel = 0.1
 
     this.lifeTime = Infinity
+    this.attachments = [] // pointer to all things that have the pointer to this entity
+                          // used when despawning
 
     createMiddleware(this, 'onBlockCollision')
     createMiddleware(this, 'onUnloadedChunk')
@@ -110,6 +112,10 @@ class Body extends Frame {
   }
 
   despawn() {
+    this.attachments.forEach(attachment => {
+      attachment.detach(this)
+    })
+
     this.layer.deleteChild(this)
   }
 

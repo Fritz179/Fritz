@@ -46,7 +46,7 @@
 // Layers al ga tanct layer in cui al met i fiöi, al ga an map ca al ga dis a che livel ca le
 // al ga an forEach ca al fa pasa tüt
 
-// TileGame al ga chunkWidth/height, tileSize, chunks e miga collisionTable,
+// TileGame al ga chunkWidth/height, tileWidth, chunks e miga collisionTable,
 // li sprie gline in dali sprites
 // al ga anca funzion cuma getTileAt, collideMap, loadChunkAt
 
@@ -57,8 +57,6 @@
 // temp
 // dove vegnial salvu i blöc cun animazion?
 
-
-// TODO: cambia al _isMap cun i addPre ca i agiungian properties al args
 // ca i vegnian ciamai da default nal realFun o da quela dal utente
 
 // funzion par disegnà cun an oggetto? tipu an per default po an args?
@@ -94,4 +92,4 @@
 //    getSprite.post => if ret !== false => get sprite of children and set them to changed = false
 
 // TileGame
-//    pre par tüt par i chunk e _autoLoadChunks
+//    pre par tüt par i chunk e _autoLoadChunks (update: miga _autoLoadChunks)

@@ -1,11 +1,12 @@
 class Chunk extends Canvas {
   constructor(map, x, y) {
-    super(map.chunkWidth * map.tileSize, map.chunkHeight * map.tileSize)
+    super(map.chunkWidth * map.tileWidth, map.chunkHeight * map.tileWidth)
 
     this.map = map
     this.tiles = null
     this.originalChunk = true
-    this.chunkPos = new Vec2(x, y)
+
+    this.children = new Set()
   }
 
   getSprite() {
@@ -15,7 +16,7 @@ class Chunk extends Canvas {
   load(chunk) {
     this.tiles = chunk
 
-    const w = this.map.tileSize
+    const w = this.map.tileWidth
 
     this.tiles.forEach((tile, i) => {
       const x = i % this.map.chunkWidth
@@ -23,15 +24,37 @@ class Chunk extends Canvas {
       const sprite = tiles[tile].sprite
 
       this.image(sprite, x * w, y * w, w, w)
-
-      // const [chunkX, chunkY] = this.chunkPos
-      // this.map.onBlockPlaced(tile, chunkX * 16 + x, chunkY * 16 + y)
     })
   }
 
-  unload() {
+  attach(entity) {
+    this.children.add(entity)
+    entity.attachments.push(this)
+  }
+
+  detach(entity) {
+    this.children.delete(entity)
+  }
+
+  serialize() {
+    const serial = {}
+
     if (!this.originalChunk) {
-      return this.tiles
+      serial.data = this.tiles
+    }
+
+    this.children.forEach(child => {
+      const serialized = child.serialize()
+      child.despawn()
+
+      if (serialized) {
+        if (!serial.entities) serial.entities = []
+        serial.entities.push({args: serialized, name: child.constructor.name})
+      }
+    })
+
+    if (Object.keys(serial).length) {
+      return serial
     }
   }
 
@@ -39,7 +62,7 @@ class Chunk extends Canvas {
     const i = x + y * this.map.chunkWidth
     this.tiles[abs(i)] = tile
 
-    const w = this.map.tileSize
+    const w = this.map.tileWidth
     const sprite = tiles[tile].sprite
 
     this.image(sprite, x * w, y * w, w, w)

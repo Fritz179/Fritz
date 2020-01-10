@@ -44,7 +44,7 @@ class Tile {
   }
 }
 
-class Main extends MapLoader {
+class Main extends TileGame {
   constructor() {
     super('auto')
 
@@ -61,11 +61,7 @@ class Main extends MapLoader {
     this.pointer = this.addChild(new Pointer(this))
     this.hand = new Hand(this.pointer)
 
-    this.addMapModifier(generateTree, {chance: 4, min: 8, pre: 1, linear: true})
-    this.addMapModifier(generateCoalOrePach, {chance: 30, min: 10, pre: 1, linear: false})
-    this.addMapModifier(generateIronOrePach, {chance: 600, min: 10, pre: 1, linear: false})
-    this.addMapModifier(generateDiamonOrePach, {chance: 500, min: 30, pre: 1, linear: false})
-    this.baseChunkLoader = getBaseChunk
+    this.chunkLoader = new MainChunkLoader()
     this.setChunkLoader(2, 5)
   }
 
@@ -104,18 +100,11 @@ class Main extends MapLoader {
     this.center = this.player.center
   }
 
-  placeBlockAt(x, y, id) {
+  onBlockPlaced({id, x, y, chunk, xc, yc}) {
     if (id == 9) {
-      // furnace
-      this.addChild(new Furnace(x, y))
+      this.addChild(new Furnace(chunk, {x, y, xc, yc}))
     }
-
-    this.setTileAt(x, y, id)
   }
-
-  // onBlockPlaced(id, x, y) {
-  //
-  // }
 }
 
 addCordMiddleware(Main, 'placeBlockAt', 2)

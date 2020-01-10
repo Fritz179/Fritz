@@ -22,7 +22,7 @@ class Pointer extends Canvas {
   get x() { return main.x + this.offset.x }
   get y() { return main.y + this.offset.y }
 
-  set tile(id) { this.layer.placeBlockAt.cord(this.x, this.y, id) }
+  set tile(id) { this.layer.setTileAt.cord(this.x, this.y, id) }
 
   fixedUpdate() {
     const [x, y] = this.tilePos

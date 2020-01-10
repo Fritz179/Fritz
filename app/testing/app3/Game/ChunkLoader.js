@@ -1,15 +1,22 @@
-class MapLoader extends TileGame {
-  constructor(...args) {
-    super(...args)
+/*
+  Chunk:
+    - data: Array(16*16)
+    - entities: Array()
+*/
 
+class ChunkLoader {
+  constructor() {
     this.bufferedChunks = {}
     this.chunkModifiers = {}
     this.mapModifiers = []
 
+    this.baseChunkLoader = this.chunkLoader
+    this.chunkLoader = this.chunkLoaderReplacer
+
     this.blockAdder = this.blockAdder.bind(this)
   }
 
-  chunkLoader(x, y) {
+  chunkLoaderReplacer(x, y) {
     const id = `${x}_${y}`
 
     // if chunk was previously offloaded
@@ -18,7 +25,11 @@ class MapLoader extends TileGame {
     }
 
     // generate new chunk
-    const chunk = {data: this.baseChunkLoader(x, y)}
+    const chunk = {
+      data: this.baseChunkLoader(x, y),
+      entities: []
+    }
+
     if (!this.chunkModifiers[id]) this.chunkModifiers[id] = []
 
     this.mapModifiers.forEach(modifier => {
@@ -148,8 +159,8 @@ class MapLoader extends TileGame {
     }
   }
 
-  baseChunkLoader(x, y) {
-    throw new Error('Please add a baseChunkLoader function!!')
+  chunkLoader(x, y) {
+    throw new Error('Please add a chunkLoader function!!\nThis function is used for getting the baseChunk')
   }
 
   blockAdder({x, y, to, hard = false}) {
