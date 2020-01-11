@@ -49,7 +49,7 @@ class Pointer extends Canvas {
           this.diggingFor = this.diggingTime(tile)
 
           const [x, y] = this.tileCord
-          main.addChild(new Drop(x + this.w / 2, y + this.h / 2, tileNames[tiles[tile].drop].id))
+          main.addChild(new Drop({x: x + this.w / 2, y: y + this.h / 2, id: tileNames[tiles[tile].drop].id}))
           this.tile = 0
         }
 
@@ -110,6 +110,10 @@ class Pointer extends Canvas {
       }
     }
 
+    return false
+  }
+
+  onUnloadedChunk() {
     return false
   }
 }

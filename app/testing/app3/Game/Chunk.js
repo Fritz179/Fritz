@@ -37,25 +37,27 @@ class Chunk extends Canvas {
   }
 
   serialize() {
-    const serial = {}
+    const serial = {data: [], entities: []}
 
-    if (!this.originalChunk) {
+    if (!this.originalChunk || this.children.size) {
       serial.data = this.tiles
+      serial.data.notOriginal = true
+
+      this.children.forEach(child => {
+        const serialized = child.serialize()
+        child.despawn()
+
+        if (serialized) {
+          serial.entities.push({args: serialized, name: child.constructor.name})
+        }
+      })
     }
 
-    this.children.forEach(child => {
-      const serialized = child.serialize()
-      child.despawn()
+    return serial
+  }
 
-      if (serialized) {
-        if (!serial.entities) serial.entities = []
-        serial.entities.push({args: serialized, name: child.constructor.name})
-      }
-    })
-
-    if (Object.keys(serial).length) {
-      return serial
-    }
+  tileAt(x, y) {
+    return this.tiles[abs(x + y * this.map.chunkWidth)]
   }
 
   setTileAt(x, y, tile) {

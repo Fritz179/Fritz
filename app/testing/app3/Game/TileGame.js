@@ -187,7 +187,13 @@ class TileGame extends SpriteLayer {
 
     chunk.load(json.data)
     json.entities.forEach(({name, args}) => {
-      this.addChild(new Furnace(chunk, args))
+      switch (name) {
+        case 'Furnace': this.addChild(new Furnace(args, chunk)); break;
+        case 'Drop': this.addChild(new Drop(args, chunk)); break;
+        default: console.error(name);
+
+      }
+
 
       // const key = name.toLowerCase()
       // if (!this.spawners[key]) {
@@ -210,8 +216,8 @@ class TileGame extends SpriteLayer {
       const serialized = entity.onUnloadedChunk()
 
       if (serialized) {
-        console.log(serialized);
-        json.entities.push(serialized)
+        entity.despawn()
+        json.entities.push({name: entity.constructor.name, args: serialized})
       }
     })
 
@@ -221,7 +227,7 @@ class TileGame extends SpriteLayer {
       delete this.chunks[chunkX]
     }
 
-    if (json) {
+    if (json.data.length || json.entities.length) {
       this.chunkLoader.chunkOffloader(json, chunkX, chunkY)
     }
   }

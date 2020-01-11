@@ -1,5 +1,5 @@
 class Furnace extends Body {
-  constructor(chunk, {x, y, xc, yc}) {
+  constructor({x, y, xc, yc}, chunk) {
     super()
     this.location = {xc, yc}
     this.chunk = chunk
@@ -19,9 +19,14 @@ class Furnace extends Body {
   fixedUpdate() {
 
     if (this.lit != this.wasLit) {
-      this.chunk.setTileAt(this.location.xc, this.location.yc, this.lit ? 10 : 9)
-      // main.setTileAt(this.location.x, this.location.y, this.lit ? 10 : 9)
-      this.wasLit = this.lit
+      const {xc, yc} = this.location
+
+      if (this.chunk.tileAt(xc, yc) != (this.lit ? 9 : 10)) {
+        this.despawn()
+      } else {
+        this.chunk.setTileAt(xc, yc, this.lit ? 10 : 9)
+        this.wasLit = this.lit
+      }
     }
 
     this.lit = false

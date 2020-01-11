@@ -56,7 +56,7 @@ class Player extends Entity {
   onEntityCollision({name, entity}) {
     if (name == 'Drop') {
       if (entity.pickupTime < 0 && this.inventory) {
-        this.inventory.add(entity.blockId, entity.quantity)
+        this.inventory.add(entity.id, entity.quantity)
         entity.despawn()
       }
     }

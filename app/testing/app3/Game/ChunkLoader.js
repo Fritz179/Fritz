@@ -19,16 +19,22 @@ class ChunkLoader {
   chunkLoaderReplacer(x, y) {
     const id = `${x}_${y}`
 
-    // if chunk was previously offloaded
-    if (this.bufferedChunks[id] && this.bufferedChunks[id].data) {
-      return this.bufferedChunks[id]
-    }
-
     // generate new chunk
     const chunk = {
-      data: this.baseChunkLoader(x, y),
+      data: [],
       entities: []
     }
+
+    // if chunk was previously offloaded
+    if (this.bufferedChunks[id]) {
+      if (this.bufferedChunks[id].data && this.bufferedChunks[id].data.length) {
+        return this.bufferedChunks[id]
+      } else {
+        chunk.entities = this.bufferedChunks[id].entities
+      }
+    }
+
+    chunk.data = this.baseChunkLoader(x, y)
 
     if (!this.chunkModifiers[id]) this.chunkModifiers[id] = []
 
@@ -141,7 +147,11 @@ class ChunkLoader {
 
   chunkOffloader(data, x, y) {
     const id = `${x}_${y}`
-    this.bufferedChunks[id] = data
+
+    this.bufferedChunks[id] = {
+      data: data.data.length ? data.data : this.bufferedChunks[id] && this.bufferedChunks[id].data || [],
+      entities: data.entities || []
+    }
   }
 
   addMapModifier(fun, {linear = false, chance = 0, pre = 0, min = 0, minX = 0, minY = 0, preX = 0, preY = 0}) {
