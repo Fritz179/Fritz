@@ -69,7 +69,7 @@ function loadSprite(name, options = {}, callback) {
     incrementPreloadCounter(2)
     Promise.all([
       loadImage(imgPath),
-      loadJSON(jsonPah)
+      _loadJSON(jsonPah)
     ]).then(([img, json]) => {
       decrementPreloadCounter(2)
       parse(img, json)

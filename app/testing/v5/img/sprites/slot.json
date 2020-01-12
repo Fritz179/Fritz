@@ -1,0 +1,21 @@
+{
+  "animations": [
+    {
+      "action": "slot",
+      "recursive": 2,
+      "x": 0,
+      "y": 0,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "action": "crafting",
+      "recursive": 5,
+      "mirror": true,
+      "x": 0,
+      "y": 32,
+      "w": 40,
+      "h": 40
+    }
+  ]
+}

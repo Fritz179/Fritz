@@ -1,6 +1,6 @@
 class Slot extends ItemHolder {
   constructor(inventory, num) {
-    super(sprites.slot[0])
+    super(sprites.slot.slot[0])
 
     const x = num % inventory.cols
     const y = (num - x) / inventory.cols
@@ -59,7 +59,7 @@ class Slot extends ItemHolder {
       this.oldQuantity = this.quantity
       this.oldSelected = this.selected
 
-      this.image(sprites.slot[this.selected ? 1 : 0], this.x, this.y, 64, 64)
+      this.image(sprites.slot.slot[this.selected ? 1 : 0], this.x, this.y, 64, 64)
 
       this.textFont('consolas')
       this.textAlign('right', 'bottom')

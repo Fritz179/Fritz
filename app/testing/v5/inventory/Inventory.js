@@ -12,17 +12,23 @@ class Inventory extends SpriteLayer {
       this.slots[i] = this.addChild(new Slot(this, i))
     }
 
-    this.open = true
-    this.toggleInventory()
+    this.open = false
+    this.furnaceOpen = false
+    this.refresh()
 
     this.selected = 0
   }
 
   get selectedSlot() { return this.slots[this.selected] }
 
+  setNearFurnace(near) {
+    this.furnaceOpen = near
+    this.refresh()
+  }
+
   onKey({name}) {
     switch (name) {
-      case 'e': this.toggleInventory(); break;
+      case 'e': this.open = !this.open; this.refresh(); break;
     }
 
     let int = parseInt(name)
@@ -36,18 +42,19 @@ class Inventory extends SpriteLayer {
     main.pointer.changed = true
   }
 
-  slotClicked(num) {
-    console.log(num);
-  }
-
-  toggleInventory() {
-    this.open = !this.open
-
+  refresh() {
     if (this.open) {
       this.setChildren(this.slots)
+
+      if (this.furnaceOpen) {
+        recipes.forEach(({ingredients, result}, i) => {
+          this.addChild(new CraftingLayer(ingredients, result, this.rows + i + 1))
+        })
+      }
     } else {
       this.setChildren(this.slots.slice(0, this.cols))
     }
+
 
     this.changed = true
   }
@@ -121,7 +128,7 @@ class Inventory extends SpriteLayer {
       slot.quantity -= quantity
 
       if (!slot.quantity) {
-        for (var i = 0; i < this.slots.length; i++) {
+        for (let i = 0; i < this.slots.length; i++) {
           const candidate = this.slots[i]
 
           if (candidate == slot) {

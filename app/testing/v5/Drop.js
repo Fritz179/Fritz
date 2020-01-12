@@ -33,7 +33,7 @@ class Drop extends Entity {
       if (this.id == entity.id && entity.pickupTime < 0 && this.pickupTime < 0) {
         this.lifeTime = this.maxLifeTime
         this.quantity += entity.quantity
-        this.setVel(random(-5, 5), random(-6, -4))
+        this.setVel(random(-2, 2), random(-2.5, -1.5))
         this.pickupTime = 10
         entity.despawn()
       }

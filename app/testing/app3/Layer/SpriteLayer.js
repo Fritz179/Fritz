@@ -4,25 +4,49 @@ class SpriteLayer extends Layer {
   }
 
   fixedUpdateCapture() {
-    for (var i = 0; i < this.children.types.length; i++) {
+    for (let i = 0; i < this.children.types.length; i++) {
       const type = this.children.types[i]
       if (!this.children[type] || !this.children[type].length) break
 
       if (collisionTable[type]) {
         for (let i = 0; i < collisionTable[type].length; i++) {
           const to = collisionTable[type][i]
+
           if (!this.children[to] || !this.children[to].length) break
+          const e1 = this.children[type]
+          const e2 = this.children[to]
 
-          this.children[to].forEach(target => {
-            this.children[type].forEach(collider => {
-              if (target !== collider) {
-                if (rectIsOnRect(target.triggerBox, collider.triggerBox)) {
 
-                  collider.onEntityCollision({name: to, entity: target})
+          if (type == to) {
+
+            for (let i1 = e1.length - 1; i1 >= 0; i1--) {
+              const target = e1[i1]
+
+              for (let i2 = i1 - 1; i2 >= 0; i2--) {
+
+                const collider = e2[i2]
+                if (!(target.xv || target.yv || collider.xv || collider.yv)) break
+                // console.log(i1, i2, type, to);
+
+                if (target !== collider) {
+                  if (rectIsOnRect(target.triggerBox, collider.triggerBox)) {
+
+                    collider.onEntityCollision({name: to, entity: target})
+                  }
                 }
               }
+            }
+          } else {
+            this.children[to].forEach(target => {
+              this.children[type].forEach(collider => {
+                if (rectIsOnRect(target.triggerBox, collider.triggerBox)) {
+                  collider.onEntityCollision({name: to, entity: target})
+                }
+                // if (target !== collider && (target.xv || target.yv || collider.xv || collider.yv)) {
+                // }
+              })
             })
-          })
+          }
         }
       }
     }

@@ -35,6 +35,7 @@ class Furnace extends Body {
   onEntityCollision({name, entity}) {
     if (name == 'Player') {
       this.lit = true
+      entity.nearFurnace = true
     }
   }
 

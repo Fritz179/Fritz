@@ -1,0 +1,22 @@
+[
+  {
+    "ingredients": [
+      { "name": "coal", "quantity": 1 },
+      { "name": "iron_ore", "quantity": 3 }
+    ],
+    "result": [
+      { "name": "wooden_axe", "quantity": 1 }
+    ]
+  },
+  {
+    "ingredients": [
+      { "name": "coal", "quantity": 1 },
+      { "name": "iron_ore", "quantity": 420 },
+      { "name": "diamond_ore", "quantity": 69 }
+    ],
+    "result": [
+      { "name": "wooden_axe", "quantity": 1 },
+      { "name": "wooden_sword", "quantity": 1 }
+    ]
+  }
+]

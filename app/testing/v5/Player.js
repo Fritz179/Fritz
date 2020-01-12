@@ -17,6 +17,8 @@ class Player extends Entity {
     this.jumpRequest = 0
     this.creative = false
     this.inventory = null
+    this.nearFurnace = false
+    this.wasNearFurnace = false
 
     this.setGamemode(true)
   }
@@ -51,6 +53,14 @@ class Player extends Entity {
         }
       }
     }
+
+    if (this.nearFurnace != this.wasNearFurnace) {
+      this.wasNearFurnace = this.nearFurnace
+
+      main.player.inventory.setNearFurnace(this.nearFurnace)
+    }
+
+    this.nearFurnace = false
   }
 
   onEntityCollision({name, entity}) {

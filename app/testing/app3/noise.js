@@ -180,7 +180,7 @@ function fnoise(x = 0, y = 0) {
     out += RANDX[x[i]]
   }
 
-  for (i = 0; i < y.length; i++) {
+  for (let i = 0; i < y.length; i++) {
     out += RANDY[y[i]]
   }
 

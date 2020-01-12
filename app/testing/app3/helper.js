@@ -94,22 +94,34 @@ function _loadImage(url, callback) {
 
 function loadJSON(url, callback) {
   if (typeof callback == 'function') {
-    return _loadJSON(url, callback)
+    return _loadJSON(url).then(json => callback(json))
   } else if (callback && typeof callback.callback == 'function') {
-    return _loadJSON(url, callback.callback)
+    return _loadJSON(url).then(json => callback.callback(json))
   } else {
-    return new Promise(resolve => {
-      _loadJSON(url, resolve)
-    });
+    let ret = {}
+
+    if (callback) {
+      ret = []
+    }
+
+    _loadJSON(url).then(json => {
+      for (const key in json) {
+        ret[key] = json[key]
+      }
+    })
+
+    return ret
   }
 }
 
-function _loadJSON(url, callback) {
-  fetch(url).then(res => {
-    res.json().then(json => {
-      callback(json)
+function _loadJSON(url) {
+  return new Promise(resolve => {
+    fetch(url).then(res => {
+      res.json().then(json => {
+        resolve(json)
+      })
     })
-  })
+  });
 }
 
 function getColor(args) {
