@@ -45,3 +45,28 @@ class Furnace extends Body {
     return {x: this.x / 16, y: this.y / 16, xc, yc}
   }
 }
+
+class CraftingTable extends Body {
+  constructor({x, y}, chunk) {
+    super()
+    chunk.attach(this)
+
+    this.setPos(x * 16, y * 16)
+    this.setSize(16, 16)
+    this.setTrigger(-32, -32, 80, 80)
+  }
+
+  getSprite() {
+    return false
+  }
+
+  onEntityCollision({name, entity}) {
+    if (name == 'Player') {
+      entity.nearCrafting = true
+    }
+  }
+
+  serialize() {
+    return {x: this.x / 16, y: this.y / 16}
+  }
+}

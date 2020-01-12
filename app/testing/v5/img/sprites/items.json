@@ -33,6 +33,14 @@
     {
       "name": "coal",
       "maxStack": 64
+    },
+    {
+      "name": "iron",
+      "maxStack": 64
+    },
+    {
+      "name": "stick",
+      "maxStack": 64
     }
   ]
 }

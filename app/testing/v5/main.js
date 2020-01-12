@@ -18,14 +18,11 @@ function setup() {
   addLayer(new Overlay())
 
   player.inventory.add(100, 1)
-  player.inventory.add(101, 1)
-  player.inventory.add(102, 1)
-  player.inventory.add(103, 1)
-  player.inventory.add(9, 9)
 }
 
 addCollision(Player, Drop)
 addCollision(Furnace, Player)
+addCollision(CraftingTable, Player)
 addCollision(Drop, Drop)
 
 function tp(x, y = false) {
@@ -106,6 +103,8 @@ class Main extends TileGame {
   onBlockPlaced({id, x, y, chunk, xc, yc}) {
     if (id == 9) {
       this.addChild(new Furnace({x, y, xc, yc}, chunk))
+    } else if (id == 12) {
+      this.addChild(new CraftingTable({x, y}, chunk))
     }
   }
 }

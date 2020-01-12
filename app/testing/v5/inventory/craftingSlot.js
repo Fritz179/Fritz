@@ -5,18 +5,24 @@ class CraftingSlot extends ItemHolder {
     this.id = id
     this.quantity = quantity
     this.isResult = isResult
+    this.clicked = false
 
     this.setPos(x * 80 + 16, 0)
     this.setSize(64, 64)
   }
 
-  onLeftClick({stopPropagation$}) {
+  onLeftClick({stopPropagation}) {
     stopPropagation()
   }
 
   onClickUp() {
-    if (this.isResult) {
-      console.log('crafted!');
+    this.clicked = true
+  }
+
+  fixedUpdate() {
+    if (this.clicked) {
+      this.clicked = false
+      this.isResult.craft()
     }
   }
 
@@ -25,9 +31,6 @@ class CraftingSlot extends ItemHolder {
       this.oldId = this.id
       this.oldQuantity = this.quantity
       this.oldSelected = this.selected
-
-
-      this.image(sprites.slot.slot[0], this.x, this.y, 64, 64)
 
       this.textFont('consolas')
       this.textAlign('right', 'bottom')
@@ -49,8 +52,8 @@ class CraftingLayer extends SpriteLayer {
   constructor(ingredients , result, y) {
     super()
 
-    this.ingredients  = ingredients.length
-    this.result = result.length
+    this.ingredients  = ingredients
+    this.result = result
     this.y = -y * 80 + 16
 
     let offset = 0
@@ -63,25 +66,37 @@ class CraftingLayer extends SpriteLayer {
     offset++
 
     result.forEach(({name, quantity}) => {
-      this.addChild(new CraftingSlot(tileNames[name].id, quantity, offset++, true))
+      this.addChild(new CraftingSlot(tileNames[name].id, quantity, offset++, this))
+    })
+  }
+
+  craft() {
+    this.ingredients.forEach(({name, quantity}) => {
+      main.player.inventory.remove(tileNames[name].id, quantity)
+    })
+
+    this.result.forEach(({name, quantity}) => {
+      main.player.inventory.add(tileNames[name].id, quantity)
     })
   }
 
   getSprite() {
 
-    for (let i = 0; i < this.ingredients ; i++) {
-      let pos = i == 0 ? (this.ingredients == 1 ? 4 : 0) : i < this.ingredients  - 1 ? 1 : 2
+    const ing = this.ingredients.length
+    const res = this.result.length
+
+    for (let i = 0; i < ing ; i++) {
+      let pos = i == 0 ? (ing == 1 ? 4 : 0) : i < ing  - 1 ? 1 : 2
       this.image(sprites.slot.crafting[pos][0], 8 + i * 80, -8, 80, 80)
     }
 
     // arrow
-    let j = this.ingredients
-    this.image(sprites.slot.crafting[3][0], 8 + j * 80, -8, 80, 80)
+    this.image(sprites.slot.crafting[3][0], 8 + ing * 80, -8, 80, 80)
 
-    for (let i = 0; i < this.result; i++) {
-      let pos = i == 0 ? (this.result == 1 ? 4 : 2) : i < this.result - 1 ? 1 : 0
+    for (let i = 0; i < res; i++) {
+      let pos = i == 0 ? (res == 1 ? 4 : 2) : i < res - 1 ? 1 : 0
 
-      this.image(sprites.slot.crafting[pos][1], 8 + (i + j + 1) * 80, -8, 80, 80)
+      this.image(sprites.slot.crafting[pos][1], 8 + (i + ing + 1) * 80, -8, 80, 80)
     }
   }
 }

@@ -19,7 +19,7 @@ class Hand extends ItemHolder {
 
       if (this.id && tiles[this.id].isPlacable) {
         pointer.tile = this.id
-        this.removeOne()
+        this.remove()
       } else if (selectedSlot.id && tiles[selectedSlot.id].isPlacable) {
         pointer.tile = selectedSlot.id
         player.inventory.getFromSlot(selected, 1)

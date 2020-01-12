@@ -14,6 +14,7 @@ class Inventory extends SpriteLayer {
 
     this.open = false
     this.furnaceOpen = false
+    this.craftingOpen = false
     this.refresh()
 
     this.selected = 0
@@ -23,6 +24,11 @@ class Inventory extends SpriteLayer {
 
   setNearFurnace(near) {
     this.furnaceOpen = near
+    this.refresh()
+  }
+
+  setNearCrafting(near) {
+    this.craftingOpen = near
     this.refresh()
   }
 
@@ -46,9 +52,13 @@ class Inventory extends SpriteLayer {
     if (this.open) {
       this.setChildren(this.slots)
 
-      if (this.furnaceOpen) {
-        recipes.forEach(({ingredients, result}, i) => {
-          this.addChild(new CraftingLayer(ingredients, result, this.rows + i + 1))
+      if (this.open) {
+        let offset = 1
+
+        recipes.forEach(({ingredients, result, from}) => {
+          if (this.hasRecipe(ingredients) && (!from || this[from + 'Open'])) {
+            this.addChild(new CraftingLayer(ingredients, result, this.rows + offset++))
+          }
         })
       }
     } else {
@@ -80,6 +90,11 @@ class Inventory extends SpriteLayer {
         quantity -= space
       } else {
         hand.quantity += quantity
+
+        if (this.open) {
+          this.refresh()
+        }
+
         return 0
       }
     }
@@ -96,6 +111,11 @@ class Inventory extends SpriteLayer {
           quantity -= space
         } else {
           slot.quantity += quantity
+
+          if (this.open) {
+            this.refresh()
+          }
+
           return 0
         }
       }
@@ -113,9 +133,18 @@ class Inventory extends SpriteLayer {
           quantity -= maxStack
         } else {
           slot.quantity = quantity
+
+          if (this.open) {
+            this.refresh()
+          }
+
           return 0
         }
       }
+    }
+
+    if (this.open) {
+      this.refresh()
     }
 
     return quantity
@@ -149,6 +178,10 @@ class Inventory extends SpriteLayer {
         }
       }
 
+      if (this.open) {
+        this.refresh()
+      }
+
       return quantity
     } else {
       console.error(`Cannot remove from empty slot!!`);
@@ -157,11 +190,50 @@ class Inventory extends SpriteLayer {
   }
 
   remove(id, count = 1) {
+    for (let i = 0; i < this.slots.length; i++) {
+      const slot = this.slots[i]
 
+      if (slot.id == id) {
+        if (slot.quantity >= count) {
+          slot.remove(count)
+          break
+        } else {
+          count -= slot.quantity
+          slot.empty()
+        }
+      }
+    }
   }
 
-  has(id) {
+  has(id, quantity) {
+    let found = 0
 
+    for (let i = 0; i < this.slots.length; i++) {
+      const slot = this.slots[i]
+
+      if (slot.id == id) {
+        found += slot.quantity
+
+        if (found >= quantity) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  hasRecipe(recipe) {
+    if (!Array.isArray(recipe)) {
+      recipe = [recipe]
+    }
+
+    return recipe.every(item => {
+      const {quantity} = item
+      const id = tileNames[item.name].id
+
+      return this.has(id, quantity)
+    })
   }
 }
 

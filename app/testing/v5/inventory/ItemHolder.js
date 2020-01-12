@@ -11,7 +11,7 @@ class ItemHolder extends Canvas {
 
   get changed() { return this.id != this.oldId || this.quantity != this.oldQuantity }
   get isEmpty() { return !this.id }
-  
+
   set changed(bool) { }
 
   getFrom(other) {
@@ -35,8 +35,8 @@ class ItemHolder extends Canvas {
     return this
   }
 
-  removeOne() {
-    this.quantity--
+  remove(q = 1) {
+    this.quantity -= q
 
     if (this.quantity <= 0) {
       return this.empty()

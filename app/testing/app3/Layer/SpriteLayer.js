@@ -6,7 +6,7 @@ class SpriteLayer extends Layer {
   fixedUpdateCapture() {
     for (let i = 0; i < this.children.types.length; i++) {
       const type = this.children.types[i]
-      if (!this.children[type] || !this.children[type].length) break
+      if (!this.children[type] || !this.children[type].length) continue
 
       if (collisionTable[type]) {
         for (let i = 0; i < collisionTable[type].length; i++) {

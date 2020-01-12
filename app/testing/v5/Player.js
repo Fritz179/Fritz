@@ -19,6 +19,8 @@ class Player extends Entity {
     this.inventory = null
     this.nearFurnace = false
     this.wasNearFurnace = false
+    this.nearCrafting = false
+    this.wasNearCrafting = false
 
     this.setGamemode(true)
   }
@@ -56,11 +58,15 @@ class Player extends Entity {
 
     if (this.nearFurnace != this.wasNearFurnace) {
       this.wasNearFurnace = this.nearFurnace
-
       main.player.inventory.setNearFurnace(this.nearFurnace)
     }
-
     this.nearFurnace = false
+
+    if (this.nearCrafting != this.wasNearCrafting) {
+      this.wasNearCrafting = this.nearCrafting
+      main.player.inventory.setNearCrafting(this.nearCrafting)
+    }
+    this.nearCrafting = false
   }
 
   onEntityCollision({name, entity}) {

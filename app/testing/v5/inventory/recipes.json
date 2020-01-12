@@ -1,22 +1,35 @@
 [
   {
     "ingredients": [
-      { "name": "coal", "quantity": 1 },
-      { "name": "iron_ore", "quantity": 3 }
+      { "name": "wood", "quantity": 1 }
     ],
     "result": [
-      { "name": "wooden_axe", "quantity": 1 }
+      { "name": "wood_plank", "quantity": 4 }
     ]
   },
   {
     "ingredients": [
-      { "name": "coal", "quantity": 1 },
-      { "name": "iron_ore", "quantity": 420 },
-      { "name": "diamond_ore", "quantity": 69 }
+      { "name": "wood_plank", "quantity": 2 }
     ],
     "result": [
-      { "name": "wooden_axe", "quantity": 1 },
-      { "name": "wooden_sword", "quantity": 1 }
+      { "name": "stick", "quantity": 4 }
     ]
+  },
+  {
+    "ingredients": [
+      { "name": "wood_plank", "quantity": 4 }
+    ],
+    "result": [
+      { "name": "crafting_table", "quantity": 1 }
+    ]
+  },
+  {
+    "ingredients": [
+      { "name": "stone", "quantity": 8 }
+    ],
+    "result": [
+      { "name": "furnace", "quantity": 1 }
+    ],
+    "from": "crafting"
   }
 ]

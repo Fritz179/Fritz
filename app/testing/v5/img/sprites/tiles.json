@@ -75,6 +75,16 @@
       "hardness": 50,
       "weakness": "pickaxe",
       "drop": "furnace"
+    },
+    {
+      "name": "wood_plank",
+      "hardness": 35,
+      "weakness": "axe"
+    },
+    {
+      "name": "crafting_table",
+      "hardness": 45,
+      "weakness": "axe"
     }
   ]
 }
