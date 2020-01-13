@@ -66,18 +66,14 @@ function loadSprite(name, options = {}, callback) {
   }
 
   if (options.json && !options.recursive) {
-    incrementPreloadCounter(2)
     Promise.all([
-      loadImage(imgPath),
+      _loadImage(imgPath),
       _loadJSON(jsonPah)
     ]).then(([img, json]) => {
-      decrementPreloadCounter(2)
       parse(img, json)
     })
   } else {
-    incrementPreloadCounter(1)
-    loadImage(imgPath, img => {
-      decrementPreloadCounter(1)
+    _loadImage(imgPath, img => {
       parse(img)
     })
   }
@@ -90,57 +86,62 @@ let lastTileId = 0
 addParser('tiles', (img, json) => {
   const properties = [], _properties = new Map(), defaultProp = {}
 
-  if (json.properties) {
-    Object.keys(json.properties).forEach(prop => {
-      if (typeof json.properties[prop] == 'string' && json.properties[prop][0] == '_') {
-        _properties.set(json.properties[prop].slice(1), prop)
-      } else {
-        properties.push(prop)
-        defaultProp[prop] = json.properties[prop]
-      }
-    })
-  }
-
   const {width, height} = img
-  const {x = 0, y = 0, w = 16, h = 16, index = 0} = json
+  const {x = 0, y = 0, w = 16, h = 16} = json
 
-  parseGroup(json.tiles, defaultProp, {x, y, w, h, index})
+  parseGroup(json, defaultProp, {x, y, w, h})
 
   function parseGroup(group, defaultProp, metadata) {
-    group.forEach((tile, i) => {
-      properties.forEach(prop => {
-        if (typeof tile[prop] == 'undefined') {
-          tile[prop] = defaultProp[prop]
+    if (group.properties) {
+      Object.keys(group.properties).forEach(prop => {
+        if (typeof group.properties[prop] == 'string' && group.properties[prop][0] == '_') {
+          _properties.set(group.properties[prop].slice(1), prop)
+        } else {
+          properties.push(prop)
+          defaultProp[prop] = group.properties[prop]
         }
       })
+    }
 
-      _properties.forEach((prop, of) => {
-        if (typeof tile[prop] == 'undefined') {
-          tile[prop] = tile[of]
+    const {tiles} = group
+
+    tiles.forEach((tile, i) => {
+      if (tile.tiles) {
+        parseGroup(tile)
+      } else {
+        properties.forEach(prop => {
+          if (typeof tile[prop] == 'undefined') {
+            tile[prop] = defaultProp[prop]
+          }
+        })
+
+        _properties.forEach((prop, of) => {
+          if (typeof tile[prop] == 'undefined') {
+            tile[prop] = tile[of]
+          }
+        })
+
+        let {x, y, w, h} = metadata
+
+        if (tile.x) x = tile.x
+        if (tile.y) y = tile.y
+
+        tile.sprite = cut(img, x, y, w, h)
+        addTile(tile)
+
+        //go to next tile, move x and y
+        metadata.x += w
+        if (x >= width) {
+          x = 0
+          metadata.y += h
+          if (y >= height) throw new Error('outside image boundry!')
         }
-      })
-
-      let {x, y, w, h, index} = metadata
-
-      if (tile.x) x = tile.x
-      if (tile.y) y = tile.y
-      if (tile.index) index = tile.index
-
-      tile.sprite = cut(img, x, y, w, h)
-      addTile(tile, typeof index != 'undefined' ? index + i : null)
-
-      //go to next tile, move x and y
-      metadata.x += w
-      if (x >= width) {
-        x = 0
-        metadata.y += h
-        if (y >= height) throw new Error('outside image boundry!')
       }
     })
   }
 
-  function addTile(newTile, id) {
-    if (typeof id != 'number') id = lastTileId
+  function addTile(newTile) {
+    const id = lastTileId++
 
     if (tiles[id]) {
       throw new Error(`Id: ${id}, already in use by: ${tiles[id].name}, duplicate: ${name}`)
@@ -164,10 +165,7 @@ addParser('tiles', (img, json) => {
 
     tile.id = id
     tiles[id] = tile
-
-    if (id >= lastTileId) {
-      lastTileId++
-    }
+    tile.name = newTile.name
   }
 
   return false

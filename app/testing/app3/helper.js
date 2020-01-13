@@ -1,19 +1,40 @@
-let preloadCounter = 1
+let preloadCounter = 0
+const preloadFunctions = []
 
-function incrementPreloadCounter(ammount = 1) {
-  preloadCounter += ammount
-
+function incrementPreloadCounter() {
   if (timer.running) {
     timer.stop()
   }
+
+  return preloadCounter++
 }
 
-function decrementPreloadCounter(ammount = 1) {
-  preloadCounter -= ammount
+function decrementPreloadCounter(index, callback) {
+  preloadFunctions[index] = callback
+  preloadCounter--
 
-  if (preloadCounter <= 0) {
-    if (timer.running) console.error('console.error();');
-    else timer.start()
+  if (preloadCounter == 0) {
+    preloadFunctions.forEach(fun => fun())
+    preloadFunctions.splice(0)
+
+    // Cannot do:
+    // Promise.resolve().then(() => { });
+
+    // Because of:
+    // Promise.resolve().then(() => console.log(1)).then(() => console.log(2));
+    // Promise.resolve().then(() => console.log(3)).then(() => console.log(4));
+    // => 1
+    // => 3
+    // => 2
+    // => 4
+
+    setTimeout(() => {
+      masterLayer = new SpriteLayer('screen')
+      setup()
+
+      if (timer.running) console.error('Erur?');
+      else timer.start()
+    })
   }
 }
 
@@ -74,22 +95,26 @@ function cap(value, max) {
 
 function loadImage(url, callback) {
   if (typeof callback == 'function') {
-    return _loadImage(url, callback)
+    _loadImage(url).then(img => callback(img))
   } else if (callback && typeof callback.callback == 'function') {
-    return _loadImage(url, callback.callback)
+    _loadImage(url).then(img => callback.callback(img))
   } else {
-    return new Promise(resolve => {
-      _loadImage(url, resolve)
-    });
+    return _loadImage(url)
   }
 }
 
-function _loadImage(url, callback) {
-  const image = new Image();
-  image.addEventListener('load', () => {
-      callback(image);
-  });
-  image.src = url;
+function _loadImage(url, image) {
+  if (!image) image = new Image();
+  const count = incrementPreloadCounter()
+
+  return new Promise(resolve => {
+    image.addEventListener('load', () => {
+      decrementPreloadCounter(count, () => {
+        resolve(image)
+      })
+    });
+    image.src = url;
+  })
 }
 
 function loadJSON(url, callback) {
@@ -115,10 +140,14 @@ function loadJSON(url, callback) {
 }
 
 function _loadJSON(url) {
+  const count = incrementPreloadCounter()
+
   return new Promise(resolve => {
     fetch(url).then(res => {
       res.json().then(json => {
-        resolve(json)
+        decrementPreloadCounter(count, () => {
+          resolve(json)
+        })
       })
     })
   });

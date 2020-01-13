@@ -25,11 +25,31 @@
   },
   {
     "ingredients": [
+      { "name": "stick", "quantity": 2 },
+      { "name": "wood_plank", "quantity": 3 }
+    ],
+    "result": [
+      { "name": "wooden_pickaxe", "quantity": 1 }
+    ],
+    "from": "crafting"
+  },
+  {
+    "ingredients": [
       { "name": "stone", "quantity": 8 }
     ],
     "result": [
       { "name": "furnace", "quantity": 1 }
     ],
     "from": "crafting"
+  },
+  {
+    "ingredients": [
+      { "name": "coal", "quantity": 1 },
+      { "name": "iron_ore", "quantity": 3 }
+    ],
+    "result": [
+      { "name": "iron", "quantity": 1 }
+    ],
+    "from": "furnace"
   }
 ]

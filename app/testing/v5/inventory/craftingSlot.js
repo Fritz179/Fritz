@@ -85,18 +85,30 @@ class CraftingLayer extends SpriteLayer {
     const ing = this.ingredients.length
     const res = this.result.length
 
-    for (let i = 0; i < ing ; i++) {
-      let pos = i == 0 ? (ing == 1 ? 4 : 0) : i < ing  - 1 ? 1 : 2
-      this.image(sprites.slot.crafting[pos][0], 8 + i * 80, -8, 80, 80)
+    for (let i = 0; i < ing; i++) {
+      if (i == 0) {
+        this.image(sprites.slot.start[0], 8 + i * 80 + 0, -8, 20, 80)
+      } else {
+        this.image(sprites.slot.junction[1], 8 + i * 80 + 0, -8, 20, 80)
+      }
+
+      this.image(sprites.slot.middle[0], 8 + i * 80 + 20, -8, 40, 80)
+      this.image(sprites.slot.junction[0], 8 + i * 80 + 60, -8, 20, 80)
     }
 
     // arrow
-    this.image(sprites.slot.crafting[3][0], 8 + ing * 80, -8, 80, 80)
+    this.image(sprites.slot.arrow[0], 8 + ing * 80, -8, 80, 80)
+
 
     for (let i = 0; i < res; i++) {
-      let pos = i == 0 ? (res == 1 ? 4 : 2) : i < res - 1 ? 1 : 0
+      this.image(sprites.slot.junction[1], 8 + (i + ing + 1) * 80 + 0, -8, 20, 80)
+      this.image(sprites.slot.middle[0], 8 + (i + ing + 1) * 80 + 20, -8, 40, 80)
 
-      this.image(sprites.slot.crafting[pos][1], 8 + (i + ing + 1) * 80, -8, 80, 80)
+      if (i == res - 1) {
+        this.image(sprites.slot.start[1], 8 + (i + ing + 1) * 80 + 60, -8, 20, 80)
+      } else {
+        this.image(sprites.slot.junction[0], 8 + (i + ing + 1) * 80 + 60, -8, 20, 80)
+      }
     }
   }
 }
