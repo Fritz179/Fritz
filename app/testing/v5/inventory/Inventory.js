@@ -196,13 +196,26 @@ class Inventory extends SpriteLayer {
       if (slot.id == id) {
         if (slot.quantity >= count) {
           slot.remove(count)
-          break
+          return
         } else {
           count -= slot.quantity
           slot.empty()
         }
       }
     }
+
+    if (main.hand.id == id) {
+      if (main.hand.quantity >= count) {
+        main.hand.remove(count)
+        return
+      } else {
+        count -= main.hand.quantity
+        slot.empty()
+      }
+    }
+
+    // return the ammount that wasn't removed
+    return count
   }
 
   has(id, quantity) {
@@ -217,6 +230,14 @@ class Inventory extends SpriteLayer {
         if (found >= quantity) {
           return true
         }
+      }
+    }
+
+    if (main.hand.id == id) {
+      found += main.hand.quantity
+
+      if (found >= quantity) {
+        return true
       }
     }
 

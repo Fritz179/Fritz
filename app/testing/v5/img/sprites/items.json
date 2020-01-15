@@ -6,29 +6,30 @@
   "index": 100,
   "properties": {
     "collision": null,
-    "hardness": null,
-    "swordStrength": 1,
-    "pickaxeStrength": 1,
-    "shovelStrength": 1,
-    "axeStrength": 1,
+    "toolType": null,
+    "toolLevel": 0,
     "maxStack": 1
   },
   "tiles": [
     {
       "name": "wooden_sword",
-      "swordStrength": 2
+      "toolLevel": 1,
+      "toolType": "sword"
     },
     {
       "name": "wooden_pickaxe",
-      "pickaxeStrength": 2
+      "toolLevel": 1,
+      "toolType": "pickaxe"
     },
     {
       "name": "wooden_shovel",
-      "shovelStrength": 2
+      "toolLevel": 1,
+      "toolType": "shovel"
     },
     {
       "name": "wooden_axe",
-      "axeStrength": 2
+      "toolLevel": 1,
+      "toolType": "axe"
     },
     {
       "name": "coal",
@@ -41,6 +42,11 @@
     {
       "name": "stick",
       "maxStack": 64
+    },
+    {
+      "name": "stone_pickaxe",
+      "toolLevel": 2,
+      "toolType": "pickaxe"
     }
   ]
 }

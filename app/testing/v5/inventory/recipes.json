@@ -51,5 +51,15 @@
       { "name": "iron", "quantity": 1 }
     ],
     "from": "furnace"
+  },
+  {
+    "ingredients": [
+      { "name": "stick", "quantity": 2 },
+      { "name": "stone", "quantity": 3 }
+    ],
+    "result": [
+      { "name": "stone_pickaxe", "quantity": 1 }
+    ],
+    "from": "crafting"
   }
 ]

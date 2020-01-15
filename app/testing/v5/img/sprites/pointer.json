@@ -1,31 +1,17 @@
 {
   "animations": [
     {
-      "action": "idle_wrongTool",
+      "action": "breaking",
+      "recursive": 6,
       "x": 0,
       "y": 0,
       "w": 16,
       "h": 16
     },
     {
-      "action": "idle_rightTool",
+      "action": "tools",
+      "recursive": 3, 
       "x": 0,
-      "y": 16,
-      "w": 16,
-      "h": 16
-    },
-    {
-      "action": "digging_wrongTool",
-      "recursive": 6,
-      "x": 16,
-      "y": 0,
-      "w": 16,
-      "h": 16
-    },
-    {
-      "action": "digging_rightTool",
-      "recursive": 6,
-      "x": 16,
       "y": 16,
       "w": 16,
       "h": 16

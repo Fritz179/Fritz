@@ -103,7 +103,7 @@ class Main extends TileGame {
 
     switch (name) {
       case 'furnace': this.addChild(new Furnace({x, y, xc, yc}, chunk)); break;
-      case 'crafting_table': this.addChild(new CraftingTable({x, y}, chunk)); break;
+      case 'crafting_table': this.addChild(new CraftingTable({x, y, xc, yc}, chunk)); break;
     }
   }
 }

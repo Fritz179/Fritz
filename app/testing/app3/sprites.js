@@ -24,8 +24,7 @@ function loadSprites(...sprites) {
 function loadSprite(name, options = {}, callback) {
 
   if (typeof options == 'function') {
-    callback = options
-    options = {}
+    options = {parser: options, json: !!callback}
   } else if (typeof options == 'string') {
     options = {path: options}
   }
@@ -57,11 +56,6 @@ function loadSprite(name, options = {}, callback) {
       // make sure that sprite is an array
       sprites[name] = []
       addDefaultOptions(sprites[name], output)
-
-
-      if (typeof callback == 'function') {
-        callback(output)
-      }
     }
   }
 

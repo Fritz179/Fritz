@@ -99,7 +99,9 @@ function loadImage(url, callback) {
   } else if (callback && typeof callback.callback == 'function') {
     _loadImage(url).then(img => callback.callback(img))
   } else {
-    return _loadImage(url)
+    const img = new Image()
+    _loadImage(url, img)
+    return img
   }
 }
 

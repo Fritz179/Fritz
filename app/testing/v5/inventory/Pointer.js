@@ -45,15 +45,20 @@ class Pointer extends Canvas {
         this.diggingFor++
         this.spriteAction = 'digging'
 
-        if (this.diggingFor >= this.diggingTime(tile)) {
-          this.diggingFor = this.diggingTime(tile)
+        const miner = main.player.inventory.selectedSlot.id
 
-          const [x, y] = this.tileCord
-          main.addChild(new Drop({x: x + this.w / 2, y: y + this.h / 2, id: tileNames[tiles[tile].drop].id}))
+        if (this.diggingFor >= this.diggingTime(tile, miner)) {
+          this.diggingFor = this.diggingTime(tile, miner)
+
+          if (tiles[main.player.inventory.selectedSlot.id].toolLevel >= tiles[tile].miningLevel) {
+            const [x, y] = this.tileCord
+            main.addChild(new Drop({x: x + this.w / 2, y: y + this.h / 2, id: tileNames[tiles[tile].drop].id}))
+          }
+
           this.tile = 0
         }
 
-        this.spriteFrame = ceil(6 * this.diggingFor / this.diggingTime(tile)) - 1
+        this.spriteFrame = ceil(6 * this.diggingFor / this.diggingTime(tile, miner)) - 1
       } else {
         this.spriteAction = 'idle'
       }
@@ -64,23 +69,17 @@ class Pointer extends Canvas {
     return this.digging
   }
 
-  diggingTime(tile) {
+  diggingTime(miningID, minerID) {
     if (main.player.creative) return 1
 
-    const {hardness, weakness} = tiles[tile]
+    const mining = tiles[miningID]
+    const miner = tiles[minerID]
 
-    if (weakness == 'none') return hardness
-
-    const {selectedSlot} = main.player.inventory
-
-    if (main.hand.id) {
-      return hardness / tiles[main.hand.id][`${weakness}Strength`]
-    } else if (selectedSlot.id) {
-      return hardness / tiles[selectedSlot.id][`${weakness}Strength`]
-    } else {
-      return hardness
+    if (miner && miner.toolType == mining.weakness) {
+      return mining.hardness / [1, 2, 4, 6, 8][miner.toolLevel]
     }
 
+    return mining.hardness
 
     throw new Error(`Invalid digging tile: ${tile}`)
   }
@@ -96,17 +95,24 @@ class Pointer extends Canvas {
   getSprite(ctx) {
     if (this.spriteAction != 'clear' && this.tile) {
 
-      let tool = 'wrong'
-      const {id} = main.player.inventory.selectedSlot
+      let tool = 1
+      const miner = tiles[main.player.inventory.selectedSlot.id]
+      const mining = tiles[this.tile]
 
-      if (id && tiles[id][`${tiles[this.tile].weakness}Strength`] > 1) {
-        tool = 'right'
+      if (mining.miningLevel) {
+        if (miner && miner.toolLevel >= mining.miningLevel && miner.toolType == mining.weakness) {
+          tool = 2
+        } else {
+          tool = 0
+        }
+      } else if (miner.toolType == mining.weakness) {
+        tool = 2
       }
 
-      if (this.spriteAction == 'idle') {
-        ctx.image(sprites.pointer[`idle_${tool}Tool`], ...this.tileCord)
-      } else {
-        ctx.image(sprites.pointer[`digging_${tool}Tool`][this.spriteFrame], ...this.tileCord)
+      ctx.image(sprites.pointer.tools[tool], ...this.tileCord)
+
+      if (this.spriteAction != 'idle') {
+        ctx.image(sprites.pointer.breaking[this.spriteFrame], ...this.tileCord)
       }
     }
 

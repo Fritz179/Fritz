@@ -47,11 +47,14 @@ class Furnace extends Body {
 }
 
 class CraftingTable extends Body {
-  constructor({x, y}, chunk) {
+  constructor({x, y, xc, yc}, chunk) {
     super()
     chunk.attach(this)
 
     this.setPos(x * 16, y * 16)
+    this.xc = xc
+    this.yc = yc
+    this.chunk = chunk
     this.setSize(16, 16)
     this.setTrigger(-32, -32, 80, 80)
   }
@@ -62,7 +65,11 @@ class CraftingTable extends Body {
 
   onEntityCollision({name, entity}) {
     if (name == 'Player') {
-      entity.nearCrafting = true
+      if (tiles[this.chunk.tileAt(this.xc, this.yc)].name != 'crafting_table') {
+        this.despawn()
+      } else {
+        entity.nearCrafting = true
+      }
     }
   }
 
