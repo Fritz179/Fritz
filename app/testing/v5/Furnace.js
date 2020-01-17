@@ -74,6 +74,6 @@ class CraftingTable extends Body {
   }
 
   serialize() {
-    return {x: this.x / 16, y: this.y / 16}
+    return {x: this.x / 16, y: this.y / 16, xc: this.xc, yc: this.yc}
   }
 }

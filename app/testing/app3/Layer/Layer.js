@@ -4,7 +4,7 @@ class Layer extends Canvas {
     this.children = new Set()
     this.children.types = []
 
-    this.cameraMode = {xAlign: 0.5, yAlign: 0.5, overflow: 'dispaly'}
+    this.cameraMode = {xAlign: 0, yAlign: 0, overflow: 'dispaly'}
   }
 
   updateCapture(parentSprite) {

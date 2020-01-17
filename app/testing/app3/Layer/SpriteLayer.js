@@ -88,9 +88,14 @@ class SpriteLayer extends Layer {
         }
       }
 
-      if (debugEnabled && !(child instanceof Layer)) {
-        this.drawHitbox(...child.frame, 'green', 3)
-        this.drawHitbox(...child.triggerBox.frame, 'orange', 1)
+      if (debugEnabled) {
+        if (child instanceof Layer) {
+          child.drawHitbox(child.sprite.x, child.sprite.y, child.w, child.h, 'green', 3)
+          child.drawHitbox(child.sprite.x, child.sprite.y, child.w, child.h, 'orange', 1)
+        } else {
+          this.drawHitbox(...child.frame, 'green', 3)
+          this.drawHitbox(...child.triggerBox.frame, 'orange', 1)
+        }
       }
 
       child.changed = false

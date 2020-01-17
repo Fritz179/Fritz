@@ -3,19 +3,20 @@ loadSprite('pointer', './img/sprites')
 loadSprite('tiles', './img/sprites')
 loadSprite('items', './img/sprites')
 loadSprite('slot', './img/sprites')
+loadSprite('tools', './img/sprites')
 const recipes = loadJSON('./inventory/recipes.json', true)
 // loadSprite('slot', {path: './img/sprites', recursive: 2})
 
 let main, redrawAll = false
 
-noiseSeed(420)
+// noiseSeed(420)
 function setup() {
   addLayer(main = new Main())
-  const {player} = main
-
-  addLayer(player.inventory = new Inventory())
+  addLayer(main.player.inventory = new Inventory())
   addLayer(main.hand)
   addLayer(new Overlay())
+
+  main.player.inventory.add('wood', 9)
 }
 
 addCollision(Player, Drop)

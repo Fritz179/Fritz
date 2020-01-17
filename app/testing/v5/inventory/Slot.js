@@ -21,30 +21,40 @@ class Slot extends ItemHolder {
   get selected() { return this.inventory.selected == this.num }
 
   onLeftClick({stopPropagation, x, y}) {
-    if (main.hand.isEmpty && !this.isEmpty) {
-      this.dump(main.hand)
+    const {hand} = main
 
-      main.hand.from = this
+    if (hand.isEmpty && !this.isEmpty) { // pickUp
+      this.dump(hand)
+
+      hand.from = this
       this.leftTime = 0
+    } else if (!hand.isEmpty && (this.isEmpty || this.id == hand.id)) { // released
+      this.getFrom(hand)
     }
 
     stopPropagation()
   }
 
   onClickUp() {
+    this.onMouseReleased()
+  }
+
+  onMouseReleased() {
     const {hand} = main
+    
+    if (!hand.isEmpty) {
+      if (this.isEmpty && this.leftTime > 20) {
+        this.getFrom(hand)
+      } else if (hand.id && hand.id == this.id) {
+        const space = tiles[this.id].maxStack - this.quantity
 
-    if (this.isEmpty && !hand.isEmpty && (this != hand.from || this.leftTime > 20)) {
-      this.getFrom(hand)
-    } else if (hand.id == this.id) {
-      const space = tiles[this.id].maxStack - this.quantity
-
-      if (hand.quantity > space) {
-        this.quantity += space
-        hand.quantity -= space
-      } else {
-        this.quantity += hand.quantity
-        hand.empty()
+        if (hand.quantity > space) {
+          this.quantity += space
+          hand.quantity -= space
+        } else {
+          this.quantity += hand.quantity
+          hand.empty()
+        }
       }
     }
   }

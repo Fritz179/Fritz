@@ -99,6 +99,10 @@ function loadImage(url, callback) {
   } else if (callback && typeof callback.callback == 'function') {
     _loadImage(url).then(img => callback.callback(img))
   } else {
+    if (typeof callback == 'string') {
+      url = `${callback}/${url}`
+    }
+
     const img = new Image()
     _loadImage(url, img)
     return img

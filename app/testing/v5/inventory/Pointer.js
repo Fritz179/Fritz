@@ -2,7 +2,6 @@ class Pointer extends Canvas {
   constructor() {
     super()
 
-    this.setSize(16, 16)
     this.spriteAction = 'idle'
 
     this.oldDiggingFor = 0
@@ -84,11 +83,11 @@ class Pointer extends Canvas {
     throw new Error(`Invalid digging tile: ${tile}`)
   }
 
-  onLeftMouseBubble() {
+  onLeftClickBubble() {
     this.digging = true
   }
 
-  onLeftMouseUp() {
+  onClickUp() {
     this.digging = false
   }
 

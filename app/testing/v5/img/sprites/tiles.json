@@ -38,7 +38,7 @@
       "weakness": "pickaxe"
     },
     {
-      "name": "wood",
+      "name": "wood_log",
       "collision": 0,
       "hardness": 35,
       "weakness": "axe"
@@ -82,7 +82,7 @@
       "drop": "furnace"
     },
     {
-      "name": "wood_plank",
+      "name": "wood",
       "hardness": 35,
       "weakness": "axe"
     },

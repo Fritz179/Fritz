@@ -26,7 +26,7 @@ function loadSprite(name, options = {}, callback) {
   if (typeof options == 'function') {
     options = {parser: options, json: !!callback}
   } else if (typeof options == 'string') {
-    options = {path: options}
+    options = {path: options, parser: callback}
   }
 
   addDefaultOptions(options, {recursive: false, json: true, ext: 'png'})
@@ -39,15 +39,16 @@ function loadSprite(name, options = {}, callback) {
     let parser
 
     if (options.parser) parser = options.parser
-    else if (options.recursive) parser = 'recursive'
-    else if (json.tiles) parser = 'tiles'
-    else if (json.animations) parser = 'animation'
+    else if (options.recursive) parser = parsers.recursive
+    else if (json.tiles) parser = parsers.tiles
+    else if (json.animations) parser = parsers.animation
 
     if (!parser) {
       let available = Object.keys(parsers).map(type => `\n\t${type}`)
       console.error(`Invalid sprite type: ${options.type}, available: ${available}`);
     }
-    const output = parsers[parser](img, json, options)
+
+    const output = parser(img, json, options)
 
     if (output instanceof Canvas) {
       sprites[name] = output
@@ -67,7 +68,7 @@ function loadSprite(name, options = {}, callback) {
       parse(img, json)
     })
   } else {
-    _loadImage(imgPath, img => {
+    _loadImage(imgPath).then(img => {
       parse(img)
     })
   }
@@ -101,7 +102,7 @@ addParser('tiles', (img, json) => {
 
     tiles.forEach((tile, i) => {
       if (tile.tiles) {
-        parseGroup(tile)
+        parseGroup(tile, Object.assign({}, defaultProp), metadata)
       } else {
         properties.forEach(prop => {
           if (typeof tile[prop] == 'undefined') {
@@ -120,16 +121,20 @@ addParser('tiles', (img, json) => {
         if (tile.x) x = tile.x
         if (tile.y) y = tile.y
 
+        if (x >= width) {
+          metadata.x = x = 0
+          metadata.y = y = y + h
+          if (y >= height) {
+            debugger
+            throw new Error('outside image boundry!')
+          }
+        }
+
         tile.sprite = cut(img, x, y, w, h)
         addTile(tile)
 
         //go to next tile, move x and y
         metadata.x += w
-        if (x >= width) {
-          x = 0
-          metadata.y += h
-          if (y >= height) throw new Error('outside image boundry!')
-        }
       }
     })
   }

@@ -104,10 +104,6 @@ class Player extends Entity {
     this.ya = 0.25
   }
 
-  onClick({x, y}) {
-    console.log(x, y);
-  }
-
   onBlockCollision({x, y, solveCollision}) {
     if (this.breakBlock) {
       this.layer.setTileAt(x, y, 0)

@@ -189,6 +189,7 @@ class TileGame extends SpriteLayer {
     json.entities.forEach(({name, args}) => {
       switch (name) {
         case 'Furnace': this.addChild(new Furnace(args, chunk)); break;
+        case 'CraftingTable': this.addChild(new CraftingTable(args, chunk)); break;
         case 'Drop': this.addChild(new Drop(args, chunk)); break;
         default: console.error(name);
 

@@ -12,26 +12,6 @@
   },
   "tiles": [
     {
-      "name": "wooden_sword",
-      "toolLevel": 1,
-      "toolType": "sword"
-    },
-    {
-      "name": "wooden_pickaxe",
-      "toolLevel": 1,
-      "toolType": "pickaxe"
-    },
-    {
-      "name": "wooden_shovel",
-      "toolLevel": 1,
-      "toolType": "shovel"
-    },
-    {
-      "name": "wooden_axe",
-      "toolLevel": 1,
-      "toolType": "axe"
-    },
-    {
       "name": "coal",
       "maxStack": 64
     },
@@ -40,13 +20,12 @@
       "maxStack": 64
     },
     {
-      "name": "stick",
+      "name": "diamond",
       "maxStack": 64
     },
     {
-      "name": "stone_pickaxe",
-      "toolLevel": 2,
-      "toolType": "pickaxe"
+      "name": "stick",
+      "maxStack": 64
     }
   ]
 }
