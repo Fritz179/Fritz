@@ -162,8 +162,13 @@ class Canvas extends Frame {
     if (this instanceof Layer) {
       const {xAlign, yAlign, overflow} = this.cameraMode
 
-      args[0] = (args[0] - (this.x + this.w * xAlign)) * this.xm + this.sprite.w * xAlign
-      args[1] = (args[1] - (this.y + this.h * yAlign)) * this.ym + this.sprite.h * yAlign
+      if (this.buffer) {
+        args[0] = (args[0] + (this.sprite.x + this.w * xAlign)) * this.xm + this.sprite.w * xAlign
+        args[1] = (args[1] + (this.sprite.y + this.h * yAlign)) * this.ym + this.sprite.h * yAlign
+      } else {
+        args[0] = (args[0] + (this.x + this.w * xAlign)) * this.xm + this.sprite.w * xAlign
+        args[1] = (args[1] + (this.y + this.h * yAlign)) * this.ym + this.sprite.h * yAlign
+      }
       if (q) {
         args[2] *= this.xm
         args[3] *= this.ym

@@ -7,14 +7,10 @@ class Layer extends Canvas {
     this.cameraMode = {xAlign: 0, yAlign: 0, overflow: 'dispaly'}
   }
 
-  updateCapture(parentSprite) {
+  getSpriteCapture(parentSprite) {
     if (!this.buffer) {
       this.sprite = parentSprite
     }
-
-    if (debugEnabled) {
-        this.background(255, 255 - timer.time % 255, timer.time % 255)
-      }
   }
 
   setCameraMode({align, overflow}) {
@@ -94,5 +90,9 @@ class Layer extends Canvas {
     if (this.isTopCtx) {
       this.setSize(w, h)
     }
+  }
+
+  onResizeBubble({w, h}) {
+
   }
 }

@@ -18,8 +18,8 @@ class Pointer extends Canvas {
   get tileCord() { return this.tilePos.map(pos => pos * 16) }
   get overEntity() { return !this.layer.noEntityAt.cord(this.x, this.y) }
 
-  get x() { return main.x + this.offset.x }
-  get y() { return main.y + this.offset.y }
+  get x() { return this.offset.x - main.sprite.x }
+  get y() { return this.offset.y - main.sprite.y }
 
   set tile(id) { this.layer.setTileAt.cord(this.x, this.y, id) }
 
@@ -83,12 +83,24 @@ class Pointer extends Canvas {
     throw new Error(`Invalid digging tile: ${tile}`)
   }
 
-  onLeftClickBubble() {
-    this.digging = true
+  onMouseBubble({button}) {
+    if (button == 0) {
+      this.digging = true
+    }
+  }
+
+  onClickBubble({button}) {
+    if (button == 0) {
+      this.digging = true
+    }
   }
 
   onClickUp() {
     this.digging = false
+  }
+
+  onClickReleased() {
+    this.onClickUp()
   }
 
   getSprite(ctx) {

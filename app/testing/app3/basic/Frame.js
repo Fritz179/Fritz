@@ -1,6 +1,4 @@
 const DEFAULT_TEXTURE = null
-const SOFT = 1
-const HARD = 2
 
 class Frame extends Block {
   constructor(x, y, w, h) {

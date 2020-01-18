@@ -15,7 +15,10 @@ class TriggerBox extends Block {
 
   set(xOff, yOff, w, h) {
     this.offPos.set(xOff, yOff)
-    this.offSize.set(w, h)
+
+    if (w || h) {
+      this.offSize.set(w, h)
+    }
   }
 
   get x() { return this.body.x + this.offPos.x }
@@ -23,16 +26,12 @@ class TriggerBox extends Block {
   get w() { return this.offSize.x || this.body.w }
   get h() { return this.offSize.y || this.body.h }
 
-  // set x(x) { this.offPos = x - this.body.x }
-  // set y(y) { this.offPos = y - this.body.y }
+  // set x(x) { this.offPos.x = x - this.body.x }
+  // set y(y) { this.offPos.x = y - this.body.y }
   // set w(w) { this.offSize.x = w }
   // set h(h) { this.offSize.y = h }
   set x(x) { }
   set y(y) { }
   set w(w) { }
   set h(h) { }
-
-  getSprite() {
-    return false
-  }
 }

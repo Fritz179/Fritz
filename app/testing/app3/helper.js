@@ -1,5 +1,10 @@
 let preloadCounter = 0
 const preloadFunctions = []
+const eventListeners = []
+
+function addEventListenerAfterPreload(...args) {
+  eventListeners.push(args)
+}
 
 function incrementPreloadCounter() {
   if (timer.running) {
@@ -31,6 +36,10 @@ function decrementPreloadCounter(index, callback) {
     setTimeout(() => {
       masterLayer = new SpriteLayer('screen')
       setup()
+
+      eventListeners.forEach(listener => {
+        window.addEventListener(...listener)
+      });
 
       if (timer.running) console.error('Erur?');
       else timer.start()

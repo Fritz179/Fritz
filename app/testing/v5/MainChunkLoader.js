@@ -12,7 +12,7 @@ class MainChunkLoader extends ChunkLoader {
     const data = []
 
     function tileAt(x, y) {
-      let distToTop =  y -noise(x / 20) * 50
+      let distToTop = y -noise(x / 20) * 50
 
       if (distToTop < 0) return 0
       if (distToTop < 1) return 1

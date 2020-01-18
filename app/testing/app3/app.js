@@ -1,5 +1,4 @@
 const timer = new Timer(60, fixedUpdate, update, false)
-let masterLayer = new Layer()
 
 const {round, floor, ceil, PI, abs, min, max, sign} = Math
 const random = (...args) => {
@@ -24,7 +23,7 @@ function fixedUpdate() {
 function update() {
   redrawAll = redrawAll || debugEnabled
   if (masterLayer.update() || masterLayer.changed || redrawAll) {
-    masterLayer.getSprite()
+    masterLayer.getSprite(masterLayer)
     masterLayer.changed = false
     redrawAll = false
     return true

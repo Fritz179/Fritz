@@ -31,11 +31,14 @@ class TileGame extends SpriteLayer {
     this.forEachChunk(chunk => chunk.fixedUpdate())
   }
 
-  updateCapture() {
+  updateCapture(sprite) {
     if (this.preW !== null) {
       const {chunkTotalWidth, chunkTotalHeight, preW, preH, postW, postH} = this
-      const xCenter = floor(this.center.x / chunkTotalWidth)
-      const yCenter = floor(this.center.y / chunkTotalHeight)
+
+      // const xCenter = floor(-this.x / chunkTotalWidth)
+      // const yCenter = floor(-this.y / chunkTotalHeight)
+      const xCenter = floor(-this.sprite.center.x / chunkTotalWidth)
+      const yCenter = floor(-this.sprite.center.y / chunkTotalHeight)
 
       // delete all outside chunk
       let deletedChunks = 0

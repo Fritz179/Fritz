@@ -1,25 +1,31 @@
 class CraftingLayer extends SpriteLayer {
   constructor(ingredients, result, y) {
-    super()
+    super('auto')
 
     this.setCameraMode({align: 'left-top'})
     this.ingredients = ingredients
     this.result = result
-    this.y = -y * 80 + 16
-    this.x = -8
+    this.y = y * 80
+    // this.sprite.y = y * 80
     this.clicked = false
 
     this.setSize((ingredients.length + result.length + 1) * 80, 80)
   }
 
-  onClick() {
+  onResize() {
+    
+  }
+
+  onClick({stopPropagation}) {
     this.clicked = true
+
+    stopPropagation()
   }
 
   onClickUp() {
     if (this.clicked) {
       this.clicked = false
-      
+
       this.ingredients.forEach(({name, quantity}) => {
         main.player.inventory.remove(tileNames[name].id, quantity)
       })
@@ -31,7 +37,7 @@ class CraftingLayer extends SpriteLayer {
   }
 
   getSprite() {
-
+    // this.background(0)
     const ing = this.ingredients.length
     const res = this.result.length
 

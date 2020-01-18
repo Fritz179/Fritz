@@ -88,8 +88,15 @@ function mapMouse(allow, drag) {
     if (target instanceof Layer) {
       const {xAlign, yAlign, overflow} = target.cameraMode
 
-      args.x = round((args.x - parent.w * xAlign) / target.xm + (target.x + target.w * xAlign))
-      args.y = round((args.y - parent.h * yAlign) / target.ym + (target.y + target.h * yAlign))
+      // args[0] = (args[0] + (this.x + this.w * xAlign)) * this.xm + this.sprite.w * xAlign
+      // args[1] = (args[1] + (this.y + this.h * yAlign)) * this.ym + this.sprite.h * yAlign
+      if (target.buffer) {
+        args.x = round((args.x - parent.w * xAlign) / target.xm - (target.x + target.sprite.x + target.w * xAlign))
+        args.y = round((args.y - parent.h * yAlign) / target.ym - (target.y + target.sprite.y + target.h * yAlign))
+      } else {
+        args.x = round((args.x - parent.w * xAlign) / target.xm - (target.x + target.w * xAlign))
+        args.y = round((args.y - parent.h * yAlign) / target.ym - (target.y + target.h * yAlign))
+      }
     } else {
       args.x = round(args.x / target.xm - target.x)
       args.y = round(args.y / target.ym - target.y)
@@ -112,7 +119,7 @@ mouseDirs.forEach(dir => {
   createCrawler(`on${dir}Mouse`, mouseMapper)
 })
 
-window.addEventListener('mousedown', event => {
+addEventListenerAfterPreload('mousedown', event => {
   const {x, y, button} = event
 
   mouseIsClicked = button + 1
@@ -140,7 +147,7 @@ mouseDirs.forEach(dir => {
   createCrawler(`on${dir}MouseDrag`, mapper, true)
 })
 
-window.addEventListener('mousemove', ({movementX, movementY, x, y}) => {
+addEventListenerAfterPreload('mousemove', ({movementX, movementY, x, y}) => {
   const args = {x, y, xd: movementX, yd: movementY, button: mouseIsClicked - 1}
   crawl('onDrag', Object.assign({}, args))
   if (mouseIsClicked) {
@@ -162,7 +169,7 @@ mouseDirs.forEach(dir => {
   createCrawler(`on${dir}MouseReleased`, mouseReleased)
 })
 
-window.addEventListener('mouseup', ({x, y, button}) => {
+addEventListenerAfterPreload('mouseup', ({x, y, button}) => {
   mouseIsClicked = 0
 
   const mouseUpNames = [
@@ -192,7 +199,7 @@ function deClickAll(target) {
 
 //onKey crawler
 createCrawler('onKey')
-window.addEventListener('keydown', event => {
+addEventListenerAfterPreload('keydown', event => {
   if (allowRepeatedKeyPressed || !event.repeat) {
 
     const output = getKey(event)
@@ -218,7 +225,7 @@ window.addEventListener('keydown', event => {
 
 //onKeyUp crawler
 createCrawler('onKeyUp')
-window.addEventListener('keyup', event => {
+addEventListenerAfterPreload('keyup', event => {
 
   const output = getKey(event)
   const {key, name, keyCode} = output
@@ -244,12 +251,12 @@ function getKey(event) {
 
 //wheel crawler
 createCrawler('onWheel')
-window.addEventListener('wheel', event => {
+addEventListenerAfterPreload('wheel', event => {
   crawl('onWheel', {dir: Math.sign(event.deltaY)})
 });
 
 createCrawler('onResize', t => t instanceof Layer)
-window.addEventListener('resize', () => {
+addEventListenerAfterPreload('resize', () => {
   const width = window.innerWidth
   const height = window.innerHeight
 

@@ -8,6 +8,9 @@ class Inventory extends SpriteLayer {
     this.rows = 4
     this.slots = []
 
+    this.setSize(this.cols * 80, this.rows * 80)
+    this.setPos(16, 16)
+
     for (let i = 0; i < this.cols * this.rows; i++) {
       this.slots[i] = this.addChild(new Slot(this, i))
     }
@@ -69,7 +72,7 @@ class Inventory extends SpriteLayer {
     this.changed = true
   }
 
-  onWheel({dir}) {
+  onWheelBubble({dir}) {
     let newSel = this.selected + dir
 
     if (newSel < 0) newSel = this.cols - 1

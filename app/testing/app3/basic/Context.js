@@ -104,6 +104,7 @@ class Context extends Block {
     const xm = sw / dw
     const ym = sh / dh
 
+    // console.log(xm);
 
     const f = Math.floor
     const c = Math.ceil
@@ -169,8 +170,13 @@ class Context extends Block {
       if (sx + sw < 0 || sy + sh < 0 || dx + dw < 0 || dy + dw < 0) debugger
     }
 
-    // console.log(sw, dw, sx, sy, dx, dy);
-    this.ctx.drawImage(sprite, f(sx), f(sy), f(sw), f(sh), f(dx), f(dy), f(dw), f(dh))
+    if (this.width > 256 || this.width == 16) {
+      this.ctx.drawImage(sprite, sx, sy, sw, sh, dx, dy, dw, dh)
+      // const r = Math.round
+      // this.ctx.drawImage(sprite, r(sx), r(sy), r(sw), r(sh), r(dx), r(dy), r(dw), r(dh))
+    } else {
+      this.ctx.drawImage(sprite, f(sx), f(sy), f(sw), f(sh), f(dx), f(dy), f(dw), f(dh))
+    }
   }
 
   _drawHitbox(args) {

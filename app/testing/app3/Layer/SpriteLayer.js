@@ -72,13 +72,17 @@ class SpriteLayer extends Layer {
     // begin bubble process
     this.children.forEach(child => {
       if (!child.changed && child.buffer && !redrawAll) {
-        this.image(child, child.sprite.x, child.sprite.y)
+        this.image(child, child.x, child.y)
       } else {
+        if (child.buffer && debugEnabled) {
+          child.background(255, 255 - timer.time % 255, timer.time % 255)
+        }
+
         const sprite = child.getSprite(this)
 
         if (sprite) {
-          if (child instanceof Layer) {
-            this.image(sprite, child.sprite.x, child.sprite.y)
+          if (child.buffer) {
+            this.image(sprite, child.x, child.y)
           } else {
             this.image(sprite, child.x + sprite.x, child.y + sprite.y)
           }
@@ -90,8 +94,8 @@ class SpriteLayer extends Layer {
 
       if (debugEnabled) {
         if (child instanceof Layer) {
-          child.drawHitbox(child.sprite.x, child.sprite.y, child.w, child.h, 'green', 3)
-          child.drawHitbox(child.sprite.x, child.sprite.y, child.w, child.h, 'orange', 1)
+          this.drawHitbox(...child.frame, 'green', 3)
+          this.drawHitbox(...child.triggerBox.frame, 'orange', 1)
         } else {
           this.drawHitbox(...child.frame, 'green', 3)
           this.drawHitbox(...child.triggerBox.frame, 'orange', 1)
@@ -129,3 +133,5 @@ function addCollision(of, to) {
     }
   })
 }
+
+const cameraPosVec = addVec2(Frame, 'cameraPos', 'cx', 'cy')

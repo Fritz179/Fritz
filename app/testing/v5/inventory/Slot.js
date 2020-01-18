@@ -5,7 +5,7 @@ class Slot extends ItemHolder {
     const x = num % inventory.cols
     const y = (num - x) / inventory.cols
 
-    this.setPos(x * 80 + 16, y * 80 + 16)
+    this.setPos(x * 80 + 8, y * 80 + 8)
     this.setSize(64, 64)
 
     this.inventory = inventory
@@ -41,7 +41,7 @@ class Slot extends ItemHolder {
 
   onMouseReleased() {
     const {hand} = main
-    
+
     if (!hand.isEmpty) {
       if (this.isEmpty && this.leftTime > 20) {
         this.getFrom(hand)

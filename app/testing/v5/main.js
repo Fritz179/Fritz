@@ -9,14 +9,14 @@ const recipes = loadJSON('./inventory/recipes.json', true)
 
 let main, redrawAll = false
 
-// noiseSeed(420)
+noiseSeed(420)
 function setup() {
   addLayer(main = new Main())
   addLayer(main.player.inventory = new Inventory())
   addLayer(main.hand)
   addLayer(new Overlay())
 
-  main.player.inventory.add('wood', 9)
+  // main.player.inventory.add('wood', 9)
 }
 
 addCollision(Player, Drop)
@@ -48,12 +48,16 @@ class Main extends TileGame {
     super('auto')
 
     this.zoom = 3
-    this.setScale(this.zoom)
+    this.setScale(3)
     this.setCameraMode({align: 'center', overflow: 'display'})
+
+    this.setSize(window.innerWidth, window.innerHeight)
+    // this.w = window.innerWidth
+    // this.h = window.innerHeight
 
     // create palyer
     this.player = new Player(1600, (ceil(noise(1600 / 320) * 50)) * 16 - 24)
-    this.center = this.player.center
+    // this.center = this.player.center
     this.addChild(this.player)
 
     // create player attachments
@@ -65,7 +69,7 @@ class Main extends TileGame {
   }
 
   onDrag({x, y}) {
-    this.pointer.offset.set(x - this.x, y - this.y)
+    this.pointer.offset.set(x + this.sprite.x, y + this.sprite.y)
   }
 
   onKey({name}) {
@@ -95,8 +99,13 @@ class Main extends TileGame {
     }
   }
 
+  onResize({w, h}) {
+    this.setSize(w, h)
+  }
+
   update() {
-    this.center = this.player.center
+    let {x, y} = this.player.center
+    this.sprite.center = {x: -x, y: -y}
   }
 
   onBlockPlaced({id, x, y, chunk, xc, yc}) {
