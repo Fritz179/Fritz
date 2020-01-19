@@ -51,7 +51,7 @@ class Pointer extends Canvas {
 
           if (tiles[main.player.inventory.selectedSlot.id].toolLevel >= tiles[tile].miningLevel) {
             const [x, y] = this.tileCord
-            main.addChild(new Drop({x: x + this.w / 2, y: y + this.h / 2, id: tileNames[tiles[tile].drop].id}))
+            main.addChild(new Drop({x: x + this.w / 2, y: y + this.h / 2, id: tiles[tiles[tile].drop].id}))
           }
 
           this.tile = 0

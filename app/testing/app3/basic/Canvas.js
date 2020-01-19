@@ -62,24 +62,7 @@ class Canvas extends Frame {
     }
   }
 
-  // get offsetTop() { return this.yo }
-  // get offsetLeft() { return this.xo }
-  // get offset() { return {x: this.xo, y: this.yo} }
-  //
-  // set offsetTop(y) { this.yo = y }
-  // set offsetLeft(x) { this.xo = x }
-  // set offset({x, y}) { this.xo = x; this.yo = y }
-  //
-  // setOffset(x, y) { this.xo = x; this.yo = y; return this; }
-
-  // set scaleX(y) { this.xm = x }
-  // set scaleY(x) { this.ym = y }
-  // set scale({x, y}) { this.xm = x; this.ym = y }
   set size({w, h}) { this.setSize(w, h); }
-
-  // get scaleX() { return this.xm }
-  // get scaleY() { return this.ym }
-  // get scale() { return {x: this.xm, y: this.ym} }
 
   get size() { return {w: this.w, h: this.h} }
   get topCtx() { return this.sprite.topCtx }

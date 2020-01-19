@@ -7,6 +7,7 @@ class Frame extends Block {
     this.mult = new multVec(1, 1)
 
     this._wasOnClick = false
+    this._hovered = false
     this.sprite = null
     this.layer = null
     this.changed = true
@@ -39,6 +40,11 @@ class Frame extends Block {
   onDragBubble(x, y, dx, dy) { }
   onWheel(dir) { }
   onWheelBubble(dir) { }
+
+  onHover() { }
+  onHoverBubble() { }
+  onUnhover() { }
+  onUnhoverBubble() { }
 };
 
 ['Mouse', 'Click'].forEach(name => {

@@ -26,21 +26,7 @@ addCollision(Drop, Drop)
 
 function tp(x, y = false) {
   if (y === false) y = (ceil(noise(x / 320) * 50)) * 16 - 24
-  main.player.pos = {x, y}
-}
-
-class Tile {
-  constructor({name}) {
-    tileNames[name] = this
-  }
-
-  get isPlacable() {
-    return this.collision !== null
-  }
-
-  get isBreakable() {
-    return this.collision !== null
-  }
+  main.player.pos.set(x, y)
 }
 
 class Main extends TileGame {

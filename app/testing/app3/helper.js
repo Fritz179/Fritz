@@ -102,6 +102,10 @@ function cap(value, max) {
   }
 }
 
+function constrain(val, min, max) {
+  return Math.max(min, Math.min(val, max))
+}
+
 function loadImage(url, callback) {
   if (typeof callback == 'function') {
     _loadImage(url).then(img => callback(img))

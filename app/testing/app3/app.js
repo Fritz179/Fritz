@@ -21,6 +21,7 @@ function fixedUpdate() {
 }
 
 function update() {
+  updateMouseHover()
   redrawAll = redrawAll || debugEnabled
   if (masterLayer.update() || masterLayer.changed || redrawAll) {
     masterLayer.getSprite(masterLayer)

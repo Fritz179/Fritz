@@ -1,6 +1,7 @@
 let debugEnabled = false
 let allowRepeatedKeyPressed = false
 let mouseIsClicked = 0
+let mouseX = -1, mouseY = -1
 const mouseDirs = ['Left', 'Middle', 'Right', '']
 
 // TODO: add names...
@@ -113,8 +114,8 @@ function mapMouse(allow, drag) {
 
 //onMouse and onClick crawlers
 mouseDirs.forEach(dir => {
-  const clickMapper = mapMouse((t, a, p) => pointIsInRange(a, t.w, t.h) ? t._wasOnClick = true : false)
-  const mouseMapper = mapMouse((t, a, p) => !pointIsInRange(a, t.w, t.h))
+  const clickMapper = mapMouse((t, a, p) => t._hovered ? t._wasOnClick = true : false)
+  const mouseMapper = mapMouse((t, a, p) => !t._hovered)
   createCrawler(`on${dir}Click`, clickMapper)
   createCrawler(`on${dir}Mouse`, mouseMapper)
 })
@@ -144,10 +145,12 @@ addEventListenerAfterPreload('mousedown', event => {
 createCrawler('onDrag', mapMouse(false, true))
 mouseDirs.forEach(dir => {
   const mapper = mapMouse((t, a, p) => t._wasOnClick, true)
-  createCrawler(`on${dir}MouseDrag`, mapper, true)
+  createCrawler(`on${dir}MouseDrag`, mapper)
 })
 
 addEventListenerAfterPreload('mousemove', ({movementX, movementY, x, y}) => {
+  mouseX = x
+  mouseY = y
   const args = {x, y, xd: movementX, yd: movementY, button: mouseIsClicked - 1}
   crawl('onDrag', Object.assign({}, args))
   if (mouseIsClicked) {
@@ -158,10 +161,10 @@ addEventListenerAfterPreload('mousemove', ({movementX, movementY, x, y}) => {
 
 //onMouseUp and onClickUp crawlers
 mouseDirs.forEach(dir => {
-  const clickUp = mapMouse((t, a, p) => pointIsInRange(a, t.w, t.h) && t._wasOnClick)
-  const mouseUp = mapMouse((t, a, p) => !pointIsInRange(a, t.w, t.h) && !t._wasOnClick)
-  const clickReleased = mapMouse((t, a, p) => !pointIsInRange(a, t.w, t.h) && t._wasOnClick)
-  const mouseReleased = mapMouse((t, a, p) => pointIsInRange(a, t.w, t.h) && !t._wasOnClick)
+  const clickUp = mapMouse((t, a, p) => t._hovered && t._wasOnClick)
+  const mouseUp = mapMouse((t, a, p) => !t._hovered && !t._wasOnClick)
+  const clickReleased = mapMouse((t, a, p) => !t._hovered && t._wasOnClick)
+  const mouseReleased = mapMouse((t, a, p) => t._hovered && !t._wasOnClick)
 
   createCrawler(`on${dir}ClickUp`, clickUp)
   createCrawler(`on${dir}MouseUp`, mouseUp)
@@ -262,3 +265,16 @@ addEventListenerAfterPreload('resize', () => {
 
   crawl('onResize', {width, height, w: width, h: height})
 });
+
+
+const hoverMapper = mapMouse((t, a, p) => pointIsInRange(a, t.w, t.h) && !t._hovered ? t._hovered = true : false)
+const unHoverMapper = mapMouse((t, a, p) => !pointIsInRange(a, t.w, t.h) && t._hovered ? !(t._hovered = false) : false)
+createCrawler(`onHover`, hoverMapper)
+createCrawler(`onUnhover`, unHoverMapper)
+
+function updateMouseHover() {
+  if (mouseX != -1) {
+    crawl('onHover', {x: mouseX, y: mouseY})
+    crawl('onUnhover', {x: mouseX, y: mouseY})
+  }
+}

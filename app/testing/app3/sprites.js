@@ -75,7 +75,6 @@ function loadSprite(name, options = {}, callback) {
 };
 
 const tiles = []
-const tileNames = {}
 let lastTileId = 0
 
 addParser('tiles', (img, json) => {
@@ -146,12 +145,7 @@ addParser('tiles', (img, json) => {
       throw new Error(`Id: ${id}, already in use by: ${tiles[id].name}, duplicate: ${name}`)
     }
 
-    let tile
-    if (typeof Tile != 'undefined') {
-      tile = new Tile(newTile)
-    } else {
-      tile = {}
-    }
+    const tile = { }
 
     properties.forEach(prop => {
       if (typeof tile[prop] == 'undefined') tile[prop] = newTile[prop]
@@ -164,6 +158,7 @@ addParser('tiles', (img, json) => {
 
     tile.id = id
     tiles[id] = tile
+    tiles[newTile.name] = tile
     tile.name = newTile.name
   }
 

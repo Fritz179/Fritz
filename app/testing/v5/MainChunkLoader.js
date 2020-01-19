@@ -110,17 +110,3 @@ class MainChunkLoader extends ChunkLoader {
     }
   }
 }
-
-// function getTreeLocation(x, add, rnd) {
-//   let pos = []
-//
-//   for (let i = -1; i < 17; i++) {
-//     pos[i] = floor(noise((x * 16 + i) / 20) * 50)
-//   }
-//
-//   for (let i = 0; i < 16; i++) {
-//     if ((pos[i - 1] > pos[i] && pos[i + 1] > pos[i]) || (pos[i - 1] < pos[i] && pos[i + 1] < pos[i])) {
-//       generateTree(x * 16 + i, add, rnd)
-//     }
-//   }
-// }

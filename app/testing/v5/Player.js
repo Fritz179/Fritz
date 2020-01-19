@@ -136,10 +136,6 @@ class Player extends Entity {
     }
   }
 
-  onClick() {
-    console.log('You clicked me!');
-  }
-
   explode(w, h) {
     for (let x = -w + 1; x < w + 1; x++) {
       for (let y = -h + 1; y < h + 1; y++) {

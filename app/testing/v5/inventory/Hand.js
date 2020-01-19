@@ -17,10 +17,10 @@ class Hand extends ItemHolder {
     if (this.placing && !pointer.tile && !pointer.overEntity) {
       const {selected, selectedSlot} = player.inventory
 
-      if (this.id && tiles[this.id].isPlacable) {
+      if (this.id && tiles[this.id].collision !== null) {
         pointer.tile = this.id
         this.remove()
-      } else if (selectedSlot.id && tiles[selectedSlot.id].isPlacable) {
+      } else if (selectedSlot.id && tiles[selectedSlot.id].collision !== null) {
         pointer.tile = selectedSlot.id
         player.inventory.getFromSlot(selected, 1)
       }

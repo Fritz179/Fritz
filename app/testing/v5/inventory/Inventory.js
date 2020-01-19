@@ -57,12 +57,13 @@ class Inventory extends SpriteLayer {
 
       if (this.open) {
         let offset = 1
-
-        recipes.forEach(({ingredients, result, from}) => {
-          if (this.hasRecipe(ingredients) && (!from || this[from + 'Open'])) {
-            this.addChild(new CraftingLayer(ingredients, result, this.rows + offset++))
-          }
+        const validRecipes = recipes.filter(({ingredients, result, from}) => {
+          return this.hasRecipe(ingredients) && (!from || this[from + 'Open'])
         })
+
+        if (validRecipes.length) {
+          this.addChild(new CraftingLayer(validRecipes, this.rows + 1))
+        }
       }
     } else {
       this.setChildren(this.slots.slice(0, this.cols))
@@ -82,7 +83,7 @@ class Inventory extends SpriteLayer {
   }
 
   add(_id, quantity = 1) {
-    const {maxStack, id} = typeof _id == 'string' ? tileNames[_id] : tiles[_id]
+    const {maxStack, id} = tiles[_id]
     const {hand} = main
 
     if (hand.id == id && quantity < maxStack) {
@@ -254,11 +255,11 @@ class Inventory extends SpriteLayer {
 
     return recipe.every(item => {
       const {quantity} = item
-      const id = tileNames[item.name].id
+      const id = tiles[item.name].id
 
       return this.has(id, quantity)
     })
   }
 }
 
-// main.addChild(new Drop(x + this.w / 2, y + this.h / 2, tileNames[tiles[tile].drop].id))
+// main.addChild(new Drop(x + this.w / 2, y + this.h / 2, tiles[tiles[tile].drop].id))

@@ -1,19 +1,55 @@
 class CraftingLayer extends SpriteLayer {
+  constructor(recipes, row) {
+    super()
+
+    this.y = row * 80
+    this.scrollPos = 0
+    this.scrollView = 10
+
+    this.recipes = []
+    recipes.forEach(({ingredients, result}, i) => {
+      this.recipes.push(new CraftingSlot(ingredients, result))
+    })
+
+    const w = Math.max(...this.recipes.map(el => el.w))
+    this.setSize(w, Math.min(this.recipes.length, this.scrollView) * 80)
+
+    this.refresh()
+  }
+
+  onWheel({dir, stopPropagation}) {
+    if (this._hovered) {
+      this.scrollPos += dir
+
+      this.scrollPos = constrain(this.scrollPos, 0, this.recipes.length - this.scrollView)
+      this.refresh()
+
+      stopPropagation()
+    }
+  }
+
+  refresh() {
+    this.setChildren(this.recipes.slice(this.scrollPos, this.scrollPos + this.scrollView))
+    this.children.CraftingSlot.forEach((slot, i) => {
+      slot.y = i * 80
+    });
+  }
+}
+
+class CraftingSlot extends SpriteLayer {
   constructor(ingredients, result, y) {
     super('auto')
 
     this.setCameraMode({align: 'left-top'})
     this.ingredients = ingredients
     this.result = result
-    this.y = y * 80
-    // this.sprite.y = y * 80
     this.clicked = false
 
     this.setSize((ingredients.length + result.length + 1) * 80, 80)
   }
 
   onResize() {
-    
+
   }
 
   onClick({stopPropagation}) {
@@ -27,11 +63,11 @@ class CraftingLayer extends SpriteLayer {
       this.clicked = false
 
       this.ingredients.forEach(({name, quantity}) => {
-        main.player.inventory.remove(tileNames[name].id, quantity)
+        main.player.inventory.remove(tiles[name].id, quantity)
       })
 
       this.result.forEach(({name, quantity}) => {
-        main.player.inventory.add(tileNames[name].id, quantity)
+        main.player.inventory.add(tiles[name].id, quantity)
       })
     }
   }
@@ -58,9 +94,9 @@ class CraftingLayer extends SpriteLayer {
       this.textAlign('right', 'bottom')
 
       this.textSize(32)
-      this.image(tileNames[name].sprite, x + 24, 24, 32, 32)
+      this.image(tiles[name].sprite, x + 24, 24, 32, 32)
 
-      if (tileNames[name].maxStack > 1) {
+      if (tiles[name].maxStack > 1) {
         this.text(quantity, x + 62, 72)
       }
     }
@@ -86,9 +122,9 @@ class CraftingLayer extends SpriteLayer {
       this.textAlign('right', 'bottom')
 
       this.textSize(32)
-      this.image(tileNames[name].sprite, x + 24, 24, 32, 32)
+      this.image(tiles[name].sprite, x + 24, 24, 32, 32)
 
-      if (tileNames[name].maxStack > 1) {
+      if (tiles[name].maxStack > 1) {
         this.text(quantity, x + 62, 72)
       }
     }

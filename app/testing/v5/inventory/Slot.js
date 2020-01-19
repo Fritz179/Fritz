@@ -8,6 +8,8 @@ class Slot extends ItemHolder {
     this.setPos(x * 80 + 8, y * 80 + 8)
     this.setSize(64, 64)
 
+    this.triggerBox.set(-8, -8, 80, 80)
+
     this.inventory = inventory
     this.num = num
 
