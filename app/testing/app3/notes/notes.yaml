@@ -68,3 +68,8 @@ Notes:
   - body is collision box
   - body.sprite is drawing position
   - body.trigger is triggering box => defaults to body collision box
+
+
+
+
+  - Parity Algorithm, R U' R' U' R U R D R' U' R D' R' U2 R' U'

@@ -4,7 +4,9 @@ class CraftingLayer extends SpriteLayer {
 
     this.y = row * 80
     this.scrollPos = 0
-    this.scrollView = 10
+
+    // total space available, minus inventory (4) minus spacing(2)
+    this.scrollView = floor(window.innerHeight / 80 - 6)
 
     this.recipes = []
     recipes.forEach(({ingredients, result}, i) => {

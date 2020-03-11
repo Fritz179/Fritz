@@ -16,9 +16,13 @@ function setup() {
   addLayer(main.hand)
   addLayer(new Overlay())
 
+  // main.player.setAcc(0.3, 0)
+  // main.player.collideWithMap = false
+  // main.player.setGamemode(false)
+  // debugEnabled = true
+
   // main.player.inventory.add('wood', 9)
 }
-
 addCollision(Player, Drop)
 addCollision(Furnace, Player)
 addCollision(CraftingTable, Player)
